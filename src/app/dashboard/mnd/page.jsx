@@ -114,21 +114,21 @@ export default function MNDOfficerDashboard() {
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Link href="http://localhost:3000/mpr/abstract55" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+            <Link href="https://sarracrm.vercel.app/dashboard/mpr" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
               <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <PlusCircle size={24} />
               </div>
               <span className="font-bold text-slate-700">Abstract 55</span>
               <span className="text-xs text-slate-500 mt-1">New Entry</span>
             </Link>
-            <Link href="http://localhost:3000/mpr/head55-01" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+            <Link href="https://sarracrm.vercel.app/dashboard/mnd/mpr/praroop1a" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
               <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <PlusCircle size={24} />
               </div>
               <span className="font-bold text-slate-700">Praroop-1(A)</span>
               <span className="text-xs text-slate-500 mt-1">New Entry</span>
             </Link>
-            <Link href="http://localhost:3000/mpr/head55-02" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+            <Link href="https://sarracrm.vercel.app/dashboard/mnd/mpr/praroop1b" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
               <div className="w-12 h-12 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <PlusCircle size={24} />
               </div>

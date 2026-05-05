@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const dir = 'c:/Users/hp/Desktop/sarracrm/src/components/forms/StreamshedDPR';
+const dir = path.join(__dirname, 'src', 'components', 'forms', 'StreamshedDPR');
 if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
 const stepIndicatorCode = `import React from 'react';
