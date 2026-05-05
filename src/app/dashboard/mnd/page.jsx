@@ -111,7 +111,7 @@ export default function MNDOfficerDashboard() {
           </div>
         </div>
 
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h2 className="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Link href="https://sarracrm.vercel.app/dashboard/mpr" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
@@ -150,7 +150,7 @@ export default function MNDOfficerDashboard() {
               <span className="text-xs text-slate-500 mt-1">Insights</span>
             </Link>
           </div>
-        </div>
+        </div> */}
       </div>
     </RoleGuard>
   );
