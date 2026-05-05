@@ -1,0 +1,17 @@
+export const DPR_STATUS = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  RESUBMITTED: 'RESUBMITTED',
+};
+
+export const STATUS_LABELS = {
+  [DPR_STATUS.DRAFT]: 'Draft',
+  [DPR_STATUS.SUBMITTED]: 'Submitted',
+  [DPR_STATUS.UNDER_REVIEW]: 'Under Review',
+  [DPR_STATUS.APPROVED]: 'Approved',
+  [DPR_STATUS.REJECTED]: 'Rejected',
+  [DPR_STATUS.RESUBMITTED]: 'Resubmitted',
+};
