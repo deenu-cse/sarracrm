@@ -55,6 +55,16 @@ export function middleware(request) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  // IMPORTANT: Check /dashboard/mnd-admin BEFORE /dashboard/mnd
+  // because startsWith('/dashboard/mnd') would also match '/dashboard/mnd-admin'
+  if (path.startsWith('/dashboard/mnd-admin') && !['MND_SUPER_ADMIN'].includes(role)) {
+    if (['MND_OFFICER'].includes(role)) return NextResponse.redirect(new URL('/dashboard/mnd', request.url));
+    if (['PIA_OFFICER'].includes(role)) return NextResponse.redirect(new URL('/dashboard/officer', request.url));
+    if (role === 'DD_LEVEL') return NextResponse.redirect(new URL('/dashboard/dd', request.url));
+    if (['SUPER_ADMIN'].includes(role)) return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   if (path.startsWith('/dashboard/mnd') && !['MND_OFFICER', 'MND_SUPER_ADMIN'].includes(role)) {
     if (['PIA_OFFICER'].includes(role)) return NextResponse.redirect(new URL('/dashboard/officer', request.url));
     if (role === 'DD_LEVEL') return NextResponse.redirect(new URL('/dashboard/dd', request.url));

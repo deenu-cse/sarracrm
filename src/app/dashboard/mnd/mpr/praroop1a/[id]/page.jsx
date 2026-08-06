@@ -7,8 +7,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { patch } from '@/lib/api';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/formatters';
-import { BarChart3, FileText, CheckCircle, XCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { BarChart3, FileText, CheckCircle, XCircle, Info, Edit } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function MPRPraroop1ADetailPage() {
   const { id } = useParams();
@@ -61,7 +61,6 @@ export default function MPRPraroop1ADetailPage() {
     }
   };
 
-  // Data prep for charts
   const activityData = mpr.activities?.filter(a => !a.isHeader).map(a => ({
     name: a.activityEnglishName,
     code: a.activityCode,
@@ -84,11 +83,18 @@ export default function MPRPraroop1ADetailPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold font-mono text-blue-800">{mpr.applicationNo}</h1>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${mpr.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-              mpr.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                'bg-amber-100 text-amber-800'
+            <span className={`text-xs px-2 py-1 rounded font-semibold flex items-center gap-1 ${
+              mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+              mpr.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+              mpr.status === 'RESUBMITTED' ? 'bg-purple-100 text-purple-700' :
+              'bg-amber-100 text-amber-700'
               }`}>
               {mpr.status}
+              {mpr.status === 'REJECTED' && mpr.rejectionReason && (
+                <span title={mpr.rejectionReason} className="cursor-help text-red-700 hover:text-red-900">
+                  <Info size={14} />
+                </span>
+              )}
             </span>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
@@ -99,6 +105,38 @@ export default function MPRPraroop1ADetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-3 w-full md:w-auto mt-4 md:mt-0">
+          {mpr.status === 'REJECTED' && user?.role === 'MND_OFFICER' && (
+            <button
+              onClick={() => {
+                const transformedActivities = {};
+                if (mpr.activities) {
+                  mpr.activities.forEach(act => {
+                    transformedActivities[act.activityCode] = { districts: {} };
+                    if (act.districts) {
+                      act.districts.forEach(d => {
+                        transformedActivities[act.activityCode].districts[d.districtName] = d;
+                      });
+                    }
+                  });
+                }
+                
+                localStorage.setItem(`sarra_mpr_55_01_${user._id}`, JSON.stringify({
+                  formData: transformedActivities,
+                  totalApprovedSchemes: mpr.totalApprovedSchemes,
+                  totalSpringsUnderSchemes: mpr.totalSpringsUnderSchemes,
+                  springsCurrentlyBeingTreated: mpr.springsCurrentlyBeingTreated,
+                  mprId: mpr._id,
+                  savedAt: new Date().toISOString()
+                }));
+                router.push('/dashboard/mnd/head55-01');
+              }}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white border border-indigo-700 hover:bg-indigo-700 shadow-md font-bold rounded-xl transition-all"
+            >
+              <Edit size={18} />
+              Edit & Resubmit
+            </button>
+          )}
+
           <Link
             href={`/dashboard/mnd/mpr/praroop1a/${id}/analytics`}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-bold rounded-xl transition-all"

@@ -38,13 +38,25 @@ export default function MNDAdminDashboard() {
     []
   );
 
+  const { data: pendingPraroop1C, loading: praroop1CLoading } = useFetch(
+    '/mpr/praroop1c/all-reports?status=SUBMITTED&limit=5',
+    []
+  );
+
+  const { data: pendingPraroop1D, loading: praroop1DLoading } = useFetch(
+    '/mpr/praroop1d/all-reports?status=SUBMITTED&limit=5',
+    []
+  );
+
   const pendingList = [
     ...(Array.isArray(pendingAbstract) ? pendingAbstract : []).map(r => ({ ...r, type: 'Abstract 55' })),
     ...(Array.isArray(pendingPraroop) ? pendingPraroop : []).map(r => ({ ...r, type: 'Praroop-1(A)' })),
-    ...(Array.isArray(pendingPraroop1B) ? pendingPraroop1B : []).map(r => ({ ...r, type: 'Praroop-1(B)' }))
+    ...(Array.isArray(pendingPraroop1B) ? pendingPraroop1B : []).map(r => ({ ...r, type: 'Praroop-1(B)' })),
+    ...(Array.isArray(pendingPraroop1C) ? pendingPraroop1C : []).map(r => ({ ...r, type: 'Praroop-1(C)' })),
+    ...(Array.isArray(pendingPraroop1D) ? pendingPraroop1D : []).map(r => ({ ...r, type: 'Praroop-1(D)' }))
   ].sort((a, b) => new Date(b.submittedAt || b.createdAt) - new Date(a.submittedAt || a.createdAt)).slice(0, 5);
 
-  const formsLoading = abstractLoading || praroopLoading || praroop1BLoading;
+  const formsLoading = abstractLoading || praroopLoading || praroop1BLoading || praroop1CLoading || praroop1DLoading;
 
   const adapatedStats = {
     totalForms: analyticsData?.overview?.totalMPRs || 0,
@@ -96,12 +108,18 @@ export default function MNDAdminDashboard() {
                     {pendingList.map(form => {
                       const isPraroop1A = form.type === 'Praroop-1(A)';
                       const isPraroop1B = form.type === 'Praroop-1(B)';
+                      const isPraroop1C = form.type === 'Praroop-1(C)';
+                      const isPraroop1D = form.type === 'Praroop-1(D)';
                       const detailUrl = isPraroop1A 
                         ? `/dashboard/mnd-admin/mpr/praroop1a/${form._id}` 
                         : isPraroop1B
                         ? `/dashboard/mnd-admin/mpr/praroop1b/${form._id}`
+                        : isPraroop1C
+                        ? `/dashboard/mnd-admin/mpr/praroop1c/${form._id}`
+                        : isPraroop1D
+                        ? `/dashboard/mnd-admin/mpr/praroop1d/${form._id}`
                         : `/dashboard/mnd-admin/mpr/${form._id}`;
-                      const budget = isPraroop1A || isPraroop1B
+                      const budget = isPraroop1A || isPraroop1B || isPraroop1C || isPraroop1D
                         ? (form.computed?.grandTotalSarraExpend || 0) 
                         : (form.computed?.totalSarraShareLakh || 0);
 
@@ -120,7 +138,7 @@ export default function MNDAdminDashboard() {
                                 <span className="font-mono text-sm font-bold text-[#0a3d62] group-hover:underline">
                                   {form.applicationNo}
                                 </span>
-                                <Badge variant={isPraroop1A || isPraroop1B ? 'warning' : 'info'} className={`text-[9px] h-4 px-1.5 font-bold ${isPraroop1B ? 'bg-cyan-100 text-cyan-800' : ''}`}>
+                                <Badge variant={isPraroop1A || isPraroop1B || isPraroop1C || isPraroop1D ? 'warning' : 'info'} className={`text-[9px] h-4 px-1.5 font-bold ${isPraroop1B ? 'bg-cyan-100 text-cyan-800' : isPraroop1C ? 'bg-indigo-100 text-indigo-800' : isPraroop1D ? 'bg-teal-100 text-teal-800' : ''}`}>
                                   {form.type}
                                 </Badge>
                               </div>

@@ -11,8 +11,12 @@ export const NAV_LINKS = {
   [USER_ROLES.MND_OFFICER]: [
     { label: 'Dashboard', href: '/dashboard/mnd' },
     { label: 'MPR Reports', href: '/dashboard/mnd/mpr' },
+    // { label: 'Abstract 55', href: '/dashboard/mnd/abstract55' },
+    { label: 'Head 55-01 (Spring)', href: '/dashboard/mnd/head55-01' },
+    { label: 'Head 55-02 (River)', href: '/dashboard/mnd/head55-02' },
+    { label: 'Head 55-03 (Major River)', href: '/dashboard/mnd/head55-03' },
+    { label: 'Head 55-04 (Ground Water)', href: '/dashboard/mnd/head55-04' },
     { label: 'Analytics', href: '/dashboard/mnd/analytics' },
-    { label: 'Notifications', href: '/dashboard/mnd/notifications' },
   ],
   [USER_ROLES.DD_LEVEL]: [
     { label: 'Dashboard', href: '/dashboard/dd' },

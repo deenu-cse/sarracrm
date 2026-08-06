@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { get } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
@@ -31,9 +31,19 @@ const STATUS_COLORS = {
 };
 
 const DISTRICTS = [
-  "Almora", "Bageshwar", "Chamoli", "Champawat", "Dehradun",
-  "Haridwar", "Nainital", "Pauri Garhwal", "Pithoragarh",
-  "Rudraprayag", "Tehri Garhwal", "Udham Singh Nagar", "Uttarkashi"
+  { id: "Almora", label: "Almora" },
+  { id: "Bageshwar", label: "Bageshwar" },
+  { id: "Chamoli", label: "Chamoli" },
+  { id: "Champawat", label: "Champawat" },
+  { id: "Dehradun", label: "Dehradun" },
+  { id: "Haridwar", label: "Haridwar" },
+  { id: "Nainital", label: "Nainital" },
+  { id: "Pauri", label: "Pauri Garhwal" },
+  { id: "Pithoragarh", label: "Pithoragarh" },
+  { id: "Rudraprayag", label: "Rudraprayag" },
+  { id: "Tehri", label: "Tehri Garhwal" },
+  { id: "USNagar", label: "Udham Singh Nagar" },
+  { id: "Uttarkashi", label: "Uttarkashi" }
 ];
 
 // ── Components ──────────────────────────────────────────────────────────────
@@ -94,13 +104,13 @@ export default function MNDAdminAnalytics() {
     status: ''
   });
 
-  const fetchAnalytics = async (f = filters) => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       const query = new URLSearchParams();
-      Object.entries(f).forEach(([k, v]) => {
-        if (v) query.append(k, v);
-      });
+      if (filters.financialYear) query.append('financialYear', filters.financialYear);
+      if (filters.district) query.append('district', filters.district);
+      if (filters.status) query.append('status', filters.status);
       const res = await get(`/mpr/abstract55/analytics/full?${query.toString()}`);
       if (res.success) {
         setData(res.data);
@@ -110,11 +120,11 @@ export default function MNDAdminAnalytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.financialYear, filters.district, filters.status]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [fetchAnalytics]);
 
   const stats = data?.overview || {};
 
@@ -153,6 +163,7 @@ export default function MNDAdminAnalytics() {
               >
                 <option value="2024-25">2024-25</option>
                 <option value="2025-26">2025-26</option>
+                <option value="2026-27">2026-27</option>
               </select>
             </div>
             <div>
@@ -163,7 +174,7 @@ export default function MNDAdminAnalytics() {
                 className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-blue-500/20 outline-none min-w-[140px]"
               >
                 <option value="">All Districts</option>
-                {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                {DISTRICTS.map(d => <option key={d.id} value={d.id}>{d.label}</option>)}
               </select>
             </div>
             <button
@@ -178,7 +189,7 @@ export default function MNDAdminAnalytics() {
         {/* Tab Navigation */}
         <div className="max-w-7xl mx-auto px-6 mt-6">
           <div className="flex gap-1 border-b border-slate-200 overflow-x-auto">
-            {['overview', 'praroop1a', 'praroop1b', 'departments', 'districts', 'trends'].map(tab => (
+            {['overview', 'praroop1a', 'praroop1b', 'praroop1c', 'praroop1d', 'departments', 'districts', 'trends'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -187,7 +198,7 @@ export default function MNDAdminAnalytics() {
                     ? 'border-[#0a3d62] text-[#0a3d62]'
                     : 'border-transparent text-slate-400 hover:text-slate-600'}`}
               >
-                {tab === 'praroop1a' ? 'Praroop-1(A)' : tab === 'praroop1b' ? 'Praroop-1(B)' : tab}
+                {tab === 'praroop1a' ? 'Praroop-1(A)' : tab === 'praroop1b' ? 'Praroop-1(B)' : tab === 'praroop1c' ? 'Praroop-1(C)' : tab === 'praroop1d' ? 'Praroop-1(D)' : tab}
               </button>
             ))}
           </div>
@@ -624,6 +635,322 @@ function Praroop1BTab({ data }) {
     </div>
   );
 }
+
+
+
+function Praroop1CTab({ data }) {
+  if (!data) return <div className="text-center py-16 text-slate-400">No Praroop-1(C) data available</div>;
+  const ov = data.overview || {};
+  const utilPct = ov.totalSarraBudget > 0 ? Math.min(100, ((ov.totalSarraExpend / ov.totalSarraBudget) * 100)).toFixed(1) : 0;
+  const radialData = [{ name: 'Utilization', value: parseFloat(utilPct), fill: parseFloat(utilPct) > 80 ? '#1a6fc4' : parseFloat(utilPct) > 50 ? '#e67e22' : '#ef4444' }];
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* KPI Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <MiniKPI label="Total Forms" value={ov.totalForms} />
+        <MiniKPI label="Approved" value={ov.totalApproved} color="text-green-600" />
+        <MiniKPI label="Pending" value={ov.totalPending} color="text-blue-600" />
+        <MiniKPI label="Physical Progress" value={ov.totalPhysicalProgress?.toLocaleString()} color="text-[#1a6fc4]" />
+        <MiniKPI label="SARRA Spent" value={`₹${ov.totalSarraExpend?.toFixed(2)} L`} color="text-amber-600" />
+        <MiniKPI label="SARRA Budget" value={`₹${ov.totalSarraBudget?.toFixed(2)} L`} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity-wise Physical Progress */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Activity-wise Physical Progress</h3>
+            <p className="text-xs text-slate-500">Cumulative units completed per activity</p>
+          </div>
+          <div className="p-5 h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.activityStats} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis type="number" axisLine={false} tickLine={false} />
+                <YAxis dataKey="code" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} width={80} />
+                <Tooltip content={<PTooltip />} />
+                <Legend />
+                <Bar dataKey="totalPhysicalProgress" name="Physical Progress" fill="#1a6fc4" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="targetUnit" name="Target" fill="#e2e8f0" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Budget Utilization Radial */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Budget Utilization</h3>
+            <p className="text-xs text-slate-500">SARRA expenditure vs allocation</p>
+          </div>
+          <div className="p-5 h-[300px] flex items-center justify-center relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" data={radialData} startAngle={180} endAngle={0}>
+                <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                <RadialBar background clockWise dataKey="value" cornerRadius={10} fill={radialData[0].fill} />
+              </RadialBarChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ marginTop: '-20px' }}>
+              <span className="text-4xl font-bold text-slate-800">{utilPct}%</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Utilized</span>
+            </div>
+          </div>
+          <div className="px-5 pb-5 grid grid-cols-2 gap-3">
+            <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Allocated</p>
+              <p className="text-sm font-bold text-slate-800">₹{ov.totalSarraBudget?.toFixed(2)} L</p>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Spent</p>
+              <p className="text-sm font-bold text-amber-600">₹{ov.totalSarraExpend?.toFixed(2)} L</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity-wise SARRA Expenditure */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Activity-wise SARRA Expenditure</h3>
+            <p className="text-xs text-slate-500">Budget vs Spend per activity (₹ Lakh)</p>
+          </div>
+          <div className="p-5 h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.activityStats}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700 }} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip content={<PTooltip />} />
+                <Legend />
+                <Bar dataKey="totalSarraBudget" name="SARRA Budget" fill="#0a3d62" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="totalSarraExpend" name="SARRA Spent" fill="#e67e22" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* District-wise Summary */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">District-wise Summary</h3>
+            <p className="text-xs text-slate-500">Physical progress & SARRA spend by district</p>
+          </div>
+          <div className="p-5 h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.districtStats} layout="vertical" margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis type="number" axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600 }} width={90} />
+                <Tooltip content={<PTooltip />} />
+                <Legend />
+                <Bar dataKey="totalPhysical" name="Physical" fill="#1a6fc4" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="totalSarraExpend" name="SARRA (₹L)" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Forms Table */}
+      {data.recentForms?.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Recent Praroop-1(C) Submissions</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
+                <tr>
+                  <th className="px-5 py-3 text-left">Application No</th>
+                  <th className="px-5 py-3 text-left">Month</th>
+                  <th className="px-5 py-3 text-left">District</th>
+                  <th className="px-5 py-3 text-center">Status</th>
+                  <th className="px-5 py-3 text-right">Physical</th>
+                  <th className="px-5 py-3 text-right">SARRA (₹L)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {data.recentForms.map((f, i) => (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-3 font-mono text-xs font-bold text-[#0a3d62]">{f.applicationNo}</td>
+                    <td className="px-5 py-3 text-slate-600">{f.reportingMonth} {f.financialYear}</td>
+                    <td className="px-5 py-3 text-slate-600">{f.submittedByDistrict}</td>
+                    <td className="px-5 py-3 text-center">
+                      <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${f.status === 'APPROVED' ? 'bg-green-100 text-green-700' : f.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{f.status}</span>
+                    </td>
+                    <td className="px-5 py-3 text-right font-bold text-[#1a6fc4]">{f.grandTotalPhysicalProgress}</td>
+                    <td className="px-5 py-3 text-right font-bold text-amber-600">₹{f.grandTotalSarraExpend?.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+function Praroop1DTab({ data }) {
+  if (!data) return <div className="text-center py-16 text-slate-400">No Praroop-1(D) data available</div>;
+  const ov = data.overview || {};
+  const utilPct = ov.totalSarraBudget > 0 ? Math.min(100, ((ov.totalSarraExpend / ov.totalSarraBudget) * 100)).toFixed(1) : 0;
+  const radialData = [{ name: 'Utilization', value: parseFloat(utilPct), fill: parseFloat(utilPct) > 80 ? '#1a6fc4' : parseFloat(utilPct) > 50 ? '#e67e22' : '#ef4444' }];
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* KPI Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <MiniKPI label="Total Forms" value={ov.totalForms} />
+        <MiniKPI label="Approved" value={ov.totalApproved} color="text-green-600" />
+        <MiniKPI label="Pending" value={ov.totalPending} color="text-blue-600" />
+        <MiniKPI label="Physical Progress" value={ov.totalPhysicalProgress?.toLocaleString()} color="text-[#1a6fc4]" />
+        <MiniKPI label="SARRA Spent" value={`₹${ov.totalSarraExpend?.toFixed(2)} L`} color="text-amber-600" />
+        <MiniKPI label="SARRA Budget" value={`₹${ov.totalSarraBudget?.toFixed(2)} L`} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity-wise Physical Progress */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Activity-wise Physical Progress</h3>
+            <p className="text-xs text-slate-500">Cumulative units completed per activity</p>
+          </div>
+          <div className="p-5 h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.activityStats} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis type="number" axisLine={false} tickLine={false} />
+                <YAxis dataKey="code" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} width={80} />
+                <Tooltip content={<PTooltip />} />
+                <Legend />
+                <Bar dataKey="totalPhysicalProgress" name="Physical Progress" fill="#1a6fc4" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="targetUnit" name="Target" fill="#e2e8f0" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Budget Utilization Radial */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Budget Utilization</h3>
+            <p className="text-xs text-slate-500">SARRA expenditure vs allocation</p>
+          </div>
+          <div className="p-5 h-[300px] flex items-center justify-center relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" data={radialData} startAngle={180} endAngle={0}>
+                <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                <RadialBar background clockWise dataKey="value" cornerRadius={10} fill={radialData[0].fill} />
+              </RadialBarChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ marginTop: '-20px' }}>
+              <span className="text-4xl font-bold text-slate-800">{utilPct}%</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Utilized</span>
+            </div>
+          </div>
+          <div className="px-5 pb-5 grid grid-cols-2 gap-3">
+            <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Allocated</p>
+              <p className="text-sm font-bold text-slate-800">₹{ov.totalSarraBudget?.toFixed(2)} L</p>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg text-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Spent</p>
+              <p className="text-sm font-bold text-amber-600">₹{ov.totalSarraExpend?.toFixed(2)} L</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity-wise SARRA Expenditure */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Activity-wise SARRA Expenditure</h3>
+            <p className="text-xs text-slate-500">Budget vs Spend per activity (₹ Lakh)</p>
+          </div>
+          <div className="p-5 h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.activityStats}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="code" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700 }} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip content={<PTooltip />} />
+                <Legend />
+                <Bar dataKey="totalSarraBudget" name="SARRA Budget" fill="#0a3d62" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="totalSarraExpend" name="SARRA Spent" fill="#e67e22" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* District-wise Summary */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">District-wise Summary</h3>
+            <p className="text-xs text-slate-500">Physical progress & SARRA spend by district</p>
+          </div>
+          <div className="p-5 h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.districtStats} layout="vertical" margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis type="number" axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600 }} width={90} />
+                <Tooltip content={<PTooltip />} />
+                <Legend />
+                <Bar dataKey="totalPhysical" name="Physical" fill="#1a6fc4" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="totalSarraExpend" name="SARRA (₹L)" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Forms Table */}
+      {data.recentForms?.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h3 className="font-semibold text-slate-800">Recent Praroop-1(D) Submissions</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
+                <tr>
+                  <th className="px-5 py-3 text-left">Application No</th>
+                  <th className="px-5 py-3 text-left">Month</th>
+                  <th className="px-5 py-3 text-left">District</th>
+                  <th className="px-5 py-3 text-center">Status</th>
+                  <th className="px-5 py-3 text-right">Physical</th>
+                  <th className="px-5 py-3 text-right">SARRA (₹L)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {data.recentForms.map((f, i) => (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-3 font-mono text-xs font-bold text-[#0a3d62]">{f.applicationNo}</td>
+                    <td className="px-5 py-3 text-slate-600">{f.reportingMonth} {f.financialYear}</td>
+                    <td className="px-5 py-3 text-slate-600">{f.submittedByDistrict}</td>
+                    <td className="px-5 py-3 text-center">
+                      <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${f.status === 'APPROVED' ? 'bg-green-100 text-green-700' : f.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{f.status}</span>
+                    </td>
+                    <td className="px-5 py-3 text-right font-bold text-[#1a6fc4]">{f.grandTotalPhysicalProgress}</td>
+                    <td className="px-5 py-3 text-right font-bold text-amber-600">₹{f.grandTotalSarraExpend?.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 
 function MiniKPI({ label, value, color = 'text-slate-800' }) {
   return (

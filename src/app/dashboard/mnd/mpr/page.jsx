@@ -24,15 +24,21 @@ export default function MPRListPage() {
         </div>
       </div>
 
-      <div className="flex gap-4 border-b border-slate-200 mb-6">
-        <Link href="/dashboard/mnd/mpr" className="px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-bold">
+      <div className="flex gap-4 border-b border-slate-200 mb-6 overflow-x-auto whitespace-nowrap pb-2">
+        <Link href="/dashboard/mnd/mpr" className={"px-4 py-2 border-b-2 font-bold " + ('abstract' === 'abstract' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Abstract 55
         </Link>
-        <Link href="/dashboard/mnd/mpr/praroop1a" className="px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium">
+        <Link href="/dashboard/mnd/mpr/praroop1a" className={"px-4 py-2 border-b-2 font-bold " + ('abstract' === '1a' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Praroop-1(A)
         </Link>
-        <Link href="/dashboard/mnd/mpr/praroop1b" className="px-4 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium">
+        <Link href="/dashboard/mnd/mpr/praroop1b" className={"px-4 py-2 border-b-2 font-bold " + ('abstract' === '1b' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Praroop-1(B)
+        </Link>
+        <Link href="/dashboard/mnd/mpr/praroop1c" className={"px-4 py-2 border-b-2 font-bold " + ('abstract' === '1c' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+          Praroop-1(C)
+        </Link>
+        <Link href="/dashboard/mnd/mpr/praroop1d" className={"px-4 py-2 border-b-2 font-bold " + ('abstract' === '1d' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+          Praroop-1(D)
         </Link>
       </div>
 
@@ -43,6 +49,7 @@ export default function MPRListPage() {
             <option value="SUBMITTED">Submitted</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
+            <option value="RESUBMITTED">Resubmitted</option>
           </select>
           <select value={yearFilter} onChange={e => setYearFilter(e.target.value)} className="px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-blue-400">
             <option value="">All Financial Years</option>
@@ -81,6 +88,7 @@ export default function MPRListPage() {
                       <span className={`text-xs px-2 py-1 rounded font-semibold ${
                         mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
                         mpr.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                        mpr.status === 'RESUBMITTED' ? 'bg-purple-100 text-purple-700' :
                         'bg-amber-100 text-amber-700'
                       }`}>
                         {mpr.status}

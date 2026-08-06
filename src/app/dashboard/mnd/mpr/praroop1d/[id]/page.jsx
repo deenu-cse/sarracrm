@@ -10,11 +10,11 @@ import { formatDate } from '@/lib/formatters';
 import { BarChart3, FileText, CheckCircle, XCircle, Info, Edit } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
-export default function MPRPraroop1BDetailPage() {
+export default function MPRPraroop1DDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { data: mpr, loading, refetch } = useFetch(`/mpr/praroop1b/${id}`);
+  const { data: mpr, loading, refetch } = useFetch(`/mpr/praroop1d/${id}`);
 
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -28,7 +28,7 @@ export default function MPRPraroop1BDetailPage() {
     if (!window.confirm('Approve this MPR?')) return;
     setIsApproving(true);
     try {
-      const res = await patch(`/mpr/praroop1b/${id}/approve`, { note: 'Approved by Admin' });
+      const res = await patch(`/mpr/praroop1d/${id}/approve`, { note: 'Approved by Admin' });
       if (res.success) {
         toast.success('MPR Approved');
         refetch();
@@ -47,7 +47,7 @@ export default function MPRPraroop1BDetailPage() {
     if (!reason) return;
     setIsRejecting(true);
     try {
-      const res = await patch(`/mpr/praroop1b/${id}/reject`, { note: reason });
+      const res = await patch(`/mpr/praroop1d/${id}/reject`, { note: reason });
       if (res.success) {
         toast.success('MPR Rejected');
         refetch();
@@ -129,7 +129,7 @@ export default function MPRPraroop1BDetailPage() {
                   mprId: mpr._id,
                   savedAt: new Date().toISOString()
                 }));
-                router.push('/dashboard/mnd/head55-02');
+                router.push('/dashboard/mnd/head55-04');
               }}
               className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white border border-indigo-700 hover:bg-indigo-700 shadow-md font-bold rounded-xl transition-all"
             >
@@ -139,7 +139,7 @@ export default function MPRPraroop1BDetailPage() {
           )}
 
           <Link
-            href={`/dashboard/mnd/mpr/praroop1b/${id}/analytics`}
+            href={`/dashboard/mnd/mpr/praroop1d/${id}/analytics`}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-bold rounded-xl transition-all"
           >
             <BarChart3 size={18} />
@@ -309,7 +309,7 @@ export default function MPRPraroop1BDetailPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
           <span className="bg-[#e67e22] w-2 h-8 rounded-full"></span>
-          55-02 कुल योग (Grand Total)
+          55-04 कुल योग (Grand Total)
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10">
           <div>

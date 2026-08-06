@@ -49,6 +49,42 @@ const ACTIVITIES = [
   { code: 'M&E', en: 'Monitoring & Evaluation' }
 ];
 
+const ACTIVITIES_1C = [
+  { code:'55-03', name:'प्राथमिक / विस्तृत परियोजना रिपोर्ट पर व्यय', en:'DPR Preparation', hasPhysical:false, hasSize:false },
+  { code:'55-03(01)', name:'समोच्च खनियां / कन्टूर ट्रेंचेज', en:'Contour Trenches', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-03(02)', name:'रिचार्ज पिट', en:'Recharge Pit', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-03(03)', name:'डग आउट पौण्ड', en:'Dugout Ponds', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-03(04)', name:'चाल / खाल', en:'Chal-Khal', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-03(05)', name:'ब्रशवुड चेक डेम', en:'Brushwood Check Dam', hasPhysical:true, hasSize:false, unit:'No.' },
+  { code:'55-03(06)', name:'अस्थाई चेक डेम (पिरुल आदि)', en:'Temporary Check Dam', hasPhysical:true, hasSize:false, unit:'No.' },
+  { code:'55-03(07)', name:'Loose Boulder Check Dam', en:'Loose Boulder Check Dam', hasPhysical:true, hasSize:false, unit:'No.' },
+  { code:'55-03(08)', name:'R:R Dry Check Dam', en:'RR Dry Check Dam', hasPhysical:true, hasSize:false, unit:'No.' },
+  { code:'55-03(09)', name:'Gabion / Crate Wire Check Dam', en:'Gabion/Crate Wire Check Dam', hasPhysical:true, hasSize:false, unit:'No.' },
+  { code:'55-03(10)', name:'Cemented Check Dam', en:'Cemented Check Dam', hasPhysical:true, hasSize:false, unit:'No.' },
+  { code:'55-03(11)', name:'वानस्पतिक उपचार गतिविधि', en:'Vegetative Treatment', hasPhysical:true, hasSize:false, unit:'Ha.' },
+  { code:'55-03(12)', name:'वनीकरण गतिविधि', en:'Forestry Plantation', hasPhysical:true, hasSize:false, unit:'Ha.' },
+  { code:'55-03(13)', name:'चारा / घास रोपण', en:'Fodder/Grass Plantation', hasPhysical:true, hasSize:false, unit:'Ha.' },
+  { code:'55-03(14)', name:'प्राकृतिक पुनरोत्पादन गतिविधि', en:'ANR Activities', hasPhysical:true, hasSize:false, unit:'Ha.' },
+  { code:'55-03(15)', name:'वृक्षारोपण गतिविधि', en:'Plantation Activities', hasPhysical:true, hasSize:false, unit:'Ha.' },
+  { code:'55-03(16)', name:'उपरोक्त गतिविधियों से कुल उपचारित जल संग्रहण क्षेत्र', en:'Total Catchment Area Treated', hasPhysical:true, hasSize:false, unit:'Ha.' },
+  { code:'M&E', name:'मूल्यांकन एवं अनुश्रवण पर व्यय', en:'Monitoring & Evaluation', hasPhysical:false, hasSize:false },
+];
+
+const ACTIVITIES_1D = [
+  { code:'55-04', name:'प्राथमिक / विस्तृत परियोजना रिपोर्ट पर व्यय', en:'DPR Preparation', hasPhysical:false, hasSize:false },
+  { code:'55-04(01)', name:'समोच्च खन्तियां/कन्टूर ट्रेंच', en:'Contour Trenches', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(02)', name:'रिचार्ज पिट', en:'Recharge Pit', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(03)', name:'रिचार्ज शॉफ्ट', en:'Recharge Shaft', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(04)', name:'डग आउट पॉण्ड', en:'Dugout Pond', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(05)', name:'चाल / खाल', en:'Chal-Khal', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(06)', name:'मैदानी क्षेत्रों में अमृत सरोवर', en:'Amrit Sarovar (Plains)', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(07)', name:'मैदानी क्षेत्रों में अमृत सरोवर का पुनरोद्धार', en:'Amrit Sarovar Restoration (Plains)', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(08)', name:'मैदानी क्षेत्रों में बड़े तालाब', en:'Large Ponds (Plains)', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'55-04(09)', name:'मैदानी क्षेत्रों में बड़े तालाब का पुनरोद्धार', en:'Large Ponds Restoration (Plains)', hasPhysical:true, hasSize:true, unit:'No.' },
+  { code:'M&E', name:'मूल्यांकन एवं अनुश्रवण पर व्यय', en:'Monitoring & Evaluation', hasPhysical:false, hasSize:false },
+];
+
+
 // ── Components ──────────────────────────────────────────────────────────────
 
 const KPICard = ({ title, value, icon: Icon, sub, colorClass }) => (
@@ -74,7 +110,7 @@ function Abstract55Analytics() {
   if (financialYear) query.append('financialYear', financialYear);
   if (month) query.append('month', month);
 
-  const { data: mprsList, loading, refresh } = useFetch(`/mpr/abstract55/my-reports?${query.toString()}`);
+  const { data: mprsList, loading, refetch } = useFetch(`/mpr/abstract55/my-reports?${query.toString()}`);
   const mprs = Array.isArray(mprsList) ? mprsList : [];
 
   const analyticsData = useMemo(() => {
@@ -131,7 +167,7 @@ function Abstract55Analytics() {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-slate-800">Abstract 55 Analytics</h2>
         <div className="flex gap-2">
-          <button onClick={() => refresh()} className="p-2 border border-slate-200 rounded-lg hover:bg-white transition-colors">
+          <button onClick={() => refetch()} className="p-2 border border-slate-200 rounded-lg hover:bg-white transition-colors">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <select value={financialYear} onChange={e => setFinancialYear(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white outline-none">
@@ -445,6 +481,601 @@ function Praroop1AAnalytics() {
   );
 }
 
+// ── Praroop-1B Analytics ────────────────────────────────────────────────────
+
+function Praroop1BAnalytics() {
+  const [financialYear, setFinancialYear] = useState('2025-26');
+  
+  const { data: mprsList, loading, refetch } = useFetch(`/mpr/praroop1b/my-reports?financialYear=${financialYear}`);
+  const mprs = Array.isArray(mprsList) ? mprsList : [];
+
+  const { data: mprsListLastYear } = useFetch(`/mpr/praroop1b/my-reports?financialYear=2024-25`);
+  const mprsLastYear = Array.isArray(mprsListLastYear) ? mprsListLastYear : [];
+
+  const analyticsData = useMemo(() => {
+    if (!mprs || mprs.length === 0) return null;
+
+    let totalPhysical = 0;
+    let totalSarraSpend = 0;
+    
+    // Top Activities by Spend
+    const activityMap = {};
+    ACTIVITIES.forEach(a => activityMap[a.code] = { name: a.en, spend: 0, physical: 0 });
+
+    const monthlyData = {};
+    MONTHS.forEach(m => monthlyData[m] = { month: m, '2025-26': 0 });
+    
+    mprs.forEach(mpr => {
+      totalPhysical += mpr.computed?.grandTotalPhysicalProgress || 0;
+      totalSarraSpend += mpr.computed?.grandTotalSarraExpend || 0;
+
+      if(monthlyData[mpr.reportingMonth]) {
+        monthlyData[mpr.reportingMonth]['2025-26'] += mpr.computed?.grandTotalPhysicalProgress || 0;
+      }
+      
+      mpr.activities?.forEach(a => {
+         if(!a.isHeader && activityMap[a.activityCode]) {
+            activityMap[a.activityCode].spend += a.districtTotals?.totalSarraExpend || 0;
+            activityMap[a.activityCode].physical += a.districtTotals?.totalPhysicalProgress || 0;
+         }
+      });
+    });
+
+    MONTHS.forEach(m => {
+        if(monthlyData[m]) monthlyData[m]['2024-25'] = 0;
+    });
+    mprsLastYear.forEach(mpr => {
+        if(monthlyData[mpr.reportingMonth]) {
+            monthlyData[mpr.reportingMonth]['2024-25'] += mpr.computed?.grandTotalPhysicalProgress || 0;
+        }
+    });
+
+    const topActivities = Object.values(activityMap).sort((a, b) => b.spend - a.spend).slice(0, 5);
+    
+    // District-wise Heatmap (simplified using Scatter for matrix or Bar for aggregation)
+    const districtProgress = {};
+    DISTRICTS.forEach(d => districtProgress[d] = { name: d, physical: 0, target: 0, spend: 0 });
+    
+    mprs.forEach(mpr => {
+       mpr.computed?.districtWiseSummary?.forEach(d => {
+          if(districtProgress[d.district]) {
+              districtProgress[d.district].physical += d.totalPhysical || 0;
+              districtProgress[d.district].spend += d.totalSarraExpend || 0;
+          }
+       });
+       mpr.activities?.forEach(act => {
+          act.districts?.forEach(d => {
+             if(districtProgress[d.districtName]) {
+                 districtProgress[d.districtName].target += d.targetUnit || 0;
+             }
+          });
+       });
+    });
+
+    const underPerforming = Object.values(districtProgress).filter(d => {
+        return d.target > 0 && (d.physical / d.target) < 0.5;
+    });
+
+    return {
+      totalPhysical, totalSarraSpend,
+      monthlyChart: MONTHS.map(m => monthlyData[m]),
+      topActivities,
+      underPerforming,
+      districtProgress: Object.values(districtProgress).sort((a,b) => b.physical - a.physical)
+    };
+  }, [mprs, mprsLastYear]);
+
+  return (
+    <div className="space-y-8 mt-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-slate-800">Praroop-1(B) Analytics</h2>
+        <div className="flex gap-2">
+          <button onClick={() => refetch()} className="p-2 border border-slate-200 rounded-lg hover:bg-white transition-colors">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <select value={financialYear} onChange={e => setFinancialYear(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white outline-none">
+            <option value="2025-26">2025-26</option>
+            <option value="2026-27">2026-27</option>
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white rounded-xl animate-pulse border border-slate-200"></div>)}
+        </div>
+      ) : !analyticsData ? (
+        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+           <Activity className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+           <p className="text-slate-500">No data available for Praroop-1(B) in selected FY.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <KPICard title="Total Physical Progress" value={analyticsData.totalPhysical} sub="Total units across districts" icon={Target} colorClass="border-l-[#1e8449]" />
+            <KPICard title="Total SARRA Expenditure" value={`₹${analyticsData.totalSarraSpend.toFixed(2)} L`} sub="Actual spent" icon={Activity} colorClass="border-l-[#e67e22]" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card noPadding>
+              <CardHeader title="Year-over-Year Comparison" subtitle="Physical Progress: 2024-25 vs 2025-26" />
+              <div className="p-6 h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={analyticsData.monthlyChart}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="2024-25" stroke="#94a3b8" fill="#cbd5e1" fillOpacity={0.3} name="2024-25" />
+                    <Area type="monotone" dataKey="2025-26" stroke="#1e8449" fill="#1e8449" fillOpacity={0.6} name="2025-26" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            <Card noPadding>
+              <CardHeader title="Top 5 Activities" subtitle="By SARRA Expenditure (₹L)" />
+              <div className="p-6 h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analyticsData.topActivities} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                    <XAxis type="number" axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} width={120} />
+                    <Tooltip formatter={(val) => `₹${val.toFixed(2)}L`} />
+                    <Bar dataKey="spend" name="SARRA Spend" fill="#e67e22" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+               <Card noPadding>
+                 <CardHeader title="District-wise Physical Progress" subtitle="Aggregate Overview" />
+                 <div className="p-6 h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={analyticsData.districtProgress}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="name" tick={{fontSize: 10}} angle={-45} textAnchor="end" height={60} />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="physical" fill="#0a3d62" name="Physical Progress" radius={[4,4,0,0]} />
+                       </BarChart>
+                    </ResponsiveContainer>
+                 </div>
+               </Card>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <Card noPadding className="h-full border-red-200">
+                <CardHeader title="Under-performing Districts" subtitle="< 50% of Target Achieved" />
+                <div className="p-6">
+                   {analyticsData.underPerforming.length === 0 ? (
+                       <div className="text-center p-8">
+                           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                           <p className="text-green-700 font-bold">All districts on track!</p>
+                       </div>
+                   ) : (
+                       <div className="space-y-4">
+                           {analyticsData.underPerforming.map((d, i) => (
+                               <div key={i} className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
+                                   <span className="font-bold text-slate-800">{d.name}</span>
+                                   <div className="text-right">
+                                       <div className="text-sm font-bold text-red-600">{((d.physical / d.target)*100).toFixed(1)}%</div>
+                                       <div className="text-xs text-slate-500">{d.physical} / {d.target}</div>
+                                   </div>
+                               </div>
+                           ))}
+                       </div>
+                   )}
+                </div>
+              </Card>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+
+function Praroop1CAnalytics() {
+  const [financialYear, setFinancialYear] = useState('2025-26');
+  
+  const { data: mprsList, loading, refetch } = useFetch(`/mpr/praroop1c/my-reports?financialYear=${financialYear}`);
+  const mprs = Array.isArray(mprsList) ? mprsList : [];
+
+  const { data: mprsListLastYear } = useFetch(`/mpr/praroop1c/my-reports?financialYear=2024-25`);
+  const mprsLastYear = Array.isArray(mprsListLastYear) ? mprsListLastYear : [];
+
+  const analyticsData = useMemo(() => {
+    if (!mprs || mprs.length === 0) return null;
+
+    let totalPhysical = 0;
+    let totalSarraSpend = 0;
+    
+    // Top Activities by Spend
+    const activityMap = {}; ACTIVITIES_1C.forEach(a => activityMap[a.code] = { name: a.en, spend: 0, physical: 0 });
+
+    const monthlyData = {};
+    MONTHS.forEach(m => monthlyData[m] = { month: m, '2025-26': 0 });
+    
+    mprs.forEach(mpr => {
+      totalPhysical += mpr.computed?.grandTotalPhysicalProgress || 0;
+      totalSarraSpend += mpr.computed?.grandTotalSarraExpend || 0;
+
+      if(monthlyData[mpr.reportingMonth]) {
+        monthlyData[mpr.reportingMonth]['2025-26'] += mpr.computed?.grandTotalPhysicalProgress || 0;
+      }
+      
+      mpr.activities?.forEach(a => {
+         if(!a.isHeader && activityMap[a.activityCode]) {
+            activityMap[a.activityCode].spend += a.districtTotals?.totalSarraExpend || 0;
+            activityMap[a.activityCode].physical += a.districtTotals?.totalPhysicalProgress || 0;
+         }
+      });
+    });
+
+    MONTHS.forEach(m => {
+        if(monthlyData[m]) monthlyData[m]['2024-25'] = 0;
+    });
+    mprsLastYear.forEach(mpr => {
+        if(monthlyData[mpr.reportingMonth]) {
+            monthlyData[mpr.reportingMonth]['2024-25'] += mpr.computed?.grandTotalPhysicalProgress || 0;
+        }
+    });
+
+    const topActivities = Object.values(activityMap).sort((a, b) => b.spend - a.spend).slice(0, 5);
+    
+    // District-wise Heatmap (simplified using Scatter for matrix or Bar for aggregation)
+    const districtProgress = {};
+    DISTRICTS.forEach(d => districtProgress[d] = { name: d, physical: 0, target: 0, spend: 0 });
+    
+    mprs.forEach(mpr => {
+       mpr.computed?.districtWiseSummary?.forEach(d => {
+          if(districtProgress[d.district]) {
+              districtProgress[d.district].physical += d.totalPhysical || 0;
+              districtProgress[d.district].spend += d.totalSarraExpend || 0;
+          }
+       });
+       mpr.activities?.forEach(act => {
+          act.districts?.forEach(d => {
+             if(districtProgress[d.districtName]) {
+                 districtProgress[d.districtName].target += d.targetUnit || 0;
+             }
+          });
+       });
+    });
+
+    const underPerforming = Object.values(districtProgress).filter(d => {
+        return d.target > 0 && (d.physical / d.target) < 0.5;
+    });
+
+    return {
+      totalPhysical, totalSarraSpend,
+      monthlyChart: MONTHS.map(m => monthlyData[m]),
+      topActivities,
+      underPerforming,
+      districtProgress: Object.values(districtProgress).sort((a,b) => b.physical - a.physical)
+    };
+  }, [mprs, mprsLastYear]);
+
+  return (
+    <div className="space-y-8 mt-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-slate-800">Praroop-1(C) Analytics</h2>
+        <div className="flex gap-2">
+          <button onClick={() => refetch()} className="p-2 border border-slate-200 rounded-lg hover:bg-white transition-colors">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <select value={financialYear} onChange={e => setFinancialYear(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white outline-none">
+            <option value="2025-26">2025-26</option>
+            <option value="2026-27">2026-27</option>
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white rounded-xl animate-pulse border border-slate-200"></div>)}
+        </div>
+      ) : !analyticsData ? (
+        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+           <Activity className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+           <p className="text-slate-500">No data available for Praroop-1(C) in selected FY.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <KPICard title="Total Physical Progress" value={analyticsData.totalPhysical} sub="Total units across districts" icon={Target} colorClass="border-l-[#1e8449]" />
+            <KPICard title="Total SARRA Expenditure" value={`₹${analyticsData.totalSarraSpend.toFixed(2)} L`} sub="Actual spent" icon={Activity} colorClass="border-l-[#e67e22]" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card noPadding>
+              <CardHeader title="Year-over-Year Comparison" subtitle="Physical Progress: 2024-25 vs 2025-26" />
+              <div className="p-6 h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={analyticsData.monthlyChart}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="2024-25" stroke="#94a3b8" fill="#cbd5e1" fillOpacity={0.3} name="2024-25" />
+                    <Area type="monotone" dataKey="2025-26" stroke="#1e8449" fill="#1e8449" fillOpacity={0.6} name="2025-26" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            <Card noPadding>
+              <CardHeader title="Top 5 Activities" subtitle="By SARRA Expenditure (₹L)" />
+              <div className="p-6 h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analyticsData.topActivities} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                    <XAxis type="number" axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} width={120} />
+                    <Tooltip formatter={(val) => `₹${val.toFixed(2)}L`} />
+                    <Bar dataKey="spend" name="SARRA Spend" fill="#e67e22" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+               <Card noPadding>
+                 <CardHeader title="District-wise Physical Progress" subtitle="Aggregate Overview" />
+                 <div className="p-6 h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={analyticsData.districtProgress}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="name" tick={{fontSize: 10}} angle={-45} textAnchor="end" height={60} />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="physical" fill="#0a3d62" name="Physical Progress" radius={[4,4,0,0]} />
+                       </BarChart>
+                    </ResponsiveContainer>
+                 </div>
+               </Card>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <Card noPadding className="h-full border-red-200">
+                <CardHeader title="Under-performing Districts" subtitle="< 50% of Target Achieved" />
+                <div className="p-6">
+                   {analyticsData.underPerforming.length === 0 ? (
+                       <div className="text-center p-8">
+                           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                           <p className="text-green-700 font-bold">All districts on track!</p>
+                       </div>
+                   ) : (
+                       <div className="space-y-4">
+                           {analyticsData.underPerforming.map((d, i) => (
+                               <div key={i} className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
+                                   <span className="font-bold text-slate-800">{d.name}</span>
+                                   <div className="text-right">
+                                       <div className="text-sm font-bold text-red-600">{((d.physical / d.target)*100).toFixed(1)}%</div>
+                                       <div className="text-xs text-slate-500">{d.physical} / {d.target}</div>
+                                   </div>
+                               </div>
+                           ))}
+                       </div>
+                   )}
+                </div>
+              </Card>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+
+function Praroop1DAnalytics() {
+  const [financialYear, setFinancialYear] = useState('2025-26');
+  
+  const { data: mprsList, loading, refetch } = useFetch(`/mpr/praroop1d/my-reports?financialYear=${financialYear}`);
+  const mprs = Array.isArray(mprsList) ? mprsList : [];
+
+  const { data: mprsListLastYear } = useFetch(`/mpr/praroop1d/my-reports?financialYear=2024-25`);
+  const mprsLastYear = Array.isArray(mprsListLastYear) ? mprsListLastYear : [];
+
+  const analyticsData = useMemo(() => {
+    if (!mprs || mprs.length === 0) return null;
+
+    let totalPhysical = 0;
+    let totalSarraSpend = 0;
+    
+    // Top Activities by Spend
+    const activityMap = {};
+    ACTIVITIES_1D.forEach(a => activityMap[a.code] = { name: a.en, spend: 0, physical: 0 });
+
+    const monthlyData = {};
+    MONTHS.forEach(m => monthlyData[m] = { month: m, '2025-26': 0 });
+    
+    mprs.forEach(mpr => {
+      totalPhysical += mpr.computed?.grandTotalPhysicalProgress || 0;
+      totalSarraSpend += mpr.computed?.grandTotalSarraExpend || 0;
+
+      if(monthlyData[mpr.reportingMonth]) {
+        monthlyData[mpr.reportingMonth]['2025-26'] += mpr.computed?.grandTotalPhysicalProgress || 0;
+      }
+      
+      mpr.activities?.forEach(a => {
+         if(!a.isHeader && activityMap[a.activityCode]) {
+            activityMap[a.activityCode].spend += a.districtTotals?.totalSarraExpend || 0;
+            activityMap[a.activityCode].physical += a.districtTotals?.totalPhysicalProgress || 0;
+         }
+      });
+    });
+
+    MONTHS.forEach(m => {
+        if(monthlyData[m]) monthlyData[m]['2024-25'] = 0;
+    });
+    mprsLastYear.forEach(mpr => {
+        if(monthlyData[mpr.reportingMonth]) {
+            monthlyData[mpr.reportingMonth]['2024-25'] += mpr.computed?.grandTotalPhysicalProgress || 0;
+        }
+    });
+
+    const topActivities = Object.values(activityMap).sort((a, b) => b.spend - a.spend).slice(0, 5);
+    
+    // District-wise Heatmap (simplified using Scatter for matrix or Bar for aggregation)
+    const districtProgress = {};
+    DISTRICTS.forEach(d => districtProgress[d] = { name: d, physical: 0, target: 0, spend: 0 });
+    
+    mprs.forEach(mpr => {
+       mpr.computed?.districtWiseSummary?.forEach(d => {
+          if(districtProgress[d.district]) {
+              districtProgress[d.district].physical += d.totalPhysical || 0;
+              districtProgress[d.district].spend += d.totalSarraExpend || 0;
+          }
+       });
+       mpr.activities?.forEach(act => {
+          act.districts?.forEach(d => {
+             if(districtProgress[d.districtName]) {
+                 districtProgress[d.districtName].target += d.targetUnit || 0;
+             }
+          });
+       });
+    });
+
+    const underPerforming = Object.values(districtProgress).filter(d => {
+        return d.target > 0 && (d.physical / d.target) < 0.5;
+    });
+
+    return {
+      totalPhysical, totalSarraSpend,
+      monthlyChart: MONTHS.map(m => monthlyData[m]),
+      topActivities,
+      underPerforming,
+      districtProgress: Object.values(districtProgress).sort((a,b) => b.physical - a.physical)
+    };
+  }, [mprs, mprsLastYear]);
+
+  return (
+    <div className="space-y-8 mt-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-slate-800">Praroop-1(D) Analytics</h2>
+        <div className="flex gap-2">
+          <button onClick={() => refetch()} className="p-2 border border-slate-200 rounded-lg hover:bg-white transition-colors">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <select value={financialYear} onChange={e => setFinancialYear(e.target.value)} className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white outline-none">
+            <option value="2025-26">2025-26</option>
+            <option value="2026-27">2026-27</option>
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-white rounded-xl animate-pulse border border-slate-200"></div>)}
+        </div>
+      ) : !analyticsData ? (
+        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+           <Activity className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+           <p className="text-slate-500">No data available for Praroop-1(D) in selected FY.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <KPICard title="Total Physical Progress" value={analyticsData.totalPhysical} sub="Total units across districts" icon={Target} colorClass="border-l-[#1e8449]" />
+            <KPICard title="Total SARRA Expenditure" value={`₹${analyticsData.totalSarraSpend.toFixed(2)} L`} sub="Actual spent" icon={Activity} colorClass="border-l-[#e67e22]" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card noPadding>
+              <CardHeader title="Year-over-Year Comparison" subtitle="Physical Progress: 2024-25 vs 2025-26" />
+              <div className="p-6 h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={analyticsData.monthlyChart}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="2024-25" stroke="#94a3b8" fill="#cbd5e1" fillOpacity={0.3} name="2024-25" />
+                    <Area type="monotone" dataKey="2025-26" stroke="#1e8449" fill="#1e8449" fillOpacity={0.6} name="2025-26" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            <Card noPadding>
+              <CardHeader title="Top 5 Activities" subtitle="By SARRA Expenditure (₹L)" />
+              <div className="p-6 h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analyticsData.topActivities} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                    <XAxis type="number" axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} width={120} />
+                    <Tooltip formatter={(val) => `₹${val.toFixed(2)}L`} />
+                    <Bar dataKey="spend" name="SARRA Spend" fill="#e67e22" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+               <Card noPadding>
+                 <CardHeader title="District-wise Physical Progress" subtitle="Aggregate Overview" />
+                 <div className="p-6 h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={analyticsData.districtProgress}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="name" tick={{fontSize: 10}} angle={-45} textAnchor="end" height={60} />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="physical" fill="#0a3d62" name="Physical Progress" radius={[4,4,0,0]} />
+                       </BarChart>
+                    </ResponsiveContainer>
+                 </div>
+               </Card>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <Card noPadding className="h-full border-red-200">
+                <CardHeader title="Under-performing Districts" subtitle="< 50% of Target Achieved" />
+                <div className="p-6">
+                   {analyticsData.underPerforming.length === 0 ? (
+                       <div className="text-center p-8">
+                           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                           <p className="text-green-700 font-bold">All districts on track!</p>
+                       </div>
+                   ) : (
+                       <div className="space-y-4">
+                           {analyticsData.underPerforming.map((d, i) => (
+                               <div key={i} className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
+                                   <span className="font-bold text-slate-800">{d.name}</span>
+                                   <div className="text-right">
+                                       <div className="text-sm font-bold text-red-600">{((d.physical / d.target)*100).toFixed(1)}%</div>
+                                       <div className="text-xs text-slate-500">{d.physical} / {d.target}</div>
+                                   </div>
+                               </div>
+                           ))}
+                       </div>
+                   )}
+                </div>
+              </Card>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+
 // ── Main Layout ─────────────────────────────────────────────────────────────
 
 export default function AnalyticsDashboard() {
@@ -460,7 +1091,7 @@ export default function AnalyticsDashboard() {
               <h1 className="text-2xl font-bold text-slate-800">Analytics Dashboard</h1>
               <p className="text-slate-500">Track state-wide submissions and physical/financial progress.</p>
             </div>
-            <div className="flex bg-slate-200 p-1 rounded-lg">
+            <div className="flex bg-slate-200 p-1 rounded-lg overflow-x-auto whitespace-nowrap">
                <button 
                   onClick={() => setActiveTab('abstract55')}
                   className={`px-4 py-2 rounded-md font-bold transition-all text-sm ${activeTab === 'abstract55' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
@@ -473,10 +1104,32 @@ export default function AnalyticsDashboard() {
                >
                   Praroop-1(A)
                </button>
+               <button 
+                  onClick={() => setActiveTab('praroop1b')}
+                  className={`px-4 py-2 rounded-md font-bold transition-all text-sm ${activeTab === 'praroop1b' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                  Praroop-1(B)
+               </button>
+               <button 
+                  onClick={() => setActiveTab('praroop1c')}
+                  className={`px-4 py-2 rounded-md font-bold transition-all text-sm ${activeTab === 'praroop1c' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                  Praroop-1(C)
+               </button>
+               <button 
+                  onClick={() => setActiveTab('praroop1d')}
+                  className={`px-4 py-2 rounded-md font-bold transition-all text-sm ${activeTab === 'praroop1d' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                  Praroop-1(D)
+               </button>
             </div>
           </div>
 
-          {activeTab === 'abstract55' ? <Abstract55Analytics /> : <Praroop1AAnalytics />}
+          {activeTab === 'abstract55' ? <Abstract55Analytics /> : 
+           activeTab === 'praroop1a' ? <Praroop1AAnalytics /> : 
+           activeTab === 'praroop1b' ? <Praroop1BAnalytics /> : 
+           activeTab === 'praroop1c' ? <Praroop1CAnalytics /> : 
+           <Praroop1DAnalytics />}
 
         </div>
       </div>

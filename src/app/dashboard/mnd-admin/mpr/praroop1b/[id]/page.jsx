@@ -310,7 +310,7 @@ export default function MNDAdminPraroop1AReviewPage() {
 
           <div className="lg:col-span-3 space-y-6">
             {/* Review Panel */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-8">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-24">
               <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-600" /> Review Panel</h3>
 
               {canReview ? (

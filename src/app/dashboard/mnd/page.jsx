@@ -21,15 +21,19 @@ export default function MNDOfficerDashboard() {
   const { data: abstractReports, loading: abstractLoading } = useFetch('/mpr/abstract55/my-reports?page=1&limit=5&sort=-submittedAt');
   const { data: praroopReports, loading: praroopLoading } = useFetch('/mpr/praroop1a/my-reports?page=1&limit=5&sort=-submittedAt');
   const { data: praroop1BReports, loading: praroop1BLoading } = useFetch('/mpr/praroop1b/my-reports?page=1&limit=5&sort=-submittedAt');
+  const { data: praroop1CReports, loading: praroop1CLoading } = useFetch('/mpr/praroop1c/my-reports?page=1&limit=5&sort=-submittedAt');
+  const { data: praroop1DReports, loading: praroop1DLoading } = useFetch('/mpr/praroop1d/my-reports?page=1&limit=5&sort=-submittedAt');
 
   // Combine and sort recent reports
   const allRecentReports = [
     ...(Array.isArray(abstractReports) ? abstractReports : []).map(r => ({ ...r, type: 'Abstract 55' })),
     ...(Array.isArray(praroopReports) ? praroopReports : []).map(r => ({ ...r, type: 'Praroop-1(A)' })),
-    ...(Array.isArray(praroop1BReports) ? praroop1BReports : []).map(r => ({ ...r, type: 'Praroop-1(B)' }))
+    ...(Array.isArray(praroop1BReports) ? praroop1BReports : []).map(r => ({ ...r, type: 'Praroop-1(B)' })),
+    ...(Array.isArray(praroop1CReports) ? praroop1CReports : []).map(r => ({ ...r, type: 'Praroop-1(C)' })),
+    ...(Array.isArray(praroop1DReports) ? praroop1DReports : []).map(r => ({ ...r, type: 'Praroop-1(D)' }))
   ].sort((a, b) => new Date(b.submittedAt || b.createdAt) - new Date(a.submittedAt || a.createdAt)).slice(0, 5);
 
-  const reportsLoading = abstractLoading || praroopLoading || praroop1BLoading;
+  const reportsLoading = abstractLoading || praroopLoading || praroop1BLoading || praroop1CLoading || praroop1DLoading;
 
   const adaptedStats = {
     totalForms: analyticsData?.overview?.totalMPRs || 0,
@@ -68,7 +72,7 @@ export default function MNDOfficerDashboard() {
                         <div>
                           <div className="flex items-center gap-2">
                             <Link 
-                              href={mpr.type === 'Praroop-1(A)' ? `/dashboard/mnd/mpr/praroop1a/${mpr._id}` : mpr.type === 'Praroop-1(B)' ? `/dashboard/mnd/mpr/praroop1b/${mpr._id}` : `/dashboard/mnd/mpr/${mpr._id}`} 
+                              href={mpr.type === 'Praroop-1(A)' ? `/dashboard/mnd/mpr/praroop1a/${mpr._id}` : mpr.type === 'Praroop-1(B)' ? `/dashboard/mnd/mpr/praroop1b/${mpr._id}` : mpr.type === 'Praroop-1(C)' ? `/dashboard/mnd/mpr/praroop1c/${mpr._id}` : mpr.type === 'Praroop-1(D)' ? `/dashboard/mnd/mpr/praroop1d/${mpr._id}` : `/dashboard/mnd/mpr/${mpr._id}`} 
                               className="font-mono text-sm font-medium text-navy hover:underline"
                             >
                               {mpr.applicationNo}
@@ -78,13 +82,13 @@ export default function MNDOfficerDashboard() {
                             </span>
                           </div>
                           <p className="text-xs text-slate-500 mt-1">
-                            {mpr.reportingMonth} {mpr.financialYear} &bull; {mpr.type === 'Praroop-1(A)' || mpr.type === 'Praroop-1(B)' ? `${mpr.totalApprovedSchemes || 0} Schemes` : `${mpr.computed?.totalProposalsAllDepts || 0} Proposals`} &bull; {formatDate(mpr.submittedAt || mpr.createdAt)}
+                            {mpr.reportingMonth} {mpr.financialYear} &bull; {mpr.type.includes('Praroop') ? `${mpr.totalApprovedSchemes || 0} Schemes` : `${mpr.computed?.totalProposalsAllDepts || 0} Proposals`} &bull; {formatDate(mpr.submittedAt || mpr.createdAt)}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <Badge status={mpr.status} />
                           <span className="text-[10px] font-bold text-slate-400">
-                            ₹{(mpr.type === 'Praroop-1(A)' || mpr.type === 'Praroop-1(B)' ? mpr.computed?.grandTotalSarraExpend : mpr.computed?.totalSarraShareLakh)?.toFixed(2)} L
+                            ₹{(mpr.type.includes('Praroop') ? mpr.computed?.grandTotalSarraExpend : mpr.computed?.totalSarraShareLakh)?.toFixed(2)} L
                           </span>
                         </div>
                       </div>
@@ -111,29 +115,43 @@ export default function MNDOfficerDashboard() {
           </div>
         </div>
 
-        {/* <div className="mb-6">
+        <div className="mb-6">
           <h2 className="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Link href="https://sarracrm.vercel.app/dashboard/mpr" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <Link href="/dashboard/mnd/abstract55" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
               <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <PlusCircle size={24} />
               </div>
               <span className="font-bold text-slate-700">Abstract 55</span>
               <span className="text-xs text-slate-500 mt-1">New Entry</span>
             </Link>
-            <Link href="https://sarracrm.vercel.app/dashboard/mnd/mpr/praroop1a" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
-              <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <Link href="/dashboard/mnd/head55-01" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <PlusCircle size={24} />
               </div>
-              <span className="font-bold text-slate-700">Praroop-1(A)</span>
-              <span className="text-xs text-slate-500 mt-1">New Entry</span>
+              <span className="font-bold text-slate-700">Head 55-01</span>
+              <span className="text-xs text-slate-500 mt-1">Praroop-1(A)</span>
             </Link>
-            <Link href="https://sarracrm.vercel.app/dashboard/mnd/mpr/praroop1b" target="_blank" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+            <Link href="/dashboard/mnd/head55-02" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
               <div className="w-12 h-12 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                 <PlusCircle size={24} />
               </div>
-              <span className="font-bold text-slate-700">Praroop-1(B)</span>
-              <span className="text-xs text-slate-500 mt-1">New Entry</span>
+              <span className="font-bold text-slate-700">Head 55-02</span>
+              <span className="text-xs text-slate-500 mt-1">Praroop-1(B)</span>
+            </Link>
+            <Link href="/dashboard/mnd/head55-03" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <PlusCircle size={24} />
+              </div>
+              <span className="font-bold text-slate-700">Head 55-03</span>
+              <span className="text-xs text-slate-500 mt-1">Praroop-1(C)</span>
+            </Link>
+            <Link href="/dashboard/mnd/head55-04" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
+              <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <PlusCircle size={24} />
+              </div>
+              <span className="font-bold text-slate-700">Head 55-04</span>
+              <span className="text-xs text-slate-500 mt-1">Praroop-1(D)</span>
             </Link>
             <Link href="/dashboard/mnd/mpr" className="p-4 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all flex flex-col items-center text-center group">
               <div className="w-12 h-12 bg-navy text-white rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -150,7 +168,7 @@ export default function MNDOfficerDashboard() {
               <span className="text-xs text-slate-500 mt-1">Insights</span>
             </Link>
           </div>
-        </div> */}
+        </div>
       </div>
     </RoleGuard>
   );

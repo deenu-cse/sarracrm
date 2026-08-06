@@ -82,6 +82,7 @@ export const AuthProvider = ({ children }) => {
       if (data.success) {
         setUser(data.data);
         setAccessToken(currentToken);
+        setToken(currentToken); // Restore the cookie for middleware.js!
         setIsAuthenticated(true);
       } else {
         removeToken();

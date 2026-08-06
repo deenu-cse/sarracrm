@@ -166,7 +166,7 @@ export default function MNDAdminReviewPage() {
           </div>
 
           <div className="lg:col-span-3">
-            <div className="sticky top-8 space-y-4">
+            <div className="sticky top-24 space-y-4">
               {/* Approval Panel */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Activity className="w-4 h-4 text-blue-600" /> Review Panel</h3>

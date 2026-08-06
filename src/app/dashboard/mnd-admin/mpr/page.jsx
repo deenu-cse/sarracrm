@@ -43,6 +43,12 @@ export default function MNDAdminMPRList() {
       if (filters.reportType === "ALL" || filters.reportType === "PRAROOP_1B") {
         requests.push(get(`/mpr/praroop1b/all-reports?${queryString}`).then(r => ({ type: 'PRAROOP_1B', res: r })));
       }
+      if (filters.reportType === "ALL" || filters.reportType === "PRAROOP_1C") {
+        requests.push(get(`/mpr/praroop1c/all-reports?${queryString}`).then(r => ({ type: 'PRAROOP_1C', res: r })));
+      }
+      if (filters.reportType === "ALL" || filters.reportType === "PRAROOP_1D") {
+        requests.push(get(`/mpr/praroop1d/all-reports?${queryString}`).then(r => ({ type: 'PRAROOP_1D', res: r })));
+      }
 
       const results = await Promise.all(requests);
       
@@ -75,6 +81,8 @@ export default function MNDAdminMPRList() {
   const handleRowClick = (item) => {
     const baseUrl = item.reportType === 'PRAROOP_1A' ? '/dashboard/mnd-admin/mpr/praroop1a' : 
                     item.reportType === 'PRAROOP_1B' ? '/dashboard/mnd-admin/mpr/praroop1b' : 
+                    item.reportType === 'PRAROOP_1C' ? '/dashboard/mnd-admin/mpr/praroop1c' : 
+                    item.reportType === 'PRAROOP_1D' ? '/dashboard/mnd-admin/mpr/praroop1d' : 
                     '/dashboard/mnd-admin/mpr';
     router.push(`${baseUrl}/${item._id}`);
   };
@@ -112,6 +120,8 @@ export default function MNDAdminMPRList() {
             <option value="ABSTRACT_55">Abstract-55 (Budget)</option>
             <option value="PRAROOP_1A">Praroop-1(A) (Springs)</option>
             <option value="PRAROOP_1B">Praroop-1(B) (Rivers)</option>
+            <option value="PRAROOP_1C">Praroop-1(C) (Major Rivers)</option>
+            <option value="PRAROOP_1D">Praroop-1(D) (Ground Water)</option>
           </select>
 
           <select 
@@ -179,8 +189,16 @@ export default function MNDAdminMPRList() {
                 </tr>
               ) : (
                 reports.map((item) => {
-                  const typeLabel = item.reportType === 'PRAROOP_1A' ? 'Praroop-1(A)' : item.reportType === 'PRAROOP_1B' ? 'Praroop-1(B)' : 'Abstract-55';
+                  const typeLabel = item.reportType === 'PRAROOP_1A' ? 'Praroop-1(A)' : 
+                                    item.reportType === 'PRAROOP_1B' ? 'Praroop-1(B)' : 
+                                    item.reportType === 'PRAROOP_1C' ? 'Praroop-1(C)' : 
+                                    item.reportType === 'PRAROOP_1D' ? 'Praroop-1(D)' : 
+                                    'Abstract-55';
                   const isPraroop = item.reportType !== 'ABSTRACT_55';
+                  const badgeClass = item.reportType === 'PRAROOP_1B' ? 'bg-cyan-100 text-cyan-800' : 
+                                     item.reportType === 'PRAROOP_1C' ? 'bg-indigo-100 text-indigo-800' :
+                                     item.reportType === 'PRAROOP_1D' ? 'bg-teal-100 text-teal-800' :
+                                     'bg-blue-50 text-blue-600';
                   return (
                     <tr 
                       key={item._id} 
@@ -190,7 +208,7 @@ export default function MNDAdminMPRList() {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="font-mono text-sm font-bold text-[#0a3d62] group-hover:underline">{item.applicationNo}</span>
-                          <Badge className={`mt-1 w-fit text-[10px] ${item.reportType === 'PRAROOP_1B' ? 'bg-cyan-100 text-cyan-800' : 'bg-blue-50 text-blue-600'}`}>
+                          <Badge className={`mt-1 w-fit text-[10px] ${badgeClass}`}>
                             {typeLabel}
                           </Badge>
                         </div>

@@ -4,15 +4,15 @@ import { useFetch } from '@/hooks/useFetch';
 import Link from 'next/link';
 import { formatDate } from '@/lib/formatters';
 
-export default function MPRPraroop1AListPage() {
+export default function MPRpraroop1dListPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
-  
+
   const query = new URLSearchParams();
   if (statusFilter) query.append('status', statusFilter);
   if (yearFilter) query.append('financialYear', yearFilter);
-  
-  const { data: mprsList, loading } = useFetch(`/mpr/praroop1a/my-reports?${query.toString()}`);
+
+  const { data: mprsList, loading } = useFetch(`/mpr/praroop1d/my-reports?${query.toString()}`);
   const mprs = Array.isArray(mprsList) ? mprsList : (mprsList?.data || mprsList?.mprs || []);
 
   return (
@@ -25,19 +25,19 @@ export default function MPRPraroop1AListPage() {
       </div>
 
       <div className="flex gap-4 border-b border-slate-200 mb-6 overflow-x-auto whitespace-nowrap pb-2">
-        <Link href="/dashboard/mnd/mpr" className={"px-4 py-2 border-b-2 font-bold " + ('1a' === 'abstract' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+        <Link href="/dashboard/mnd/mpr" className={"px-4 py-2 border-b-2 font-bold " + ('1d' === 'abstract' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Abstract 55
         </Link>
-        <Link href="/dashboard/mnd/mpr/praroop1a" className={"px-4 py-2 border-b-2 font-bold " + ('1a' === '1a' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+        <Link href="/dashboard/mnd/mpr/praroop1a" className={"px-4 py-2 border-b-2 font-bold " + ('1d' === '1a' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Praroop-1(A)
         </Link>
-        <Link href="/dashboard/mnd/mpr/praroop1b" className={"px-4 py-2 border-b-2 font-bold " + ('1a' === '1b' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+        <Link href="/dashboard/mnd/mpr/praroop1b" className={"px-4 py-2 border-b-2 font-bold " + ('1d' === '1b' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Praroop-1(B)
         </Link>
-        <Link href="/dashboard/mnd/mpr/praroop1c" className={"px-4 py-2 border-b-2 font-bold " + ('1a' === '1c' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+        <Link href="/dashboard/mnd/mpr/praroop1c" className={"px-4 py-2 border-b-2 font-bold " + ('1d' === '1c' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Praroop-1(C)
         </Link>
-        <Link href="/dashboard/mnd/mpr/praroop1d" className={"px-4 py-2 border-b-2 font-bold " + ('1a' === '1d' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
+        <Link href="/dashboard/mnd/mpr/praroop1d" className={"px-4 py-2 border-b-2 font-bold " + ('1d' === '1d' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700')}>
           Praroop-1(D)
         </Link>
       </div>
@@ -58,7 +58,7 @@ export default function MPRPraroop1AListPage() {
             <option value="2026-27">2026-27</option>
           </select>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
@@ -77,7 +77,7 @@ export default function MPRPraroop1AListPage() {
               {loading ? (
                 <tr><td colSpan="8" className="p-8 text-center text-slate-500">Loading...</td></tr>
               ) : mprs.length === 0 ? (
-                <tr><td colSpan="8" className="p-8 text-center text-slate-500">No Praroop-1(A) reports found.</td></tr>
+                <tr><td colSpan="8" className="p-8 text-center text-slate-500">No Praroop-1(D) reports found.</td></tr>
               ) : (
                 mprs.map(mpr => (
                   <tr key={mpr._id} className="border-b border-slate-100 hover:bg-slate-50">
@@ -87,18 +87,17 @@ export default function MPRPraroop1AListPage() {
                     <td className="px-6 py-4 text-slate-600">{mpr.computed?.grandTotalPhysicalProgress || 0}</td>
                     <td className="px-6 py-4 text-slate-600 font-medium">₹{mpr.computed?.grandTotalSarraExpend?.toFixed(2) || '0.00'} L</td>
                     <td className="px-6 py-4">
-                      <span className={`text-xs px-2 py-1 rounded font-semibold ${
-                        mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                      <span className={`text-xs px-2 py-1 rounded font-semibold ${mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
                         mpr.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
                         mpr.status === 'RESUBMITTED' ? 'bg-purple-100 text-purple-700' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>
+                          'bg-amber-100 text-amber-700'
+                        }`}>
                         {mpr.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-500">{formatDate(mpr.submittedAt)}</td>
                     <td className="px-6 py-4 text-right">
-                      <Link href={`/dashboard/mnd/mpr/praroop1a/${mpr._id}`} className="text-blue-600 hover:underline font-medium bg-blue-50 px-3 py-1.5 rounded-lg">
+                      <Link href={`/dashboard/mnd/mpr/praroop1d/${mpr._id}`} className="text-blue-600 hover:underline font-medium bg-blue-50 px-3 py-1.5 rounded-lg">
                         View
                       </Link>
                     </td>
@@ -112,3 +111,4 @@ export default function MPRPraroop1AListPage() {
     </div>
   );
 }
+

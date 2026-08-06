@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatCard } from '../ui/StatCard';
-import { FileText, CheckCircle, Clock, AlertTriangle, Droplets, DollarSign } from 'lucide-react';
+import { FileText, CheckCircle, Clock, AlertTriangle, Droplets, DollarSign, IndianRupee } from 'lucide-react';
 
 export function KPIStrip({ stats, loading }) {
   if (loading) {
@@ -70,7 +70,7 @@ export function KPIStrip({ stats, loading }) {
       kpis.push({
         title: 'Budget (₹L)',
         value: `₹${s.totalBudgetLakh ?? 0}L`,
-        icon: DollarSign,
+        icon: IndianRupee,
         color: 'success'
       });
     }

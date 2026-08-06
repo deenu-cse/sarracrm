@@ -19,16 +19,25 @@ export const NotificationProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${accessToken}` },
         credentials: 'include'
       });
-      const data = await res.json();
-      if (data.success) {
-        if (unreadOnly && limit === 1) {
-          // just updating unread count from meta
-          setUnreadCount(data.pagination?.total || 0);
-        } else {
-          setNotifications(data.data);
-          // if we fetch full list, we might want a separate count endpoint or rely on meta
-          if (data.pagination) setUnreadCount(data.pagination.total);
+      
+      if (!res.ok) {
+        // Silently ignore 404s if notifications route is not yet implemented
+        return;
+      }
+      
+      try {
+        const data = await res.json();
+        if (data.success) {
+          if (unreadOnly && limit === 1) {
+            setUnreadCount(data.pagination?.total || 0);
+          } else {
+            setNotifications(data.data);
+            if (data.pagination) setUnreadCount(data.pagination.total);
+          }
         }
+      } catch (parseError) {
+        // Ignore JSON parse errors if backend returned HTML (e.g. 404 page)
+        console.warn('Failed to parse notifications response');
       }
     } catch (e) {
       console.error('Failed to fetch notifications', e);

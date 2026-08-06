@@ -2,17 +2,19 @@
 import React, { useMemo } from 'react';
 import { useFetch } from '@/hooks/useFetch';
 import { useAuth } from '@/hooks/useAuth';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Info, Edit } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { formatDate } from '@/lib/formatters';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
 
 export default function MPRDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { user } = useAuth();
   const { data: mpr, loading } = useFetch(`/mpr/abstract55/${params.id}`);
 
@@ -75,21 +77,26 @@ export default function MPRDetailPage() {
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto space-y-6">
-      
+
       {/* HEADER */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-bold text-slate-800 font-mono">{mpr.applicationNo}</h1>
-            <span className={`text-xs px-2 py-1 rounded font-semibold ${
-                mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                mpr.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+            <span className={`text-xs px-2 py-1 rounded font-semibold flex items-center gap-1 ${mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+              mpr.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+              mpr.status === 'RESUBMITTED' ? 'bg-purple-100 text-purple-700' :
                 'bg-amber-100 text-amber-700'
               }`}>
               {mpr.status}
+              {mpr.status === 'REJECTED' && mpr.rejectionReason && (
+                <span title={mpr.rejectionReason} className="cursor-help text-red-700 hover:text-red-900">
+                  <Info size={14} />
+                </span>
+              )}
             </span>
           </div>
-          <p className="text-slate-500 font-medium">Abstract 55 &bull; {mpr.reportingMonth} {mpr.financialYear} &bull; Submitted on {formatDate(mpr.submittedAt)}</p>
+          <p className="text-slate-500 font-medium">Submitted by {mpr.submittedBy?.name} ({mpr.submittedByDistrict}) &bull; {mpr.reportingMonth} {mpr.financialYear} &bull; Submitted on {formatDate(mpr.submittedAt)}</p>
         </div>
         <div className="flex gap-3">
           <button className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all">
@@ -105,9 +112,28 @@ export default function MPRDetailPage() {
               </button>
             </>
           )}
-            <Link href={`/dashboard/mnd/mpr/${mpr._id}/analytics`} className="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold rounded-xl transition-all shadow-sm">
-              📊 View Analytics
-            </Link>
+          {mpr.status === 'REJECTED' && user?.role === 'MND_OFFICER' && (
+            <button
+              onClick={() => {
+                localStorage.setItem(`sarra_mpr_abstract55_${user._id}`, JSON.stringify({
+                  formData: mpr.departments.reduce((acc, dept) => {
+                    acc[dept.departmentName] = dept.districts;
+                    return acc;
+                  }, {}), // Note: might need precise formatting depending on backend response format vs local storage format, checking next
+                  isResubmit: true,
+                  mprId: mpr._id,
+                  savedAt: new Date().toISOString()
+                }));
+                router.push('/dashboard/mnd/abstract55');
+              }}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+            >
+              <Edit size={16} /> Edit & Resubmit
+            </button>
+          )}
+          <Link href={`/dashboard/mnd/mpr/${mpr._id}/analytics`} className="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold rounded-xl transition-all shadow-sm">
+            📊 View Analytics
+          </Link>
         </div>
       </div>
 
@@ -150,13 +176,13 @@ export default function MPRDetailPage() {
         <Card noPadding>
           <CardHeader title="Funding Distribution" />
           <div className="p-4 h-80 flex items-center justify-center relative">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" className='z-50'>
               <PieChart>
                 <Pie data={chartData.donutData} innerRadius={80} outerRadius={110} paddingAngle={5} dataKey="value">
                   {chartData.donutData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                 </Pie>
                 <Tooltip formatter={(value) => `₹${value.toFixed(2)}L`} />
-                <Legend verticalAlign="bottom" height={36}/>
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
@@ -293,7 +319,7 @@ export default function MPRDetailPage() {
           </table>
         </div>
       </Card>
-      
+
     </div>
   );
 }
