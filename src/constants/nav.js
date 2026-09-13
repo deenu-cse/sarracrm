@@ -3,15 +3,13 @@ import { USER_ROLES } from './roles';
 export const NAV_LINKS = {
   [USER_ROLES.PIA_OFFICER]: [
     { label: 'Dashboard', href: '/dashboard/officer' },
-    { label: 'My Forms', href: '/dashboard/officer/forms' },
-    { label: 'New DPR', href: '/dashboard/officer/forms/new' },
-    { label: 'Analytics', href: '/dashboard/officer/analytics' },
+    { label: 'My Projects', href: '/dashboard/officer/projects' },
+    { label: 'My MPRs', href: '/dashboard/officer/mprs' },
     { label: 'Notifications', href: '/dashboard/officer/notifications' },
   ],
   [USER_ROLES.MND_OFFICER]: [
     { label: 'Dashboard', href: '/dashboard/mnd' },
     { label: 'MPR Reports', href: '/dashboard/mnd/mpr' },
-    // { label: 'Abstract 55', href: '/dashboard/mnd/abstract55' },
     { label: 'Head 55-01 (Spring)', href: '/dashboard/mnd/head55-01' },
     { label: 'Head 55-02 (River)', href: '/dashboard/mnd/head55-02' },
     { label: 'Head 55-03 (Major River)', href: '/dashboard/mnd/head55-03' },
@@ -20,14 +18,13 @@ export const NAV_LINKS = {
   ],
   [USER_ROLES.DD_LEVEL]: [
     { label: 'Dashboard', href: '/dashboard/dd' },
-    { label: 'Review Forms', href: '/dashboard/dd/review' },
-    { label: 'Analytics', href: '/dashboard/dd/analytics' },
+    { label: 'District Projects', href: '/dashboard/dd/projects' },
+    { label: 'Review MPRs', href: '/dashboard/dd/mpr-review' },
     { label: 'Notifications', href: '/dashboard/dd/notifications' },
   ],
   [USER_ROLES.SUPER_ADMIN]: [
     { label: 'Dashboard', href: '/dashboard/admin' },
-    { label: 'All Forms', href: '/dashboard/admin/forms' },
-    { label: 'Analytics', href: '/dashboard/admin/analytics' },
+    { label: 'Projects', href: '/dashboard/admin/projects' },
     { label: 'Users', href: '/dashboard/admin/users' },
     { label: 'Audit Logs', href: '/dashboard/admin/audit-logs' },
     { label: 'Notifications', href: '/dashboard/admin/notifications' },

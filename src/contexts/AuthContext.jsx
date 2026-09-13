@@ -115,6 +115,26 @@ export const AuthProvider = ({ children }) => {
       router.push(getDashboardRoute(data.data.user.role));
       return { success: true };
     }
+
+    const restrictionCode = data.errorCode || data.data?.code;
+    if (
+      restrictionCode === 'ACCOUNT_SUSPENDED' ||
+      restrictionCode === 'ACCOUNT_DEACTIVATED' ||
+      data.data?.accountStatus === 'SUSPENDED' ||
+      data.data?.accountStatus === 'DEACTIVATED'
+    ) {
+      const payload = {
+        ...(data.data || {}),
+        code: restrictionCode || data.data?.code,
+        message: data.message
+      };
+      try {
+        sessionStorage.setItem('sarra_account_restriction', JSON.stringify(payload));
+      } catch {}
+      router.push('/account-restricted');
+      return { success: false, restricted: true, message: data.message, data: payload };
+    }
+
     return { success: false, message: data.message };
   };
 

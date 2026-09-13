@@ -16,24 +16,24 @@ import { USER_ROLES } from '@/constants/roles';
 export function QuickActions({ role }) {
   const actions = {
     [USER_ROLES.PIA_OFFICER]: [
-      { title: 'New Submission', desc: 'Create a new MPR report', icon: FilePlus, href: '/dashboard/officer/mpr/new', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
-      { title: 'My Reports', desc: 'Track your submission status', icon: Clock, href: '/dashboard/officer/mpr', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
-      { title: 'Analytics', desc: 'View your district trends', icon: BarChart2, href: '/dashboard/officer/analytics', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
+      { title: 'My Projects', desc: 'Accept and view assigned projects', icon: FileText, href: '/dashboard/officer/projects', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
+      { title: 'My MPRs', desc: 'Track and submit monthly reports', icon: Clock, href: '/dashboard/officer/mprs', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
+      { title: 'Notifications', desc: 'View recent updates', icon: Bell, href: '/dashboard/officer/notifications', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
     ],
     [USER_ROLES.DD_LEVEL]: [
-      { title: 'Review Forms', desc: 'Approve or reject submissions', icon: CheckCircle, href: '/dashboard/dd/review', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
-      { title: 'District Intel', desc: 'View aggregated performance', icon: BarChart2, href: '/dashboard/dd/analytics', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
-      { title: 'Alerts', desc: 'System notifications', icon: Bell, href: '/dashboard/dd/notifications', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
+      { title: 'District Projects', desc: 'Accept and assign projects', icon: FileText, href: '/dashboard/dd/projects', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
+      { title: 'Review MPRs', desc: 'Approve or return submissions', icon: CheckCircle, href: '/dashboard/dd/mpr-review', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
+      { title: 'Notifications', desc: 'District notifications', icon: Bell, href: '/dashboard/dd/notifications', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
     ],
     [USER_ROLES.MND_OFFICER]: [
-      { title: 'My MPRs', desc: 'Manage your monthly reports', icon: FileText, href: '/dashboard/mnd/mpr', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
+      { title: 'MPR Reports', desc: 'Manage your monthly reports', icon: FileText, href: '/dashboard/mnd/mpr', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
       { title: 'Analytics', desc: 'Deep dive into report data', icon: BarChart2, href: '/dashboard/mnd/analytics', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
-      { title: 'Support', desc: 'Get help with submissions', icon: Settings, href: '/dashboard/mnd/support', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
+      { title: 'Head 55-01', desc: 'Spring development report', icon: Settings, href: '/dashboard/mnd/head55-01', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
     ],
     MND_SUPER_ADMIN: [
-      { title: 'Approve MPRs', desc: 'Review state-wide submissions', icon: CheckCircle, href: '/dashboard/mnd-admin/mpr', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
-      { title: 'State Intelligence', desc: 'Advanced analytics & trends', icon: BarChart2, href: '/dashboard/mnd-admin/analytics', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
-      { title: 'System Health', desc: 'Monitor activity and logs', icon: ActivityIcon, href: '/dashboard/mnd-admin/activity', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
+      { title: 'All Reports', desc: 'Review state-wide submissions', icon: CheckCircle, href: '/dashboard/mnd-admin/mpr', color: 'bg-[#0a3d62] hover:bg-[#1a5276] text-white' },
+      { title: 'Advanced Analytics', desc: 'Advanced analytics & trends', icon: BarChart2, href: '/dashboard/mnd-admin/analytics', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' },
+      { title: 'Notifications', desc: 'Monitor activity notifications', icon: Bell, href: '/dashboard/mnd-admin/notifications', color: 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50' }
     ]
   };
 

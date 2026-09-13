@@ -1,11 +1,11 @@
 export const DEPARTMENTS = [
   'Forest Department',
+  'Minor Irrigation',
   'Irrigation Department',
-  'Minor Irrigation Department',
-  'Rural Development Department',
-  'Agriculture Department',
-  'Horticulture Department',
-  'Drinking Water Department',
-  'Watershed Management Directorate',
-  'Panchayati Raj Department',
+  'Rural Development',
+  'Urban Development',
+  'UCRRFP',
+  'Jal Sansthan',
+  'Peyjal',
+  'Other Department/Organization'
 ];

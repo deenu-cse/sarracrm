@@ -1,80 +1,122 @@
 "use client";
-import React from 'react';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { KPIStrip } from '@/components/dashboard/KPIStrip';
-import { DistrictMap } from '@/components/dashboard/DistrictMap';
-import { TrendChart } from '@/components/dashboard/TrendChart';
-import { BudgetChart } from '@/components/dashboard/BudgetChart';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { Card, CardHeader } from '@/components/ui/Card';
+import React, { useEffect, useMemo, useState } from 'react';
+import { get } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { FullPageSpinner } from '@/components/ui/Spinner';
-import Link from 'next/link';
-import { ExportButton } from '@/components/ui/ExportButton';
+import {
+  DashboardHero,
+  StatGrid,
+  ActionRequired,
+  RecentList,
+  QuickLinkGrid,
+  DASHBOARD_ICONS
+} from '@/components/dashboard/HomeDashboard';
+import { ROLE_LABELS } from '@/constants/roles';
+import { QuickActions } from '@/components/dashboard/QuickActions';
 
-export default function AdminDashboard() {
-  const { data, loading, error } = useAnalytics({
-    overview: '/reports/overview',
-    monthlyTrend: '/reports/monthly-trend',
-    districtStats: '/reports/district-stats',
-    budgetAllocation: '/reports/budget-allocation'
-  });
+export default function AdminDashboardPage() {
+  const { user } = useAuth();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      const res = await get('/reports/home');
+      if (mounted && res?.success) setData(res.data);
+      if (mounted) setLoading(false);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const stats = useMemo(() => {
+    if (!data?.stats) return [];
+    const s = data.stats;
+    const workflow = data.workflowRole;
+
+    if (workflow === 'CHECKER') {
+      return [
+        { label: 'Awaiting You', value: s.pendingChecker, icon: DASHBOARD_ICONS.Clock, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+        { label: 'Total Projects', value: s.totalProjects, icon: DASHBOARD_ICONS.FolderKanban, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+        { label: 'Active Projects', value: s.activeProjects, icon: DASHBOARD_ICONS.CheckCircle2, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+        { label: 'MPRs Submitted', value: s.mprSubmitted, icon: DASHBOARD_ICONS.FileText, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
+      ];
+    }
+    if (workflow === 'APPROVER') {
+      return [
+        { label: 'Awaiting Approval', value: s.pendingApprover, icon: DASHBOARD_ICONS.AlertCircle, iconBg: 'bg-orange-50', iconColor: 'text-orange-600' },
+        { label: 'Pending Checker', value: s.pendingChecker, icon: DASHBOARD_ICONS.Clock, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+        { label: 'Total Projects', value: s.totalProjects, icon: DASHBOARD_ICONS.FolderKanban, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+        { label: 'Active Projects', value: s.activeProjects, icon: DASHBOARD_ICONS.CheckCircle2, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+      ];
+    }
+    if (workflow === 'MAKER') {
+      return [
+        { label: 'Total Projects', value: s.totalProjects, icon: DASHBOARD_ICONS.FolderKanban, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+        { label: 'With Checker', value: s.pendingChecker, icon: DASHBOARD_ICONS.Clock, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+        { label: 'With Approver', value: s.pendingApprover, icon: DASHBOARD_ICONS.AlertCircle, iconBg: 'bg-orange-50', iconColor: 'text-orange-600' },
+        { label: 'Sanctioned', value: s.readyToForwardDistrict ?? 0, icon: DASHBOARD_ICONS.Activity, iconBg: 'bg-teal-50', iconColor: 'text-teal-600', sub: 'Ready to forward' },
+        { label: 'Active (PIA)', value: s.activeProjects, icon: DASHBOARD_ICONS.CheckCircle2, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+      ];
+    }
+
+    return [
+      { label: 'Users', value: s.totalUsers, icon: DASHBOARD_ICONS.Users, iconBg: 'bg-purple-50', iconColor: 'text-purple-600', sub: `${s.invitePending || 0} invites pending` },
+      { label: 'Active Users', value: s.activeUsers, icon: DASHBOARD_ICONS.CheckCircle2, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+      { label: 'Projects', value: s.totalProjects, icon: DASHBOARD_ICONS.FolderKanban, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+      { label: 'Need Checker', value: s.pendingChecker, icon: DASHBOARD_ICONS.Clock, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+      { label: 'Need Approver', value: s.pendingApprover, icon: DASHBOARD_ICONS.AlertCircle, iconBg: 'bg-orange-50', iconColor: 'text-orange-600' },
+      { label: 'Total MPRs', value: s.totalMprs, icon: DASHBOARD_ICONS.FileText, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
+    ];
+  }, [data]);
 
   if (loading) return <FullPageSpinner />;
-  if (error) return <div className="p-8 text-center text-red-500">Failed to load analytics: {error}</div>;
+  if (!data) {
+    return (
+      <div className="p-10 text-center text-slate-500">
+        Failed to load dashboard. Please refresh.
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">State Dashboard</h1>
-          <p className="text-slate-500">Overview of all 13 districts.</p>
+    <div className="p-6 max-w-[1600px] mx-auto min-h-screen">
+      <DashboardHero
+        name={user?.name}
+        roleLabel={ROLE_LABELS[user?.role] || 'Super Admin'}
+        workflowRole={data.workflowRole}
+        hint={data.welcomeHint}
+      />
+
+      <StatGrid items={stats} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+        <div className="lg:col-span-3">
+          <ActionRequired items={data.actionRequired || []} />
         </div>
-        <ExportButton availableTypes={['pdf-summary']} />
-      </div>
-
-      <KPIStrip stats={data.overview} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">
-          <Card className="h-full" noPadding>
-            <CardHeader title="Statewide Trends" subtitle="Submitted vs Approved DPRs" />
-            <div className="p-6 h-80">
-              <TrendChart data={data.monthlyTrend} />
-            </div>
-          </Card>
-        </div>
-        <div className="lg:col-span-1">
-          <Card className="h-full" noPadding>
-            <CardHeader title="Budget Allocation" subtitle="Top districts by approved budget" />
-            <div className="p-6 h-80">
-              <BudgetChart data={data.budgetAllocation} />
-            </div>
-          </Card>
+          <RecentList
+            title={data.recentActivity?.length ? 'Audit Trail' : 'Recent Projects'}
+            items={
+              data.recentActivity?.length
+                ? data.recentActivity.map((a) => ({
+                    id: a.id,
+                    title: a.name,
+                    subtitle: `${a.action?.replace(/_/g, ' ')}${a.resource ? ` · ${a.resource}` : ''}`,
+                    timestamp: a.timestamp,
+                    href: '/dashboard/admin/audit-logs',
+                  }))
+                : data.recentItems || []
+            }
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card noPadding>
-            <CardHeader 
-              title="District Performance" 
-              action={<Link href="/dashboard/admin/analytics" className="text-sm text-navy hover:underline">Full Analytics &rarr;</Link>} 
-            />
-            <div className="max-h-96 overflow-y-auto">
-              <DistrictMap data={data.districtStats} />
-            </div>
-          </Card>
-        </div>
-        <div className="lg:col-span-1">
-          <Card className="h-full" noPadding>
-            <CardHeader title="Recent Activity" />
-            <div className="max-h-96 overflow-y-auto bg-slate-50">
-              {/* Note: In a real app, this would be fetched from /audit/logs */}
-              <RecentActivity logs={[]} /> 
-            </div>
-          </Card>
-        </div>
-      </div>
+      <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Shortcuts</h2>
+      <QuickLinkGrid links={data.quickLinks || []} />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormDetail } from '@/hooks/useFormDetail';
-import { PremiumDPRView } from '@/components/review/PremiumDPRView';
+import { useMPRFormDetail } from '@/hooks/useMPRFormDetail';
+import { PremiumMPRView } from '@/components/review/PremiumMPRView';
 import { ApprovalPanel } from '@/components/review/ApprovalPanel';
 import { RevisionTimeline } from '@/components/review/RevisionTimeline';
 import { FullPageSpinner } from '@/components/ui/Spinner';
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button';
 export default function AdminFormViewPage({ params }) {
   const { id } = params;
   const router = useRouter();
-  const { form, loading, error } = useFormDetail(id);
+  const { form, loading, error } = useMPRFormDetail(id);
 
   if (loading) return <FullPageSpinner />;
   
@@ -23,7 +23,7 @@ export default function AdminFormViewPage({ params }) {
           <AlertCircle className="w-10 h-10" />
         </div>
         <h2 className="text-2xl font-bold text-slate-800">Form Not Found</h2>
-        <p className="text-slate-500 mt-2 max-w-md mx-auto">{error || "The requested DPR details could not be retrieved."}</p>
+        <p className="text-slate-500 mt-2 max-w-md mx-auto">{error || "The requested MPR details could not be retrieved."}</p>
         <Button onClick={() => router.push('/dashboard/admin/forms')} className="mt-8 rounded-2xl px-8" variant="secondary">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Forms
         </Button>
@@ -42,7 +42,7 @@ export default function AdminFormViewPage({ params }) {
             </Button>
             <div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-                DPR Review Center
+                MPR Review Center
               </h1>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                 Viewing: {form.applicationNo}
@@ -50,7 +50,7 @@ export default function AdminFormViewPage({ params }) {
             </div>
           </div>
 
-          <PremiumDPRView dpr={form} />
+          <PremiumMPRView mpr={form} />
         </div>
         
         {/* Review Sidebar */}
@@ -69,7 +69,7 @@ export default function AdminFormViewPage({ params }) {
 
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Revision Timeline</h4>
-              <RevisionTimeline revisions={form.timeline || []} currentStatus={form.status} />
+              <RevisionTimeline revisions={form.timeline || form.revisionHistory || []} currentStatus={form.status} />
             </div>
           </div>
         </div>

@@ -14,8 +14,37 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  @keyframes drawCheck {
+    0% {
+      stroke-dashoffset: 24;
+    }
+
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .approve-icon {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 0;
+  }
+
+  .group:hover .approve-icon {
+    animation: drawCheck 0.5s ease forwards;
+  }
+
+  /* Return rotate animation */
+  .return-icon {
+    transition: transform 0.6s ease;
+  }
+
+  .group:hover .return-icon {
+    transform: rotate(360deg);
   }
 }

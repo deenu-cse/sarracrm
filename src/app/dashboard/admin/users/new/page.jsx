@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiCall } from '@/lib/api';
+import { post } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { useUI } from '@/contexts/UIContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -9,61 +10,132 @@ import { FloatInput } from '@/components/forms/shared/FloatInput';
 import { FloatSelect } from '@/components/forms/shared/FloatSelect';
 import { DEPARTMENTS } from '@/constants/departments';
 import { DISTRICTS } from '@/constants/districts';
-import { ArrowLeft } from 'lucide-react';
+import { USER_ROLES } from '@/constants/roles';
+import { getDashboardRoute } from '@/lib/routes';
+import { ArrowLeft, Mail, ShieldCheck, UserPlus } from 'lucide-react';
 
-export default function AddUserPage() {
+const ROLE_OPTIONS = [
+  { value: 'PIA_OFFICER', label: 'PIA Officer' },
+  { value: 'DD_LEVEL', label: 'DD Level' },
+  { value: 'SUPER_ADMIN', label: 'Super Admin' },
+  { value: 'MND_OFFICER', label: 'MND Officer' },
+  { value: 'MND_SUPER_ADMIN', label: 'MND Super Admin' },
+];
+
+export default function InviteUserPage() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
   const { addToast } = useUI();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'PIA_OFFICER', district: '', department: ''
+    name: '',
+    email: '',
+    role: 'PIA_OFFICER',
+    district: '',
+    department: '',
   });
+
+  const isPureSuperAdmin =
+    user?.role === USER_ROLES.SUPER_ADMIN &&
+    (user?.workflowRole == null || user?.workflowRole === '');
+
+  useEffect(() => {
+    if (!isLoading && user && !isPureSuperAdmin) {
+      addToast('Only Super Admin can invite users', 'error');
+      router.replace(getDashboardRoute(user.role));
+    }
+  }, [user, isLoading, isPureSuperAdmin, router, addToast]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const needsDistrict =
+    formData.role === 'PIA_OFFICER' || formData.role === 'DD_LEVEL';
+  const needsDepartment = formData.role === 'PIA_OFFICER';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    
-    // Add default password if not provided
-    const dataToSubmit = { ...formData };
-    if (!dataToSubmit.password) dataToSubmit.password = 'sarra@123'; // Default password for new users
+    if (!formData.name.trim() || !formData.email.trim()) {
+      addToast('Name and email are required', 'error');
+      return;
+    }
+    if (needsDistrict && !formData.district) {
+      addToast('District is required for this role', 'error');
+      return;
+    }
+    if (needsDepartment && !formData.department) {
+      addToast('Department is required for PIA Officer', 'error');
+      return;
+    }
 
+    setLoading(true);
     try {
-      const res = await apiCall('/users', {
-        method: 'POST',
-        body: dataToSubmit
-      });
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        role: formData.role,
+        ...(needsDistrict && { district: formData.district }),
+        ...(needsDepartment && { department: formData.department }),
+      };
+
+      const res = await post('/admin/users/invite', payload);
       if (res?.success) {
-        addToast('User created successfully', 'success');
+        addToast('Invitation email sent successfully', 'success');
         router.push('/dashboard/admin/users');
       } else {
-        addToast(res?.message || 'Failed to create user', 'error');
+        addToast(res?.message || 'Failed to send invitation', 'error');
       }
-    } catch (error) {
-      addToast('An error occurred', 'error');
+    } catch {
+      addToast('An error occurred while sending invite', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  if (isLoading || !isPureSuperAdmin) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-slate-200 border-t-navy rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <div className="mb-6 flex items-center gap-4">
-        <Button variant="ghost" onClick={() => router.back()} className="px-2">
+      <div className="mb-8 flex items-start gap-4">
+        <Button variant="ghost" onClick={() => router.back()} className="px-2 mt-1">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Add New User</h1>
-          <p className="text-slate-500">Create a new system account</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy/5 text-navy text-xs font-semibold uppercase tracking-wider mb-3">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Super Admin only
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <UserPlus className="w-6 h-6 text-navy" />
+            Invite New User
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Send a secure invitation. The user will set their own password via email OTP (valid 5 hours).
+          </p>
         </div>
       </div>
 
       <Card>
-        <form onSubmit={handleSubmit} className="p-4 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 flex gap-3">
+            <Mail className="w-5 h-5 text-navy flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-slate-600 leading-relaxed">
+              <p className="font-semibold text-slate-800 mb-1">How invitations work</p>
+              <p>
+                We email a professional invite with a one-time OTP. The recipient opens the link,
+                verifies the OTP, sets a password, then can log in. No password is set by you.
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FloatInput
               id="name"
@@ -72,7 +144,7 @@ export default function AddUserPage() {
               onChange={handleChange}
               required
             />
-            
+
             <FloatInput
               id="email"
               label="Email Address"
@@ -85,46 +157,32 @@ export default function AddUserPage() {
             <FloatSelect
               id="role"
               label="User Role"
-              options={[
-                { value: 'PIA_OFFICER', label: 'PIA Officer' },
-                { value: 'DD_LEVEL', label: 'DD Level' },
-                { value: 'SUPER_ADMIN', label: 'Super Admin' }
-              ]}
+              options={ROLE_OPTIONS}
               value={formData.role}
               onChange={handleChange}
               required
             />
 
-            <FloatInput
-              id="password"
-              label="Password (optional, default: sarra@123)"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-            />
+            {needsDistrict && (
+              <FloatSelect
+                id="district"
+                label="District"
+                options={DISTRICTS}
+                value={formData.district}
+                onChange={handleChange}
+                required
+              />
+            )}
 
-            {formData.role !== 'SUPER_ADMIN' && (
-              <>
-                <FloatSelect
-                  id="district"
-                  label="District"
-                  options={DISTRICTS}
-                  value={formData.district}
-                  onChange={handleChange}
-                  required
-                />
-                
-                {formData.role === 'PIA_OFFICER' && (
-                  <FloatSelect
-                    id="department"
-                    label="Department"
-                    options={DEPARTMENTS}
-                    value={formData.department}
-                    onChange={handleChange}
-                    required
-                  />
-                )}
-              </>
+            {needsDepartment && (
+              <FloatSelect
+                id="department"
+                label="Department"
+                options={DEPARTMENTS}
+                value={formData.department}
+                onChange={handleChange}
+                required
+              />
             )}
           </div>
 
@@ -133,7 +191,7 @@ export default function AddUserPage() {
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={loading}>
-              Create User
+              Send Invitation
             </Button>
           </div>
         </form>
