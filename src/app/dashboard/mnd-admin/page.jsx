@@ -51,7 +51,7 @@ export default function MNDAdminDashboard() {
         <div className="p-6 max-w-[1600px] mx-auto min-h-screen">
           <DashboardHero
             name={user?.name}
-            roleLabel={ROLE_LABELS[user?.role] || 'MND Admin'}
+            roleLabel={ROLE_LABELS[user?.role] || 'MNE Admin'}
             hint={data.welcomeHint}
           />
           <StatGrid items={stats} />

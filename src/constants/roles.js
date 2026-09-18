@@ -10,6 +10,6 @@ export const ROLE_LABELS = {
   [USER_ROLES.SUPER_ADMIN]: 'Super Admin',
   [USER_ROLES.DD_LEVEL]: 'District Director',
   [USER_ROLES.PIA_OFFICER]: 'PIA Officer',
-  [USER_ROLES.MND_SUPER_ADMIN]: 'MND Admin',
-  [USER_ROLES.MND_OFFICER]: 'MND Officer',
+  [USER_ROLES.MND_SUPER_ADMIN]: 'MNE Admin',
+  [USER_ROLES.MND_OFFICER]: 'MNE Officer',
 };

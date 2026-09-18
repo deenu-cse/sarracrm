@@ -51,7 +51,7 @@ export default function MNDOfficerDashboard() {
         <div className="p-6 max-w-[1600px] mx-auto min-h-screen">
           <DashboardHero
             name={user?.name}
-            roleLabel={ROLE_LABELS[user?.role] || 'MND Officer'}
+            roleLabel={ROLE_LABELS[user?.role] || 'MNE Officer'}
             hint={data.welcomeHint}
           />
           <StatGrid items={stats} />

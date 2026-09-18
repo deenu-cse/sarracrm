@@ -104,10 +104,12 @@ export default function AdminDashboardPage() {
               data.recentActivity?.length
                 ? data.recentActivity.map((a) => ({
                     id: a.id,
-                    title: a.name,
-                    subtitle: `${a.action?.replace(/_/g, ' ')}${a.resource ? ` · ${a.resource}` : ''}`,
+                    title: a.eventName || a.action?.replace(/_/g, ' ') || 'Workflow activity',
+                    subtitle: [a.referenceNo, a.performedBy, a.performedByRole]
+                      .filter(Boolean)
+                      .join(' · '),
                     timestamp: a.timestamp,
-                    href: '/dashboard/admin/audit-logs',
+                    href: a.href || '/dashboard/admin/audit-logs',
                   }))
                 : data.recentItems || []
             }

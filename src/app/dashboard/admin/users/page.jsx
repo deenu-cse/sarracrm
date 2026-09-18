@@ -353,8 +353,8 @@ export default function AdminUsersPage() {
         options={{
           role: [
             { value: 'SUPER_ADMIN', label: 'Super Admin' },
-            { value: 'MND_SUPER_ADMIN', label: 'MND Super Admin' },
-            { value: 'MND_OFFICER', label: 'MND Officer' },
+            { value: 'MND_SUPER_ADMIN', label: 'MNE Super Admin' },
+            { value: 'MND_OFFICER', label: 'MNE Officer' },
             { value: 'DD_LEVEL', label: 'DD Level' },
             { value: 'PIA_OFFICER', label: 'PIA Officer' },
           ],

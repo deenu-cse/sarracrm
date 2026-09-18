@@ -135,7 +135,7 @@ export default function MNDAdminAnalytics() {
         <div className="bg-white border-b border-slate-200 px-6 py-8 shadow-sm">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-800">MND Advanced Analytics</h1>
+              <h1 className="text-2xl font-bold text-slate-800">MNE Advanced Analytics</h1>
               <p className="text-sm text-slate-500 mt-1 flex items-center gap-2">
                 <Activity className="w-4 h-4" /> State-wide Monitoring Dashboard
               </p>

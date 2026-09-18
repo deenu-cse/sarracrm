@@ -18,8 +18,8 @@ const ROLE_OPTIONS = [
   { value: 'PIA_OFFICER', label: 'PIA Officer' },
   { value: 'DD_LEVEL', label: 'DD Level' },
   { value: 'SUPER_ADMIN', label: 'Super Admin' },
-  { value: 'MND_OFFICER', label: 'MND Officer' },
-  { value: 'MND_SUPER_ADMIN', label: 'MND Super Admin' },
+  { value: 'MND_OFFICER', label: 'MNE Officer' },
+  { value: 'MND_SUPER_ADMIN', label: 'MNE Super Admin' },
 ];
 
 export default function InviteUserPage() {

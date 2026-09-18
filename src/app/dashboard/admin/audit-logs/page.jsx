@@ -9,6 +9,7 @@ import {
   LogIn, LogOut, UserPlus, UserX, Ban, RotateCcw,
   FileText, KeyRound, RefreshCw, ScrollText, Globe
 } from 'lucide-react';
+import BusinessAuditView from '@/components/review/BusinessAuditView';
 
 const ACTION_META = {
   LOGIN: { label: 'Login', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: LogIn },
@@ -68,6 +69,10 @@ function StatCard({ title, value, sub, icon: Icon, iconBg, iconColor, glow }) {
 }
 
 export default function AdminAuditLogsPage() {
+  return <BusinessAuditView />;
+}
+
+function LegacyAdminAuditLogsPage() {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState({ total: 0, today: 0, byAction: [] });
   const [loading, setLoading] = useState(true);
