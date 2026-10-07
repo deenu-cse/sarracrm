@@ -42,6 +42,10 @@ class AxiosInstance {
       }
     }
 
+    if (options.responseType === 'blob' && res.ok) {
+      return { data: await res.blob(), status: res.status, headers: { 'content-disposition': res.headers.get('content-disposition') || '' } };
+    }
+
     const data = await res.json();
 
     if (!res.ok) {

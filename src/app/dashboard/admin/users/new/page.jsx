@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { FloatInput } from '@/components/forms/shared/FloatInput';
 import { FloatSelect } from '@/components/forms/shared/FloatSelect';
 import { DEPARTMENTS } from '@/constants/departments';
+import { fetchDepartments } from '@/lib/projectApi';
 import { DISTRICTS } from '@/constants/districts';
 import { USER_ROLES } from '@/constants/roles';
 import { getDashboardRoute } from '@/lib/routes';
@@ -18,8 +19,8 @@ const ROLE_OPTIONS = [
   { value: 'PIA_OFFICER', label: 'PIA Officer' },
   { value: 'DD_LEVEL', label: 'DD Level' },
   { value: 'SUPER_ADMIN', label: 'Super Admin' },
-  { value: 'MND_OFFICER', label: 'MND Officer' },
-  { value: 'MND_SUPER_ADMIN', label: 'MND Super Admin' },
+  { value: 'MND_OFFICER', label: 'MNE Officer' },
+  { value: 'MND_SUPER_ADMIN', label: 'MNE Super Admin' },
 ];
 
 export default function InviteUserPage() {
@@ -27,6 +28,14 @@ export default function InviteUserPage() {
   const { user, isLoading } = useAuth();
   const { addToast } = useUI();
   const [loading, setLoading] = useState(false);
+  // Departments come from the same master list projects use, so a PIA officer's
+  // department always matches a project department. The fixed list is only a fallback.
+  const [departmentOptions, setDepartmentOptions] = useState(DEPARTMENTS);
+  useEffect(() => {
+    fetchDepartments()
+      .then((list) => { if (list.length) setDepartmentOptions(list.map((department) => department.name)); })
+      .catch(() => {});
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -178,7 +187,7 @@ export default function InviteUserPage() {
               <FloatSelect
                 id="department"
                 label="Department"
-                options={DEPARTMENTS}
+                options={departmentOptions}
                 value={formData.department}
                 onChange={handleChange}
                 required

@@ -1,317 +1,409 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { post } from '@/lib/api';
-import { Card, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { DISTRICTS } from '@/constants/districts';
-import { DEPARTMENTS } from '@/constants/departments';
-import { ChevronLeft, Plus, Trash2, FolderPlus, IndianRupee } from 'lucide-react';
+import React, { Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { fetchProjectForEdit } from '@/lib/projectApi';
+import { ArrowLeft, ArrowRight, ChevronLeft, CircleCheck, CircleAlert, FolderPlus } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Dialog } from '@/components/ui/Dialog';
+import { Stepper } from '@/components/projects/create/Stepper';
+import { StepLocation } from '@/components/projects/create/StepLocation';
+import { StepDetails } from '@/components/projects/create/StepDetails';
+import { StepDepartments } from '@/components/projects/create/StepDepartments';
+import { StepAllocation } from '@/components/projects/create/StepAllocation';
+import { StepActivities } from '@/components/projects/create/StepActivities';
+import { StepReview } from '@/components/projects/create/StepReview';
+import { SuccessScreen } from '@/components/projects/create/SuccessScreen';
+import { ActionButton, Notice, Skeleton } from '@/components/projects/create/parts';
+import {
+  FIRST_REVISION_STEP, STEPS, canOpenStep, clearDraft, createInitialState, hasEnteredData, loadDraft, saveDraft, stateFromProject, stepValidity,
+  validateAllocation, validateDepartments, validateDetails, validateLocation, wizardReducer,
+} from '@/components/projects/create/wizardState';
 
-const PROJECT_TYPES = ['SPRINGSHED', 'STREAMSHED', 'GROUNDWATER'];
-const FINANCIAL_YEARS = ['2023-2024', '2024-2025', '2025-2026', '2026-2027'];
+const PROJECTS_ROUTE = '/dashboard/admin/projects';
+const STEP_VALIDATORS = [validateLocation, validateDetails, validateDepartments, validateAllocation];
 
-const DEFAULT_ACTIVITY = { activityId: '', activityLabel: '', unit: 'Nos.', physicalTarget: 0, financialAmountLakh: 0 };
+const formatSavedAt = (iso) => {
+  if (!iso) return '';
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+};
 
-const UNITS = ['Nos.', 'Ha.', 'Km.', 'Mtrs', 'Cu.m', 'Ltr/Day', 'RM', 'Lump Sum'];
+const MODE_TITLES = { create: 'Create Project', resubmit: 'Correct & Resubmit Project', revise: 'Revise Project' };
 
-export default function CreateProjectPage() {
+/**
+ * The project wizard. Three modes share the same steps and validation:
+ *   create    a new project
+ *   resubmit  correct a rejected project and send it back to the Checker
+ *   revise    propose revised shares / targets for a sanctioned project
+ */
+function ProjectWizard({ mode, sourceId }) {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const { user, isLoading: authLoading } = useAuth();
+  const userId = user?._id || user?.id || null;
 
-  const [form, setForm] = useState({
-    projectTitle: '',
-    projectType: 'SPRINGSHED',
-    financialYear: '2025-2026',
-    district: DISTRICTS[0],
-    department: DEPARTMENTS[0],
-    makerNote: '',
-    totalSanctionedBudgetLakh: 0,
-    deptShareLakh: 0,
-    sarraShareLakh: 0,
-    sanctionedTargets: [{ ...DEFAULT_ACTIVITY }],
-  });
+  const [state, dispatch] = useReducer(wizardReducer, undefined, createInitialState);
+  const [hydrated, setHydrated] = useState(false);
+  const [restoredAt, setRestoredAt] = useState('');
+  const [attemptedStep, setAttemptedStep] = useState(-1);
+  const [direction, setDirection] = useState('forward');
+  const [shakeNext, setShakeNext] = useState(false);
+  const [createdProject, setCreatedProject] = useState(null);
+  const [pendingHref, setPendingHref] = useState(null);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const editing = mode !== 'create';
+  const backRoute = editing && sourceId ? `${PROJECTS_ROUTE}/${sourceId}` : PROJECTS_ROUTE;
+  const stepRegionRef = useRef(null);
+  const leavingRef = useRef(false);
 
-  const updateField = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+  const validity = useMemo(() => stepValidity(state), [state]);
+  const dirty = hydrated && !createdProject && hasEnteredData(state);
 
-  const updateTarget = (i, k, v) => {
-    setForm(prev => {
-      const targets = [...prev.sanctionedTargets];
-      targets[i] = { ...targets[i], [k]: v };
-      return { ...prev, sanctionedTargets: targets };
-    });
-  };
-
-  const addTarget = () =>
-    setForm(prev => ({ ...prev, sanctionedTargets: [...prev.sanctionedTargets, { ...DEFAULT_ACTIVITY }] }));
-
-  const removeTarget = (i) =>
-    setForm(prev => ({ ...prev, sanctionedTargets: prev.sanctionedTargets.filter((_, idx) => idx !== i) }));
-
-  const calcTotal = () =>
-    form.sanctionedTargets.reduce((s, t) => s + Number(t.financialAmountLakh || 0), 0);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
-    try {
-      const payload = {
-        ...form,
-        totalSanctionedBudgetLakh: calcTotal(),
-      };
-      const res = await post('/sanctions', payload);
-      if (res?.success) {
-        router.push('/dashboard/admin/projects');
-      } else {
-        setError(res?.message || 'Failed to create project');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
+  // ── Draft: restore once the user is known, then keep it saved ──────────────
+  useEffect(() => {
+    if (authLoading || hydrated) return;
+    if (editing) {
+      // Existing project: always loaded fresh from the server, never from a browser draft.
+      let current = true;
+      fetchProjectForEdit(sourceId)
+        .then((project) => {
+          if (!current) return;
+          const expected = mode === 'resubmit' ? project.status === 'REJECTED' : !['REJECTED', 'PENDING_CHECKER', 'PENDING_APPROVER', 'DRAFT'].includes(project.status);
+          if (!expected) {
+            setLoadError(mode === 'resubmit' ? 'Only a rejected project can be corrected and resubmitted.' : 'Only a sanctioned project can be revised.');
+          } else if (!(project.departmentAllocations || []).length) {
+            setLoadError('This older project has no department-wise budget and cannot be edited here.');
+          } else {
+            dispatch({ type: 'RESTORE', state: stateFromProject(project, mode) });
+          }
+          setHydrated(true);
+        })
+        .catch((err) => { if (current) { setLoadError(err?.message || 'Unable to load the project. Please try again.'); setHydrated(true); } });
+      return () => { current = false; };
     }
+    const draft = userId ? loadDraft(userId) : null;
+    if (draft && hasEnteredData({ ...createInitialState(), ...draft })) {
+      const restored = { ...createInitialState(), ...draft };
+      // Never reopen on a step whose earlier steps are no longer valid.
+      const firstInvalid = stepValidity(restored).findIndex((valid) => !valid);
+      const maxStep = firstInvalid === -1 ? STEPS.length - 1 : firstInvalid;
+      restored.step = Math.min(restored.step || 0, maxStep);
+      restored.furthestStep = Math.max(restored.step, Math.min(restored.furthestStep || 0, STEPS.length - 1));
+      dispatch({ type: 'RESTORE', state: restored });
+      setRestoredAt(formatSavedAt(draft.savedAt));
+    }
+    setHydrated(true);
+    return undefined;
+  }, [authLoading, hydrated, userId, editing, mode, sourceId]);
+
+  useEffect(() => {
+    if (editing || !hydrated || !userId || createdProject) return undefined;
+    if (!hasEnteredData(state)) return undefined;
+    const timer = setTimeout(() => saveDraft(userId, state), 400);
+    return () => clearTimeout(timer);
+  }, [state, hydrated, userId, createdProject, editing]);
+
+  // ── Guard against losing entered data ──────────────────────────────────────
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const onBeforeUnload = (event) => { event.preventDefault(); event.returnValue = ''; };
+    // In-app links (navbar, breadcrumb, back arrow) are intercepted before the router sees them.
+    const onClickCapture = (event) => {
+      if (leavingRef.current || event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
+      if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingHref(`${url.pathname}${url.search}${url.hash}`);
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('click', onClickCapture, true);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      document.removeEventListener('click', onClickCapture, true);
+    };
+  }, [dirty]);
+
+  const leave = () => {
+    leavingRef.current = true;
+    const href = pendingHref;
+    setPendingHref(null);
+    router.push(href || backRoute);
   };
+
+  // ── Step navigation ────────────────────────────────────────────────────────
+  const goToStep = useCallback((target) => {
+    setDirection(target > state.step ? 'forward' : 'back');
+    setAttemptedStep(-1);
+    dispatch({ type: 'GO_TO_STEP', step: target });
+    requestAnimationFrame(() => {
+      stepRegionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      stepRegionRef.current?.focus({ preventScroll: true });
+    });
+  }, [state.step]);
+
+  const stepErrors = state.step < STEP_VALIDATORS.length ? STEP_VALIDATORS[state.step](state) : {};
+  const showErrors = attemptedStep === state.step;
+
+  const handleNext = () => {
+    if (Object.keys(stepErrors).length > 0) {
+      setAttemptedStep(state.step);
+      setShakeNext(true);
+      setTimeout(() => setShakeNext(false), 400);
+      // Move focus to the first field that needs attention.
+      requestAnimationFrame(() => {
+        const invalid = stepRegionRef.current?.querySelector('[aria-invalid="true"]');
+        if (invalid instanceof HTMLElement) invalid.focus();
+      });
+      return;
+    }
+    goToStep(state.step + 1);
+  };
+
+  const startFresh = () => {
+    clearDraft(userId);
+    dispatch({ type: 'RESET' });
+    setRestoredAt('');
+    setAttemptedStep(-1);
+    setCreatedProject(null);
+    setDiscardOpen(false);
+    leavingRef.current = false;
+  };
+
+  const handleCreated = (project) => {
+    if (!editing) clearDraft(userId);
+    setCreatedProject(project);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  if (authLoading || !hydrated) {
+    return (
+      <div className="mx-auto max-w-6xl space-y-5 p-6" role="status" aria-label="Loading project creation">
+        <Skeleton className="h-12 w-72" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-80" />
+      </div>
+    );
+  }
+
+  if (user?.workflowRole !== 'MAKER') {
+    return (
+      <div className="mx-auto max-w-2xl p-6">
+        <Notice tone="warning" title="You cannot create projects">
+          Only a State Maker can create a project. Your account does not have the Maker role.
+        </Notice>
+        <Link href={PROJECTS_ROUTE} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-navy hover:underline">
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Back to projects
+        </Link>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-2xl p-6">
+        <Notice tone="error" title="This project cannot be opened here">{loadError}</Notice>
+        <Link href={backRoute} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-navy hover:underline">
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Back to project
+        </Link>
+      </div>
+    );
+  }
+
+  if (createdProject) {
+    return (
+      <div className="p-6 pt-12">
+        <SuccessScreen project={createdProject} mode={mode} source={state.source} onCreateAnother={startFresh} />
+      </div>
+    );
+  }
+
+  const invalidReached = validity.filter((valid, index) => !valid && index <= state.furthestStep && index !== state.step).length;
+  const allValid = validity.every(Boolean);
+  const activeDepartment = state.departments[Math.min(state.activeDepartment, state.departments.length - 1)];
+  const nextLabel = state.step < STEPS.length - 1 ? STEPS[state.step + 1].label : '';
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/dashboard/admin/projects" className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors">
-          <ChevronLeft className="w-5 h-5" />
-        </Link>
+    <div className="mx-auto max-w-6xl p-4 pb-16 sm:p-6">
+      {/* Page header */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-            <FolderPlus className="w-5 h-5 text-indigo-600" />
-          </div>
+          <Link
+            href={backRoute}
+            aria-label={editing ? 'Back to project' : 'Back to projects'}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200/70 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40"
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+          </Link>
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true">
+            <FolderPlus className="h-5 w-5" />
+          </span>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Create New Project</h1>
-            <p className="text-slate-500 text-sm">This will enter the Checker → Approver → District → PIA workflow</p>
+            <h1 className="text-xl font-bold text-slate-900">{MODE_TITLES[mode]}</h1>
+            <p className="text-sm text-slate-500">
+              Step {state.step + 1} of {STEPS.length} · {STEPS[state.step].label}
+            </p>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {state.head && (
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5">
+              <span className="text-slate-500">Head</span>
+              <span className="font-mono font-bold text-slate-800">{state.head.code}</span>
+            </span>
+          )}
+          {state.step === 4 && activeDepartment?.department && (
+            <span className="inline-flex max-w-[16rem] items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5">
+              <span className="text-slate-500">Department</span>
+              <span className="truncate font-semibold text-slate-800">{activeDepartment.department.name}</span>
+            </span>
+          )}
+          {state.projectId && (
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5">
+              <span className="text-emerald-700">Project ID</span>
+              <span className="font-mono font-bold text-emerald-900">{state.projectId.projectId}</span>
+            </span>
+          )}
+          <span
+            role="status"
+            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-semibold
+              ${allValid ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : invalidReached ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-white text-slate-600'}`}
+          >
+            {allValid ? <CircleCheck className="h-3.5 w-3.5" aria-hidden="true" /> : <CircleAlert className="h-3.5 w-3.5" aria-hidden="true" />}
+            {allValid
+              ? (state.projectId ? 'Ready to create' : 'All steps complete — generate Project ID')
+              : invalidReached
+                ? `${invalidReached} step${invalidReached === 1 ? '' : 's'} need attention`
+                : `${validity.filter(Boolean).length} of ${validity.length} steps complete`}
+          </span>
         </div>
       </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
-          {error}
+      {restoredAt && (
+        <div className="mb-4">
+          <Notice
+            tone="info"
+            action={(
+              <button
+                type="button"
+                onClick={() => setDiscardOpen(true)}
+                className="flex-shrink-0 rounded-md border border-sky-300 bg-white px-2.5 py-1 text-xs font-semibold text-sky-900 transition-colors hover:bg-sky-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40"
+              >
+                Start fresh
+              </button>
+            )}
+          >
+            Your unfinished project from {restoredAt} has been restored. It is saved on this device as you type.
+          </Notice>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Info */}
-        <Card>
-          <CardHeader title="Project Information" />
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Project Title *</label>
-              <input
-                required
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white"
-                placeholder="e.g., Springshed Development in Almora - Batch 1"
-                value={form.projectTitle}
-                onChange={e => updateField('projectTitle', e.target.value)}
-              />
-            </div>
+      <Stepper
+        current={state.step}
+        furthest={state.furthestStep}
+        validity={validity}
+        canOpen={(index) => canOpenStep(state, index)}
+        onSelect={goToStep}
+      />
 
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Project Type *</label>
-              <select
-                required
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                value={form.projectType}
-                onChange={e => updateField('projectType', e.target.value)}
-              >
-                {PROJECT_TYPES.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Financial Year *</label>
-              <select
-                required
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                value={form.financialYear}
-                onChange={e => updateField('financialYear', e.target.value)}
-              >
-                {FINANCIAL_YEARS.map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">District *</label>
-              <select
-                required
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                value={form.district}
-                onChange={e => updateField('district', e.target.value)}
-              >
-                {DISTRICTS.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Department</label>
-              <select
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                value={form.department}
-                onChange={e => updateField('department', e.target.value)}
-              >
-                {DEPARTMENTS.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Maker Note</label>
-              <textarea
-                rows={3}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white"
-                placeholder="Optional note about this project creation..."
-                value={form.makerNote}
-                onChange={e => updateField('makerNote', e.target.value)}
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* Budget */}
-        <Card>
-          <CardHeader title="Budget Details" />
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">SARRA Share (Lakh)</label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                  value={form.sarraShareLakh}
-                  onChange={e => updateField('sarraShareLakh', parseFloat(e.target.value) || 0)}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Department Share (Lakh)</label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="w-full border border-slate-200 rounded-lg pl-8 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                  value={form.deptShareLakh}
-                  onChange={e => updateField('deptShareLakh', parseFloat(e.target.value) || 0)}
-                />
-              </div>
-            </div>
-            <div className="md:col-span-2 bg-indigo-50 border border-indigo-100 rounded-xl p-4">
-              <p className="text-sm text-indigo-700 font-semibold">
-                Total Budget (computed from targets): ₹{calcTotal().toFixed(2)} Lakh
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Sanctioned Targets */}
-        <Card>
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800">Sanctioned Targets</h3>
-              <p className="text-sm text-slate-500">Define component-wise activity targets</p>
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={addTarget} className="flex items-center gap-1.5">
-              <Plus className="w-4 h-4" /> Add Component
-            </Button>
-          </div>
-          <div className="p-6 space-y-4">
-            {form.sanctionedTargets.map((target, i) => (
-              <div key={i} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 hover:bg-white transition-colors">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Component #{i + 1}
-                  </span>
-                  {form.sanctionedTargets.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTarget(i)}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Activity Label *</label>
-                    <input
-                      required
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                      placeholder="e.g., Spring Box Construction"
-                      value={target.activityLabel}
-                      onChange={e => updateTarget(i, 'activityLabel', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Unit</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                      value={target.unit}
-                      onChange={e => updateTarget(i, 'unit', e.target.value)}
-                    >
-                      {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Physical Target</label>
-                    <input
-                      type="number"
-                      min="0"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                      value={target.physicalTarget}
-                      onChange={e => updateTarget(i, 'physicalTarget', parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Amount (Lakh) *</label>
-                    <div className="relative">
-                      <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                      <input
-                        required
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        className="w-full border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                        value={target.financialAmountLakh}
-                        onChange={e => updateTarget(i, 'financialAmountLakh', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Submit */}
-        <div className="flex justify-end gap-3 pb-8">
-          <Link href="/dashboard/admin/projects">
-            <Button type="button" variant="outline">Cancel</Button>
-          </Link>
-          <Button type="submit" variant="primary" disabled={submitting}>
-            {submitting ? 'Creating Project...' : 'Create Project'}
-          </Button>
+      <div ref={stepRegionRef} tabIndex={-1} className="mt-5 scroll-mt-28 focus:outline-none">
+        <div key={state.step} className={direction === 'forward' ? 'wz-slide-from-right' : 'wz-slide-from-left'}>
+          {state.step === 0 && <StepLocation state={state} dispatch={dispatch} errors={stepErrors} showErrors={showErrors} />}
+          {state.step === 1 && <StepDetails state={state} dispatch={dispatch} errors={stepErrors} showErrors={showErrors} />}
+          {state.step === 2 && <StepDepartments state={state} dispatch={dispatch} errors={stepErrors} showErrors={showErrors} />}
+          {state.step === 3 && <StepAllocation state={state} dispatch={dispatch} errors={stepErrors} showErrors={showErrors} />}
+          {state.step === 4 && <StepActivities state={state} dispatch={dispatch} onBack={() => goToStep(3)} onComplete={() => goToStep(5)} />}
+          {state.step === 5 && <StepReview state={state} dispatch={dispatch} onBack={() => goToStep(4)} onCreated={handleCreated} />}
         </div>
-      </form>
+      </div>
+
+      {/* Navigation for the form steps (Activities and Review bring their own) */}
+      {state.step <= 3 && (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          {state.step > (mode === 'revise' ? FIRST_REVISION_STEP : 0) ? (
+            <ActionButton variant="secondary" icon={ArrowLeft} onClick={() => goToStep(state.step - 1)}>Back</ActionButton>
+          ) : (
+            <Link
+              href={backRoute}
+              className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50 focus-visible:ring-offset-2"
+            >
+              Cancel
+            </Link>
+          )}
+          <div className="flex items-center gap-4">
+            {showErrors && Object.keys(stepErrors).length > 0 && (
+              <p role="alert" className="wz-fade-in text-sm font-medium text-red-700">Please fix the highlighted fields to continue.</p>
+            )}
+            <ActionButton size="lg" iconRight={ArrowRight} onClick={handleNext} className={shakeNext ? 'wz-shake' : ''}>
+              Next: {nextLabel}
+            </ActionButton>
+          </div>
+        </div>
+      )}
+
+      {/* Leave confirmation */}
+      <Dialog
+        open={Boolean(pendingHref)}
+        onClose={() => setPendingHref(null)}
+        title="Leave project creation?"
+        size="sm"
+        footer={(
+          <>
+            <ActionButton variant="secondary" onClick={leave}>Leave</ActionButton>
+            <ActionButton onClick={() => setPendingHref(null)}>Stay</ActionButton>
+          </>
+        )}
+      >
+        <p className="text-sm text-slate-600">
+          You have unsaved project information. Are you sure you want to leave?
+        </p>
+        <p className="mt-2 text-xs text-slate-500">
+          The project has not been created yet. A draft is kept on this device so you can continue later.
+        </p>
+      </Dialog>
+
+      {/* Discard restored draft */}
+      <Dialog
+        open={discardOpen}
+        onClose={() => setDiscardOpen(false)}
+        title="Start a new project?"
+        size="sm"
+        footer={(
+          <>
+            <ActionButton variant="secondary" onClick={() => setDiscardOpen(false)}>Keep draft</ActionButton>
+            <ActionButton onClick={startFresh}>Discard and start fresh</ActionButton>
+          </>
+        )}
+      >
+        <p className="text-sm text-slate-600">
+          Everything entered in the restored draft will be cleared.
+          {state.projectId ? ` Project ID ${state.projectId.projectId} will be left unused.` : ''}
+        </p>
+      </Dialog>
     </div>
+  );
+}
+
+function ProjectWizardRoute() {
+  const params = useSearchParams();
+  const resubmitId = params.get('resubmit');
+  const reviseId = params.get('revise');
+  const mode = resubmitId ? 'resubmit' : reviseId ? 'revise' : 'create';
+  const sourceId = resubmitId || reviseId || null;
+  // A different project or mode starts a fresh wizard.
+  return <ProjectWizard key={`${mode}:${sourceId || ''}`} mode={mode} sourceId={sourceId} />;
+}
+
+export default function CreateProjectPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-6xl space-y-5 p-6" role="status" aria-label="Loading"><Skeleton className="h-12 w-72" /><Skeleton className="h-24" /><Skeleton className="h-80" /></div>}>
+      <ProjectWizardRoute />
+    </Suspense>
   );
 }

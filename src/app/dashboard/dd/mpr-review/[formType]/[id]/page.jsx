@@ -42,13 +42,13 @@ export default function DDMPRDetailPage() {
   const canReview = mpr.status === 'SUBMITTED';
 
   const handleApprove = async () => {
-    if (!window.confirm('Are you sure you want to approve this MPR and forward it to MND?')) return;
+    if (!window.confirm('Are you sure you want to approve this MPR and forward it to MNE?')) return;
     setActionError('');
     setBusy(true);
     try {
       const res = await patch(`/mpr/${formType}/${id}/district-approve`, {});
       if (res?.success) {
-        toast.success('MPR Approved & Forwarded to MND');
+        toast.success('MPR Approved & Forwarded to MNE');
         router.push('/dashboard/dd/mpr-review');
       } else {
         setActionError(res?.message || 'Failed to approve');
@@ -417,7 +417,7 @@ export default function DDMPRDetailPage() {
                     disabled={busy}
                     className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm inline-flex justify-center items-center gap-2 transition-all shadow-lg shadow-green-100 disabled:opacity-50"
                   >
-                    {busy ? 'Processing...' : <><CheckCircle className="w-4 h-4" /> Approve & Forward to MND</>}
+                    {busy ? 'Processing...' : <><CheckCircle className="w-4 h-4" /> Approve & Forward to MNE</>}
                   </button>
 
                   <div className="relative py-2">
