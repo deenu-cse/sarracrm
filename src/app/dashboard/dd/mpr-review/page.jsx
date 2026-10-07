@@ -11,6 +11,7 @@ import { patch } from '@/lib/api';
 import { ClipboardCheck, CheckCircle, RotateCcw, FileText } from 'lucide-react';
 import { MPR_STATUS } from '@/constants/status';
 import Link from 'next/link';
+import { DistrictProjectMprs } from '@/components/mpr/DistrictProjectMprs';
 
 const MPR_FORM_TYPES = [
   { key: 'praroop1a', label: 'Praroop-1(A) — Springs' },
@@ -143,6 +144,9 @@ export default function DDMPRReviewPage() {
         </div>
       </div>
 
+      <DistrictProjectMprs />
+
+      <h2 className="mb-2 mt-8 text-sm font-semibold text-slate-700">Earlier Praroop-format reports</h2>
       <FilterBar
         filters={filters}
         onChange={(f) => setFilters(prev => ({ ...prev, ...f }))}

@@ -47,6 +47,9 @@ export function ProjectDetailPanel({ project, actions }) {
               <p className="text-xs font-mono font-bold text-slate-400 mb-1">
                 {project.sanctionId || 'Sanction ID Pending'}
               </p>
+              {project.projectId && (
+                <p className="text-xs font-mono font-bold text-slate-600 mb-1">Project ID: {project.projectId}</p>
+              )}
               <h2 className="text-xl font-bold text-slate-900">{project.projectTitle}</h2>
             </div>
             <Badge status={project.status} size="md" />
@@ -54,6 +57,23 @@ export function ProjectDetailPanel({ project, actions }) {
 
           <div className="space-y-0">
             <InfoRow label="District" value={project.district} icon={Building2} />
+            {project.location?.village && (
+              <InfoRow
+                label="Block / Gram Panchayat / Village"
+                value={[project.location.block, project.location.gramPanchayat, project.location.village].filter(Boolean).join(' / ')}
+                icon={Building2}
+              />
+            )}
+            {project.head?.code && (
+              <InfoRow label="Head" value={`${project.head.code} — ${project.head.name}`} icon={Tag} />
+            )}
+            {(project.approvalDates?.dlec || project.approvalDates?.slec || project.approvalDates?.hpc) && (
+              <InfoRow
+                label="Approval Dates (DLEC / SLEC / HPC)"
+                value={['dlec', 'slec', 'hpc'].map(k => (project.approvalDates[k] ? formatDate(project.approvalDates[k]) : '—')).join(' / ')}
+                icon={Calendar}
+              />
+            )}
             <InfoRow label="Project Type" value={project.projectType || project.dprType} icon={Tag} />
             <InfoRow label="Financial Year" value={project.financialYear} icon={Calendar} />
             <InfoRow 
@@ -101,6 +121,50 @@ export function ProjectDetailPanel({ project, actions }) {
             />
           )}
         </Card>
+
+        {/* Department-wise allocation and activity plan */}
+        {project.departmentAllocations?.length > 0 && (
+          <Card>
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">
+              Department Allocation ({project.numberOfPIA || project.departmentAllocations.length} PIA)
+            </h3>
+            <div className="space-y-5">
+              {project.departmentAllocations.map((d, i) => (
+                <div key={d.departmentId || i} className="border border-slate-200 rounded-lg overflow-hidden">
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200">
+                    <span className="text-sm font-semibold text-slate-800">{d.departmentName}</span>
+                    <span className="text-xs text-slate-600">
+                      Dept. ₹{(d.deptShareLakh || 0).toFixed(2)}L · SARRA ₹{(d.sarraShareLakh || 0).toFixed(2)}L ·{' '}
+                      <span className="font-bold text-slate-800">Total ₹{(d.totalLakh || 0).toFixed(2)}L</span>
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr>
+                          <th className="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Activity</th>
+                          <th className="text-right px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Unit</th>
+                          <th className="text-right px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Physical Target</th>
+                          <th className="text-right px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Financial Target (L)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {(d.activities || []).map((a) => (
+                          <tr key={a.activityCode}>
+                            <td className="px-3 py-2 text-slate-700 font-medium">{a.activityName}</td>
+                            <td className="px-3 py-2 text-right text-slate-500">{a.unit}</td>
+                            <td className="px-3 py-2 text-right font-semibold text-slate-800">{a.physicalTarget}</td>
+                            <td className="px-3 py-2 text-right font-semibold text-emerald-700">₹{(a.financialTargetLakh || 0).toFixed(2)}L</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Sanctioned Targets */}
         {project.sanctionedTargets?.length > 0 && (

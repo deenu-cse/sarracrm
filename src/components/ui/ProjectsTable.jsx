@@ -58,6 +58,9 @@ export function ProjectsTable({ projects = [], detailBasePath = '', extraColumns
                 <p className="font-mono text-xs font-bold text-slate-500">
                   {project.sanctionId || <span className="text-slate-300 italic">Pending</span>}
                 </p>
+                {project.projectId && (
+                  <p className="font-mono text-xs text-slate-500 mt-0.5">{project.projectId}</p>
+                )}
                 <p className="font-medium text-slate-800 mt-0.5 line-clamp-1">{project.projectTitle || '—'}</p>
                 <p className="text-xs text-slate-400 mt-0.5">{project.financialYear}</p>
               </td>

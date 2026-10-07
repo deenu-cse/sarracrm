@@ -39,7 +39,7 @@ export default function OfficerFormsPage() {
           <p className="text-slate-500">Manage and track your submissions</p>
         </div>
         <div className="flex gap-3">
-          <Button onClick={() => router.push("/dashboard/officer/forms/new")} variant="primary">
+          <Button onClick={() => router.push("/dashboard/officer/forms/dpr/new")} variant="primary">
             <Plus className="w-4 h-4 mr-2" /> Springshed DPR
           </Button>
           <Button

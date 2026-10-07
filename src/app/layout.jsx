@@ -2,6 +2,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UIProvider } from '@/contexts/UIContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 export const metadata = {
   title: 'SARRA CRM Portal',
@@ -12,13 +13,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <UIProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              {children}
-            </NotificationProvider>
-          </AuthProvider>
-        </UIProvider>
+        <LanguageProvider>
+          <UIProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                {children}
+              </NotificationProvider>
+            </AuthProvider>
+          </UIProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

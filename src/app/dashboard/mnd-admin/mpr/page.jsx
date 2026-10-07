@@ -8,6 +8,12 @@ import { ExportButton } from "@/components/ui/ExportButton";
 import { Badge } from '@/components/ui/Badge';
 import { RoleGuard } from '@/components/auth/RoleGuard';
 import { USER_ROLES } from '@/constants/roles';
+import { fetchStateMprs } from '@/lib/mprApi';
+import { RegisterDownload } from '@/components/mpr/MprEvidence';
+import { downloadMprRegister } from '@/lib/lifecycleApi';
+
+// Statuses that exist for project MPRs. Any other status filter can only match the older report types.
+const PROJECT_MPR_STATUSES = ['SUBMITTED', 'DISTRICT_APPROVED', 'RETURNED_TO_PIA', 'STATE_VERIFIED'];
 
 export default function MNDAdminMPRList() {
   const router = useRouter();
@@ -16,10 +22,12 @@ export default function MNDAdminMPRList() {
   const [filters, setFilters] = useState({
     search: "",
     status: "",
-    financialYear: "2025-26",
+    financialYear: "",
     reportType: "ALL"
   });
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [projectSummary, setProjectSummary] = useState(null);
+  const [loadError, setLoadError] = useState("");
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -48,6 +56,39 @@ export default function MNDAdminMPRList() {
       }
       if (filters.reportType === "ALL" || filters.reportType === "PRAROOP_1D") {
         requests.push(get(`/mpr/praroop1d/all-reports?${queryString}`).then(r => ({ type: 'PRAROOP_1D', res: r })));
+      }
+
+      // Project MPRs (department-wise, forms 55-(1-3) and 55(4)) live in their own collection.
+      const wantsProjectMprs = (filters.reportType === "ALL" || filters.reportType === "PROJECT_MPR")
+        && (!filters.status || PROJECT_MPR_STATUSES.includes(filters.status));
+      setLoadError("");
+      if (wantsProjectMprs) {
+        requests.push(
+          fetchStateMprs({ page: pagination.page, limit: pagination.limit, search: filters.search, status: filters.status, financialYear: filters.financialYear })
+            .then((result) => {
+              setProjectSummary(result.summary);
+              return {
+                type: 'PROJECT_MPR',
+                res: {
+                  success: true,
+                  data: result.items.map((mpr) => ({
+                    _id: mpr.id,
+                    reportType: 'PROJECT_MPR',
+                    applicationNo: mpr.mprNo,
+                    submittedByDistrict: mpr.district,
+                    reportingMonth: mpr.reportingMonth,
+                    financialYear: mpr.financialYear,
+                    status: mpr.status,
+                    submittedAt: mpr.submittedAt,
+                    projectMpr: mpr,
+                  })),
+                },
+              };
+            })
+            .catch((err) => { setProjectSummary(null); setLoadError(err.message); return { type: 'PROJECT_MPR', res: { success: false } }; })
+        );
+      } else {
+        setProjectSummary(null);
       }
 
       const results = await Promise.all(requests);
@@ -79,6 +120,10 @@ export default function MNDAdminMPRList() {
   }, [fetchReports]);
 
   const handleRowClick = (item) => {
+    if (item.reportType === 'PROJECT_MPR') {
+      router.push(`/dashboard/mnd-admin/mpr/project/${item._id}`);
+      return;
+    }
     const baseUrl = item.reportType === 'PRAROOP_1A' ? '/dashboard/mnd-admin/mpr/praroop1a' : 
                     item.reportType === 'PRAROOP_1B' ? '/dashboard/mnd-admin/mpr/praroop1b' : 
                     item.reportType === 'PRAROOP_1C' ? '/dashboard/mnd-admin/mpr/praroop1c' : 
@@ -96,6 +141,7 @@ export default function MNDAdminMPRList() {
             <p className="text-slate-500 font-medium mt-1">Centralized review and analytics for all state-level reports.</p>
           </div>
           <div className="flex gap-3">
+             <RegisterDownload label="Project MPR Register (Excel)" download={() => downloadMprRegister({ search: filters.search, status: PROJECT_MPR_STATUSES.includes(filters.status) ? filters.status : '', financialYear: /^\d{4}-\d{2}$/.test(filters.financialYear || '') ? filters.financialYear : '' })} />
              <ExportButton filters={filters} availableTypes={['csv', 'excel']} />
           </div>
         </div>
@@ -105,7 +151,7 @@ export default function MNDAdminMPRList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
             <input 
               className="w-full border border-slate-200 bg-slate-50 rounded-xl pl-10 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/10 transition-all" 
-              placeholder="Application ID..." 
+              placeholder="Report no., project ID or name..." 
               value={filters.search} 
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))} 
             />
@@ -117,6 +163,7 @@ export default function MNDAdminMPRList() {
             onChange={(e) => setFilters(prev => ({ ...prev, reportType: e.target.value }))}
           >
             <option value="ALL">All Report Types</option>
+            <option value="PROJECT_MPR">Project MPR (55-(1-3) / 55(4))</option>
             <option value="ABSTRACT_55">Abstract-55 (Budget)</option>
             <option value="PRAROOP_1A">Praroop-1(A) (Springs)</option>
             <option value="PRAROOP_1B">Praroop-1(B) (Rivers)</option>
@@ -131,6 +178,9 @@ export default function MNDAdminMPRList() {
           >
             <option value="">All Statuses</option>
             <option value="SUBMITTED">Pending Review</option>
+            <option value="DISTRICT_APPROVED">Approved by District</option>
+            <option value="STATE_VERIFIED">Verified by State</option>
+            <option value="RETURNED_TO_PIA">Returned to PIA</option>
             <option value="UNDER_REVIEW">Under Review</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
@@ -141,21 +191,52 @@ export default function MNDAdminMPRList() {
             value={filters.financialYear} 
             onChange={(e) => setFilters(prev => ({ ...prev, financialYear: e.target.value }))}
           >
+            <option value="">All Years</option>
             <option value="2024-25">2024-25</option>
             <option value="2025-26">2025-26</option>
             <option value="2026-27">2026-27</option>
+            <option value="2027-28">2027-28</option>
           </select>
 
           <button 
             className="bg-slate-900 text-white rounded-xl px-3 py-2.5 text-sm font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200" 
-            onClick={() => setFilters({ search: "", status: "", financialYear: "2025-26", reportType: "ALL" })}
+            onClick={() => setFilters({ search: "", status: "", financialYear: "", reportType: "ALL" })}
           >
             <X className="w-4 h-4" /> Reset Filters
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <table className="w-full text-left">
+        {loadError && (
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between gap-3">
+            <span>{loadError}</span>
+            <button type="button" onClick={fetchReports} className="px-3 py-1 rounded-lg border border-red-300 bg-white text-xs font-bold hover:bg-red-100">Retry</button>
+          </div>
+        )}
+
+        {projectSummary && projectSummary.total > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {[
+              ['Project MPRs', projectSummary.total, ''],
+              ['Awaiting District', projectSummary.counts.SUBMITTED, 'SUBMITTED'],
+              ['Awaiting State Verification', projectSummary.counts.DISTRICT_APPROVED, 'DISTRICT_APPROVED'],
+              ['Verified by State', projectSummary.counts.STATE_VERIFIED, 'STATE_VERIFIED'],
+              ['Returned to PIA', projectSummary.counts.RETURNED_TO_PIA, 'RETURNED_TO_PIA'],
+            ].map(([label, count, status]) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setFilters(prev => ({ ...prev, reportType: 'PROJECT_MPR', status }))}
+                className={`text-left bg-white rounded-2xl border px-4 py-3 shadow-sm transition-all hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${filters.reportType === 'PROJECT_MPR' && filters.status === status ? 'border-[#0a3d62]' : 'border-slate-200'}`}
+              >
+                <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</span>
+                <span className="block text-2xl font-bold text-slate-900 tabular-nums mt-1">{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+          <table className="w-full text-left min-w-[980px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">Reference & Type</th>
@@ -189,6 +270,62 @@ export default function MNDAdminMPRList() {
                 </tr>
               ) : (
                 reports.map((item) => {
+                  if (item.reportType === 'PROJECT_MPR') {
+                    const mpr = item.projectMpr;
+                    return (
+                      <tr
+                        key={item._id}
+                        className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                        onClick={() => handleRowClick(item)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleRowClick(item); }}
+                        tabIndex={0}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-mono text-sm font-bold text-[#0a3d62] group-hover:underline">{mpr.mprNo}</span>
+                            <span className="mt-1 w-fit rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Project MPR · {mpr.formType}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <MapPin size={14} className="text-slate-400" />
+                            <span className="text-sm text-slate-700 font-bold">{mpr.district}</span>
+                          </div>
+                          <span className="block text-xs text-slate-500 mt-0.5">{mpr.departmentName}</span>
+                          <span className="block font-mono text-[11px] text-slate-400">{mpr.project?.code}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} className="text-slate-400" />
+                            <span className="text-sm text-slate-600 font-medium">{mpr.period}</span>
+                          </div>
+                          <span className="block text-[11px] text-slate-400 mt-0.5">FY {mpr.financialYear} · Head {mpr.head?.code}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-slate-700">{mpr.totals?.physicalPercent ?? 0}% achieved</span>
+                            <span className="text-[10px] text-slate-400">Physical · {mpr.totals?.activitiesCompleted ?? 0}/{mpr.totals?.activities ?? 0} activities done</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-slate-900">₹{(mpr.totals?.financialCurrentLakh || 0).toFixed(2)} L</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">This month · ₹{(mpr.totals?.financialTotalLakh || 0).toFixed(2)} L total</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge status={item.status} className="px-3 py-1 font-bold text-[10px] rounded-lg shadow-sm" />
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#0a3d62] group-hover:text-white transition-all">
+                              <ChevronRight className="w-4 h-4" />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
                   const typeLabel = item.reportType === 'PRAROOP_1A' ? 'Praroop-1(A)' : 
                                     item.reportType === 'PRAROOP_1B' ? 'Praroop-1(B)' : 
                                     item.reportType === 'PRAROOP_1C' ? 'Praroop-1(C)' : 

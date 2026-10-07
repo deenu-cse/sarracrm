@@ -6,62 +6,43 @@ import { ChevronRight, Home } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { getDashboardRoute } from '@/lib/routes';
 
+// Words that read wrongly when a path segment is simply capitalised.
+const WORDS = { mpr: 'MPR', mprs: 'MPRs', dpr: 'DPR', dd: 'District', 'mpr-review': 'Review MPRs', 'audit-logs': 'Audit Logs', 'budget-allocation': 'Budget Allocation' };
+const looksLikeId = (segment) => /^[a-f0-9]{24}$/i.test(segment) || (segment.length > 15 && !/^[a-z]+(-[a-z]+)+$/.test(segment));
+const labelOf = (segment) => {
+  if (WORDS[segment]) return WORDS[segment];
+  if (looksLikeId(segment)) return 'Details';
+  const text = segment.replace(/-/g, ' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
+/** Where the current page sits: Home, then each level down to this page. */
 export function Breadcrumb() {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const { user } = useAuth();
-  
   if (!pathname.startsWith('/dashboard')) return null;
 
-  const paths = pathname.split('/').filter(p => p && p !== 'dashboard');
-  
-  // Remove the role segment (officer, dd, admin) for cleaner breadcrumbs
-  const roleSegment = paths[0];
-  const displayPaths = paths.slice(1);
-  
-  const homeRoute = user ? getDashboardRoute(user.role) : '/dashboard';
+  const [roleSegment, ...rest] = pathname.split('/').filter((part) => part && part !== 'dashboard');
+  const home = user ? getDashboardRoute(user.role) : '/dashboard';
 
   return (
-    <div className="h-10 bg-white border-b border-slate-200 flex items-center px-4 sm:px-6 lg:px-8 text-sm">
-      <div className="flex items-center text-slate-500">
-        <Link href={homeRoute} className="hover:text-navy transition-colors flex items-center">
-          <Home className="w-4 h-4" />
-          <span className="sr-only">Home</span>
-        </Link>
-        
-        {displayPaths.length > 0 && (
-          <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0 text-slate-400" />
-        )}
-        
-        {displayPaths.map((path, index) => {
-          const isLast = index === displayPaths.length - 1;
-          
-          // format path: capitalize and replace hyphens
-          let label = path.replace(/-/g, ' ');
-          label = label.charAt(0).toUpperCase() + label.slice(1);
-          
-          // if it's an ID (like a long alphanumeric string), truncate or replace with 'Detail'
-          if (path.length > 15 && !path.includes(' ')) {
-            label = 'Details';
-          }
-
-          const href = `/dashboard/${roleSegment}/${displayPaths.slice(0, index + 1).join('/')}`;
-
-          return (
-            <React.Fragment key={path}>
-              {isLast ? (
-                <span className="font-medium text-slate-800" aria-current="page">
-                  {label}
-                </span>
-              ) : (
-                <Link href={href} className="hover:text-navy transition-colors">
-                  {label}
-                </Link>
-              )}
-              {!isLast && <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0 text-slate-400" />}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    </div>
+    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center text-sm text-slate-500">
+      <Link href={home} className="flex flex-shrink-0 items-center rounded p-1 transition-colors hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40" aria-label="Home">
+        <Home className="h-4 w-4" aria-hidden="true" />
+      </Link>
+      {rest.length === 0 && <span className="ml-2 truncate font-medium text-slate-800" aria-current="page">Dashboard</span>}
+      {rest.map((segment, index) => {
+        const last = index === rest.length - 1;
+        const href = `/dashboard/${roleSegment}/${rest.slice(0, index + 1).join('/')}`;
+        return (
+          <React.Fragment key={href}>
+            <ChevronRight className="mx-1.5 h-4 w-4 flex-shrink-0 text-slate-300" aria-hidden="true" />
+            {last
+              ? <span className="truncate font-medium text-slate-800" aria-current="page">{labelOf(segment)}</span>
+              : <Link href={href} className={`truncate rounded transition-colors hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40 ${index < rest.length - 2 ? 'hidden sm:inline' : ''}`}>{labelOf(segment)}</Link>}
+          </React.Fragment>
+        );
+      })}
+    </nav>
   );
 }
