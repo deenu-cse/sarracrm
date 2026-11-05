@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, User as UserIcon, LogOut, Key } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { ROLE_LABELS } from '@/constants/roles';
+import { roleLabelOf } from '@/constants/roles';
 
 export function UserDropdown({ mobile = false }) {
   const { user, logout } = useAuth();
@@ -33,7 +33,7 @@ export function UserDropdown({ mobile = false }) {
         </div>
         <div className="flex-1">
           <p className="text-white font-medium">{user.name}</p>
-          <p className="text-blue-300 text-sm">{ROLE_LABELS[user.role]}</p>
+          <p className="text-blue-300 text-sm">{roleLabelOf(user)}</p>
         </div>
         <button onClick={logout} className="p-2 text-blue-200 hover:text-white">
           <LogOut className="w-5 h-5" />
@@ -53,7 +53,7 @@ export function UserDropdown({ mobile = false }) {
         </div>
         <div className="hidden lg:block text-left">
           <p className="text-sm font-medium text-white leading-tight">{user.name}</p>
-          <p className="text-xs text-blue-200">{ROLE_LABELS[user.role]}</p>
+          <p className="text-xs text-blue-200">{roleLabelOf(user)}</p>
         </div>
         <ChevronDown className="w-4 h-4 text-blue-200 group-hover:text-white transition-colors hidden sm:block" />
       </button>

@@ -5,7 +5,8 @@ import {
   AlertTriangle, BarChart3, Building2, ClipboardList, FolderKanban, IndianRupee, RefreshCw, Target, UserCheck, Wallet, X,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { SANCTION_STATUS_LABELS } from '@/constants/status';
+import { SANCTION_STATUS_LABELS, PROJECT_MPR_STATUS_LABELS } from '@/constants/status';
+import { PendingStages } from '@/components/home/HomeKit';
 import { fetchProjectAnalytics } from '@/lib/mprApi';
 import { formatIndian, formatLakh } from '@/lib/numeric';
 import { Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
@@ -18,16 +19,14 @@ const TABS = [
   { id: 'map', label: 'Map View' },
   { id: 'districts', label: 'Districts' },
   { id: 'departments', label: 'Departments & Heads' },
+  { id: 'pia', label: 'PIA-wise' },
   { id: 'funds', label: 'Funds' },
   { id: 'activities', label: 'Activities' },
   { id: 'reporting', label: 'Reporting' },
   { id: 'outcomes', label: 'Outcomes' },
 ];
 
-const MPR_STATUS_OPTIONS = [
-  ['SUBMITTED', 'Awaiting district'], ['DISTRICT_APPROVED', 'Awaiting State verification'],
-  ['STATE_VERIFIED', 'Verified by State'], ['RETURNED_TO_PIA', 'Returned to PIA'],
-];
+const MPR_STATUS_OPTIONS = Object.entries(PROJECT_MPR_STATUS_LABELS).filter(([key]) => key !== 'DRAFT');
 const PROJECT_STATUS_OPTIONS = ['PENDING_CHECKER', 'PENDING_APPROVER', 'SANCTIONED', 'FORWARDED_TO_DISTRICT', 'DISTRICT_ACCEPTED', 'FORWARDED_TO_PIA', 'PIA_ACCEPTED', 'REJECTED'];
 const EMPTY_FILTERS = { financialYear: '', month: '', district: '', department: '', headCode: '', projectStatus: '', mprStatus: '' };
 
@@ -47,16 +46,17 @@ function FilterSelect({ id, label, value, onChange, children }) {
 
 const moneyColumns = [
   { key: 'budgetLakh', label: 'Sanctioned', align: 'right', render: (r) => formatLakh(r.budgetLakh) },
-  { key: 'releasedLakh', label: 'Released', align: 'right', render: (r) => formatLakh(r.releasedLakh) },
-  { key: 'releasePercent', label: 'Released %', align: 'right', render: (r) => <CellMeter percent={r.releasePercent} /> },
   { key: 'spentLakh', label: 'Spent', align: 'right', render: (r) => formatLakh(r.spentLakh) },
-  { key: 'utilisationPercent', label: 'Utilised', align: 'right', render: (r) => <CellMeter percent={r.utilisationPercent} tone={r.utilisationPercent > 100 ? 'red' : 'emerald'} /> },
+  { key: 'balanceLakh', label: 'Balance', align: 'right', render: (r) => formatLakh(r.balanceLakh) },
+  { key: 'spendPercent', label: 'Financial', align: 'right', render: (r) => <CellMeter percent={r.spendPercent} tone="emerald" /> },
   { key: 'physicalPercent', label: 'Physical', align: 'right', render: (r) => <CellMeter percent={r.physicalPercent} /> },
 ];
 const reportColumns = [
   { key: 'reports', label: 'Reports', align: 'right' },
-  { key: 'awaitingDistrict', label: 'With District', align: 'right' },
-  { key: 'awaitingState', label: 'With State', align: 'right' },
+  { key: 'atPia', label: 'At PIA', align: 'right' },
+  { key: 'atDistrict', label: 'At District', align: 'right' },
+  { key: 'atHq', label: 'At HQ', align: 'right' },
+  { key: 'verified', label: 'Verified', align: 'right' },
 ];
 
 function UnitList({ rows, extra, empty }) {
@@ -77,13 +77,15 @@ function UnitList({ rows, extra, empty }) {
 }
 
 /**
- * State-wide analytics for the M&E admin: projects, budget released, monthly
- * progress and reporting discipline, across every district.
+ * State-wide analytics for SARRA HQ and the M&E administrator: projects,
+ * expenditure against the sanctioned allocation, physical progress against
+ * approved DPR targets, the three-tier verification of monthly reports and
+ * reporting discipline, across every district and PIA.
  *
  * Every figure is calculated by the backend for the selected filters. The
  * filters live in the URL, so a view can be bookmarked or shared.
  */
-export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
+export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref, reportHref = (id) => `/dashboard/mnd-admin/mpr/project/${id}` }) {
   const [filters, setFilters] = useState({ ...EMPTY_FILTERS, ...initialFilters });
   const [tab, setTab] = useState('overview');
   const [box, setBox] = useState({ data: null, loading: true, error: '' });
@@ -132,10 +134,11 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
   const scopeNote = filters.financialYear ? `in ${filters.month ? `${filters.month}, ` : ''}FY ${filters.financialYear}` : 'all time';
   const reportTotal = kpis.reports;
   const statusSegments = [
-    ['Awaiting district', data.reportStatus.awaitingDistrict, 'bg-sky-500', 'SUBMITTED'],
-    ['Awaiting State', data.reportStatus.awaitingState, 'bg-amber-500', 'DISTRICT_APPROVED'],
-    ['Verified by State', data.reportStatus.verified, 'bg-emerald-600', 'STATE_VERIFIED'],
-    ['Returned to PIA', data.reportStatus.returned, 'bg-red-500', 'RETURNED_TO_PIA'],
+    ['At PIA verification', data.reportStatus.atPia, 'bg-amber-500', ''],
+    ['At District verification', data.reportStatus.atDistrict, 'bg-sky-500', ''],
+    ['At HQ verification', data.reportStatus.atHq, 'bg-indigo-500', ''],
+    ['Verified by State', data.reportStatus.verified, 'bg-emerald-600', 'VERIFIED_BY_STATE'],
+    ['Returned for correction', data.reportStatus.returned, 'bg-red-500', 'RETURNED_FOR_CORRECTION'],
   ];
   const pipelineMax = Math.max(1, ...data.pipeline.map((stage) => stage.projects));
 
@@ -146,7 +149,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><BarChart3 className="h-5 w-5" /></span>
           <div>
             <h1 className="text-xl font-bold text-slate-900">State Analytics</h1>
-            <p className="text-sm text-slate-500">Projects, funds released and monthly progress across every district. Amounts in ₹ Lakh.</p>
+            <p className="text-sm text-slate-500">Projects, expenditure against the sanctioned allocation and monthly progress across every district and PIA. Amounts in ₹ Lakh.</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -208,11 +211,10 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
       <dl className={`mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4 transition-opacity duration-200 ${box.loading ? 'opacity-60' : ''}`} aria-busy={box.loading}>
         <Kpi icon={FolderKanban} label="Projects" value={formatIndian(kpis.projects)} sub={`${kpis.activeProjects} active · ${kpis.sanctionedProjects} sanctioned · ${data.byDistrict.length} district${data.byDistrict.length === 1 ? '' : 's'}`} />
         <Kpi icon={IndianRupee} label="Sanctioned Budget" value={formatLakh(kpis.budgetLakh)} sub={`SARRA share ${formatLakh(kpis.sarraShareLakh)}`} />
-        <Kpi icon={Wallet} label="Funds Released" value={formatLakh(kpis.releasedLakh)} sub={`${kpis.releasePercent}% of budget · ${kpis.installments} installments · ${scopeNote}`} meter={kpis.releasePercent} />
-        <Kpi icon={Target} label="Expenditure Reported" value={formatLakh(kpis.spentLakh)} sub={`${kpis.utilisationPercent}% of released funds · ${scopeNote}`} meter={kpis.utilisationPercent} tone={kpis.utilisationPercent > 100 ? 'danger' : 'default'} />
-        <Kpi icon={Wallet} label="Unspent Balance" value={formatLakh(kpis.unspentLakh)} sub="Released but not yet reported as spent" tone={kpis.unspentLakh > 0 ? 'warning' : 'default'} />
+        <Kpi icon={Target} label="Expenditure Reported" value={formatLakh(kpis.spentLakh)} sub={`${kpis.spendPercent}% of sanctioned · ${scopeNote}`} meter={kpis.spendPercent} />
+        <Kpi icon={Wallet} label="Balance" value={formatLakh(kpis.balanceLakh)} sub="Sanctioned but not yet reported as spent" tone={kpis.balanceLakh > 0 ? 'warning' : 'default'} />
         <Kpi icon={Target} label="Physical Achievement" value={`${kpis.physicalPercent}%`} sub="Average of each department's latest report" meter={kpis.physicalPercent} tone={kpis.physicalPercent >= 100 ? 'success' : 'default'} />
-        <Kpi icon={ClipboardList} label="Progress Reports" value={formatIndian(kpis.reports)} sub={`${kpis.awaitingDistrict} with district · ${kpis.awaitingState} awaiting State`} />
+        <Kpi icon={ClipboardList} label="Progress Reports" value={formatIndian(kpis.reports)} sub={`${kpis.pendingActions} pending action${kpis.pendingActions === 1 ? '' : 's'} · ${kpis.verified} verified`} />
         <Kpi icon={UserCheck} label="PIA Departments" value={`${kpis.piaAccepted} / ${kpis.departments}`} sub={`accepted · ${kpis.piaAssigned} assigned`} meter={kpis.departments ? Math.round((kpis.piaAccepted / kpis.departments) * 100) : 0} />
       </dl>
 
@@ -220,7 +222,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
       <div className="mt-6 border-b border-slate-200">
         <div role="tablist" aria-label="Analytics sections" className="-mb-px flex gap-1 overflow-x-auto">
           {TABS.map((item) => {
-            const count = item.id === 'funds' ? kpis.overspentDepartments : item.id === 'reporting' ? compliance.missingCount : 0;
+            const count = item.id === 'funds' ? attention.lagging.length : item.id === 'reporting' ? compliance.missingCount : 0;
             return (
               <button key={item.id} type="button" role="tab" id={`an-tab-${item.id}`} aria-selected={tab === item.id} aria-controls={`an-panel-${item.id}`} onClick={() => setTab(item.id)}
                 className={`flex flex-shrink-0 items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-navy/40 ${tab === item.id ? 'border-navy text-navy' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}>
@@ -238,8 +240,8 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
               <Panel
                 className="xl:col-span-2"
-                title="Funds Released vs Expenditure"
-                description={cumulative ? 'Running totals over time.' : 'Released by the State and reported as spent, month by month.'}
+                title="Expenditure Reported"
+                description={cumulative ? 'Running total over time.' : 'Reported as spent in the monthly progress reports, month by month.'}
                 aside={(
                   <div role="group" aria-label="Trend view" className="flex rounded-lg border border-slate-300 p-0.5 text-xs font-semibold">
                     {[['Monthly', false], ['Running total', true]].map(([label, value]) => (
@@ -248,17 +250,17 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
                   </div>
                 )}
               >
-                {data.monthlyTrend.length === 0 ? <EmptyState>No funds released or expenditure reported for these filters.</EmptyState> : (
+                {data.monthlyTrend.length === 0 ? <EmptyState>No expenditure reported for these filters.</EmptyState> : (
                   <>
                     <div className="h-72"><TrendChart data={data.monthlyTrend} cumulative={cumulative} /></div>
                     <details className="mt-3 text-sm">
                       <summary className="cursor-pointer text-xs font-semibold text-navy hover:underline">View as table</summary>
                       <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200">
                         <table className="w-full min-w-[520px] text-sm">
-                          <thead><tr className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"><th scope="col" className="px-3 py-2">Month</th><th scope="col" className="px-3 py-2 text-right">Released</th><th scope="col" className="px-3 py-2 text-right">Spent</th><th scope="col" className="px-3 py-2 text-right">Reports</th></tr></thead>
+                          <thead><tr className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"><th scope="col" className="px-3 py-2">Month</th><th scope="col" className="px-3 py-2 text-right">Spent</th><th scope="col" className="px-3 py-2 text-right">Running total</th><th scope="col" className="px-3 py-2 text-right">Reports</th><th scope="col" className="px-3 py-2 text-right">Verified</th></tr></thead>
                           <tbody className="divide-y divide-slate-100">
                             {data.monthlyTrend.map((row) => (
-                              <tr key={row.period}><th scope="row" className="px-3 py-1.5 text-left font-medium text-slate-900">{row.period}</th><td className="px-3 py-1.5 text-right tabular-nums">{formatLakh(row.releasedLakh)}</td><td className="px-3 py-1.5 text-right tabular-nums">{formatLakh(row.spentLakh)}</td><td className="px-3 py-1.5 text-right tabular-nums">{row.reports}</td></tr>
+                              <tr key={row.period}><th scope="row" className="px-3 py-1.5 text-left font-medium text-slate-900">{row.period}</th><td className="px-3 py-1.5 text-right tabular-nums">{formatLakh(row.spentLakh)}</td><td className="px-3 py-1.5 text-right tabular-nums">{formatLakh(row.cumulativeSpentLakh)}</td><td className="px-3 py-1.5 text-right tabular-nums">{row.reports}</td><td className="px-3 py-1.5 text-right tabular-nums">{row.verified}</td></tr>
                             ))}
                           </tbody>
                         </table>
@@ -277,7 +279,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
                     <ul className="mt-4 space-y-1">
                       {statusSegments.map(([label, count, color, status]) => (
                         <li key={label}>
-                          <button type="button" onClick={() => setFilter('mprStatus', filters.mprStatus === status ? '' : status)} aria-pressed={filters.mprStatus === status}
+                          <button type="button" disabled={!status} onClick={() => setFilter('mprStatus', filters.mprStatus === status ? '' : status)} aria-pressed={Boolean(status) && filters.mprStatus === status}
                             className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40 ${filters.mprStatus === status ? 'bg-navy/[0.06]' : ''}`}>
                             <span className="flex items-center gap-2 text-slate-700"><span className={`h-2.5 w-2.5 rounded-sm ${color}`} aria-hidden="true" />{label}</span>
                             <span className="font-semibold tabular-nums text-slate-900">{count}<span className="ml-1.5 text-xs font-normal text-slate-500">{Math.round((count / reportTotal) * 100)}%</span></span>
@@ -285,7 +287,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-3 text-[11px] text-slate-400">Select a status to filter the whole page.</p>
+                    <p className="mt-3 text-[11px] text-slate-400">Select a final status to filter the whole page, or use the Report Status filter for a single step.</p>
                   </>
                 )}
               </Panel>
@@ -311,11 +313,11 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
               <Panel title="Needs Attention" description="Open the tab for the full list.">
                 <ul className="space-y-2">
                   {[
-                    ['Departments spending ahead of funds released', kpis.overspentDepartments, 'funds'],
-                    ['Departments using under half of released funds', attention.idleFunds.length, 'funds'],
+                    ['Departments spending well ahead of physical progress', attention.lagging.length, 'funds'],
                     [`Departments that did not report for ${compliance.period}`, compliance.missingCount, 'reporting'],
-                    ['Departments waiting for a PIA officer', attention.unassignedCount, 'reporting'],
-                    ['Reports awaiting State verification', kpis.awaitingState, 'reporting'],
+                    ['Departments without PIA or reporting responsibility', attention.unassignedCount, 'reporting'],
+                    ['Reports pending a Maker, Checker or Approver action', kpis.pendingActions, 'reporting'],
+                    ['Reports returned for correction', data.reportStatus.returned, 'reporting'],
                   ].map(([label, count, target]) => (
                     <li key={label}>
                       <button type="button" onClick={() => setTab(target)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left text-sm transition-[border-color,box-shadow] hover:border-slate-300 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">
@@ -342,7 +344,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
 
         {tab === 'districts' && (
           <>
-            <Panel title="District Comparison" description="Sanctioned budget, funds released and expenditure reported for each district.">
+            <Panel title="District Comparison" description="Sanctioned amount and expenditure reported for each of the 13 districts.">
               {data.byDistrict.length === 0 ? <EmptyState>No districts for these filters.</EmptyState> : <ComparisonChart rows={data.byDistrict} />}
             </Panel>
             <Panel title="District-wise Detail" description="Select a district to filter the whole page to it." padded={false}>
@@ -405,24 +407,37 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
           </>
         )}
 
+        {tab === 'pia' && (
+          <Panel title="PIA-wise Physical and Financial Performance" description="Each PIA Maker on each department and district, for the filters above." padded={false}>
+            <DataTable
+              rows={data.byPia}
+              caption="Figures for each PIA"
+              csvName="pia_analytics.csv"
+              rowKey={(row) => row.name}
+              defaultSort={{ key: 'budgetLakh', direction: 'desc' }}
+              minWidth={1180}
+              columns={[
+                { key: 'name', label: 'PIA' },
+                { key: 'projects', label: 'Projects', align: 'right' },
+                ...moneyColumns.map((c) => ({ ...c, csv: (r) => r[c.key] })),
+                ...reportColumns,
+              ]}
+            />
+          </Panel>
+        )}
+
         {tab === 'funds' && (
           <>
             <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Kpi label="Sanctioned Budget" value={formatLakh(kpis.budgetLakh)} />
-              <Kpi label="Released" value={formatLakh(kpis.releasedLakh)} sub={`${kpis.releasePercent}% of budget`} meter={kpis.releasePercent} />
-              <Kpi label="Yet to Release" value={formatLakh(Math.max(0, kpis.budgetLakh - kpis.releasedLakh))} sub={filters.financialYear ? 'Against releases in the selected period' : 'Of the sanctioned budget'} />
-              <Kpi label="Spent of Released" value={`${kpis.utilisationPercent}%`} sub={`${formatLakh(kpis.spentLakh)} reported`} meter={kpis.utilisationPercent} tone={kpis.utilisationPercent > 100 ? 'danger' : 'default'} />
+              <Kpi label="Sanctioned Amount" value={formatLakh(kpis.budgetLakh)} sub={`SARRA share ${formatLakh(kpis.sarraShareLakh)}`} />
+              <Kpi label="Expenditure" value={formatLakh(kpis.spentLakh)} sub={`${kpis.spendPercent}% of sanctioned`} meter={kpis.spendPercent} />
+              <Kpi label="Balance" value={formatLakh(kpis.balanceLakh)} sub={filters.financialYear ? 'Against expenditure in the selected period' : 'Of the sanctioned amount'} />
+              <Kpi label="Physical Achievement" value={`${kpis.physicalPercent}%`} sub="Against approved DPR targets" meter={kpis.physicalPercent} />
             </dl>
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-              <Panel title="Spending Ahead of Funds Released" description="Departments whose reported expenditure is more than the State has released to them (all time).">
-                <UnitList rows={attention.overspent} empty="No department has reported spending beyond its released funds."
-                  extra={(row) => <><span className="block font-semibold text-red-700">{formatLakh(row.excessLakh)} ahead</span>Spent {formatLakh(row.spentLakh)} · Released {formatLakh(row.releasedLakh)}</>} />
-              </Panel>
-              <Panel title="Low Utilisation" description="Departments that have reported spending less than half of the funds released to them (all time).">
-                <UnitList rows={attention.idleFunds} empty="Every department with released funds has used at least half."
-                  extra={(row) => <><span className="block font-semibold text-amber-700">{row.utilisationPercent}% utilised</span>Spent {formatLakh(row.spentLakh)} · Released {formatLakh(row.releasedLakh)}</>} />
-              </Panel>
-            </div>
+            <Panel title="Spending Well Ahead of Physical Progress" description="Departments whose latest report shows financial progress at least 25 points ahead of physical progress.">
+              <UnitList rows={attention.lagging} empty="No department's spending is far ahead of its physical progress."
+                extra={(row) => <><span className="block font-semibold text-amber-700">{row.financialPercent}% financial</span>{row.physicalPercent}% physical</>} />
+            </Panel>
           </>
         )}
 
@@ -451,7 +466,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
         {tab === 'reporting' && (
           <>
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-              <Panel title={`Reporting Compliance — ${compliance.period}`} description="Departments with an accepted PIA officer that filed a report for the last completed month.">
+              <Panel title={`Reporting Compliance — ${compliance.period}`} description="Departments ready for reporting (PIA accepted, or district reporting assigned) that filed a report for the last completed month.">
                 <p className="text-3xl font-bold tabular-nums text-slate-900">{compliance.percent}%</p>
                 <p className="text-xs text-slate-500">{compliance.filed} of {compliance.expected} departments reported</p>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100" role="img" aria-label={`Compliance ${compliance.percent}%`}>
@@ -462,6 +477,9 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
                 <UnitList rows={compliance.missing} empty={compliance.expected ? 'Every department reported.' : 'No department was due to report for that month.'} />
               </Panel>
             </div>
+            <Panel title="Pending Maker, Checker and Approver actions" description="Reports waiting at each step of the three tiers, with the longest wait.">
+              <PendingStages stages={data.pendingByStage} />
+            </Panel>
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
               <Panel className="xl:col-span-2" title="Latest Progress Reports" description="Most recently submitted, for the selected filters." padded={false}>
                 {data.recentReports.length === 0 ? <div className="p-5"><EmptyState>No reports for these filters.</EmptyState></div> : (
@@ -474,7 +492,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
                         {data.recentReports.map((report) => (
                           <tr key={report.id} className="transition-colors hover:bg-slate-50/60">
                             <th scope="row" className="px-5 py-2.5 text-left">
-                              <Link href={`/dashboard/mnd-admin/mpr/project/${report.id}`} className="font-semibold text-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">{report.period}</Link>
+                              <Link href={reportHref(report.id)} className="font-semibold text-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">{report.period}</Link>
                               <span className="block font-mono text-xs font-normal text-slate-500">{report.mprNo}</span>
                             </th>
                             <td className="px-3 py-2.5 text-slate-700">{report.district} · {report.department}<span className="block font-mono text-xs text-slate-400">{report.projectCode}</span></td>
@@ -489,8 +507,8 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref }) {
                   </div>
                 )}
               </Panel>
-              <Panel title="Waiting for a PIA Officer" description="Departments on district-accepted projects with no officer assigned.">
-                <UnitList rows={attention.unassigned} empty="Every department has an officer assigned." />
+              <Panel title="Waiting for PIA / Reporting Assignment" description="Departments on district-accepted projects that are not yet ready for reporting.">
+                <UnitList rows={attention.unassigned} empty="Every department is ready for reporting." />
               </Panel>
             </div>
           </>

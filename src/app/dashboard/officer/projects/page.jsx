@@ -23,14 +23,19 @@ function ProjectCard({ project, onAccept, accepting }) {
         </div>
         {project.needsMyAcceptance
           ? <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800"><Clock className="h-3.5 w-3.5" aria-hidden="true" /> Awaiting your acceptance</span>
-          : <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800"><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Accepted</span>}
+          : departments.some((department) => !department.acceptedAt)
+            ? <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800"><Clock className="h-3.5 w-3.5" aria-hidden="true" /> Awaiting PIA Maker acceptance</span>
+            : <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800"><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Accepted</span>}
       </div>
 
       {departments.length > 0 ? (
         <ul className="mt-4 divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
           {departments.map((department) => (
             <li key={department.departmentId} className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
-              <span className="font-medium text-slate-900">{department.name}</span>
+              <span className="font-medium text-slate-900">
+                {department.name}
+                {department.reportingMode === 'DISTRICT' && <span className="ml-2 rounded bg-cyan-50 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-800">District entry</span>}
+              </span>
               <span className="text-xs text-slate-600">
                 <span className="tabular-nums">{formatLakh(department.totalLakh)}</span>
                 {' · '}{department.acceptedAt ? `Accepted ${formatDate(department.acceptedAt)}` : `Assigned ${formatDate(department.assignedAt)}`}
@@ -100,7 +105,7 @@ export default function OfficerProjectsPage() {
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><FolderOpen className="h-5 w-5" /></span>
         <div>
           <h1 className="text-xl font-bold text-slate-900">My Projects</h1>
-          <p className="text-sm text-slate-500">Projects where the district has assigned a department to you.</p>
+          <p className="text-sm text-slate-500">Projects where the District SARRA Centre has assigned your department.</p>
         </div>
       </div>
 
@@ -111,7 +116,7 @@ export default function OfficerProjectsPage() {
 
       {!loading && !error && projects.length === 0 && (
         <p className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500">
-          No project is assigned to you yet. Projects appear here when the District Director assigns your department to you.
+          No project is assigned to you yet. Projects appear here when the District Maker assigns your department.
         </p>
       )}
 
@@ -124,7 +129,7 @@ export default function OfficerProjectsPage() {
 
       {!firstLoad && !error && accepted.length > 0 && (
         <section aria-labelledby="accepted-heading">
-          <h2 id="accepted-heading" className="mb-3 text-sm font-semibold text-slate-800">Accepted projects ({accepted.length})</h2>
+          <h2 id="accepted-heading" className="mb-3 text-sm font-semibold text-slate-800">Projects ({accepted.length})</h2>
           <ul className="space-y-3">{accepted.map((project) => <ProjectCard key={project._id} project={project} onAccept={accept} accepting={false} />)}</ul>
         </section>
       )}

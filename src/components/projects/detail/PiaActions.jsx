@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CheckCircle2, ClipboardPlus } from 'lucide-react';
 import { Dialog } from '@/components/ui/Dialog';
 import { SANCTION_STATUS } from '@/constants/status';
+import { workflowRoleOf } from '@/constants/roles';
 import { piaAccept } from '@/lib/projectWorkflowApi';
 import { formatLakh } from '@/lib/numeric';
 import { ActionButton, Notice } from '@/components/projects/create/parts';
@@ -12,21 +13,26 @@ export const MPR_ENTRY_ROUTE = '/dashboard/officer/forms/new';
 
 const idOf = (value) => String(value?._id || value || '');
 
-/** The signed-in officer's own departments on a project, and what they still have to do. */
+/**
+ * The signed-in PIA Maker's own departments on a project, and what they still
+ * have to do. A department the district reports on is not filed by the PIA.
+ */
 export function myAssignment(project, user) {
   const userId = String(user?._id || user?.id || '');
-  const departments = (project.departmentAllocations || []).filter((d) => d.piaUserId && idOf(d.piaUserId) === userId);
+  const maker = workflowRoleOf(user) === 'MAKER';
+  const departments = maker ? (project.departmentAllocations || []).filter((d) => d.piaUserId && idOf(d.piaUserId) === userId) : [];
   const legacy = (project.departmentAllocations || []).length === 0;
-  const legacyMine = legacy && idOf(project.forwardedToPIA) === userId;
+  const legacyMine = maker && legacy && idOf(project.forwardedToPIA) === userId;
   return {
     departments,
     legacy,
     needsAcceptance: legacy ? legacyMine && project.status === SANCTION_STATUS.FORWARDED_TO_PIA : departments.some((d) => !d.piaAcceptedAt),
-    canReport: !legacy && departments.some((d) => d.piaAcceptedAt),
+    canReport: !legacy && departments.some((d) => d.piaAcceptedAt && d.reportingMode !== 'DISTRICT'),
+    districtReported: departments.filter((d) => d.reportingMode === 'DISTRICT'),
   };
 }
 
-/** PIA officer: accept the assigned department(s), then file monthly progress. */
+/** PIA Maker: accept the assigned department(s), then file monthly progress. Checker and Approver only follow. */
 export function PiaActions({ project, user, onDone }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -57,6 +63,11 @@ export function PiaActions({ project, user, onDone }) {
       {mine.needsAcceptance && (
         <ActionButton variant="success" icon={CheckCircle2} onClick={() => { setError(''); setOpen(true); }}>Accept Project</ActionButton>
       )}
+      {mine.districtReported.length > 0 && (
+        <p className="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-900">
+          {mine.districtReported.map((d) => d.departmentName).join(', ')}: monthly progress is reported by District Technical Staff.
+        </p>
+      )}
       {mine.canReport && (
         <Link
           href={`${MPR_ENTRY_ROUTE}?projectId=${project._id}`}
@@ -70,7 +81,7 @@ export function PiaActions({ project, user, onDone }) {
         open={open}
         onClose={() => { if (!busy) setOpen(false); }}
         title="Accept this project?"
-        description="After accepting you can report monthly progress for your department."
+        description="Accepting starts implementation. You then report monthly progress for your department to the PIA Checker."
         size="md"
         dismissible={!busy}
         footer={(

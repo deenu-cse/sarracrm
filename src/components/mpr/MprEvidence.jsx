@@ -80,7 +80,7 @@ export function EvidencePicker({ items, onChange, room = MAX_EVIDENCE, disabled 
   );
 }
 
-/** Evidence attached to a filed report; the reporting officer can add or remove files until the district approves it. */
+/** Evidence attached to a report; the reporting Maker can add or remove files until the first reviewer acts on it. */
 export function MprEvidence({ report, onChanged }) {
   const [picking, setPicking] = useState(false);
   const [items, setItems] = useState([]);
@@ -114,7 +114,7 @@ export function MprEvidence({ report, onChanged }) {
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-900">Evidence <span className="font-normal text-slate-500">({evidence.length})</span></h2>
-          <p className="mt-0.5 text-xs text-slate-500">{canManage ? 'Optional photographs and measurement sheets. They can be changed until the district approves the report.' : 'Photographs and documents attached by the PIA officer.'}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{canManage ? 'Field photographs and supporting documents. They can be changed until the first reviewer acts on the report.' : 'Photographs and documents attached by the reporting Maker.'}</p>
         </div>
         {canManage && room > 0 && <ActionButton size="sm" variant="secondary" icon={ImagePlus} onClick={() => { setItems([]); setError(''); setPicking(true); }}>Add Files</ActionButton>}
       </header>

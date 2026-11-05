@@ -5,14 +5,13 @@ import { Building2, CalendarDays, ChevronLeft, ClipboardList, IndianRupee, Lock,
 import { useAuth } from '@/hooks/useAuth';
 import { useProjectDetail } from '@/hooks/useProjects';
 import { Badge } from '@/components/ui/Badge';
-import { fetchBudgetState } from '@/lib/budgetApi';
+import { fetchCompletionState } from '@/lib/lifecycleApi';
 import { formatLakh } from '@/lib/numeric';
 import { Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
-import { AllocatedTick } from '@/components/projects/budget/BudgetStatus';
 import { LifecycleTrack } from './LifecycleTrack';
 import { OverviewTab } from './OverviewTab';
-import { BudgetTab } from './BudgetTab';
 import { ActivityTab } from './ActivityTab';
+import { PhotosTab } from './PhotosTab';
 import { ReportsTab } from './ReportsTab';
 import { WorkflowTab } from './WorkflowTab';
 import { OutcomesTab } from './OutcomesTab';
@@ -22,9 +21,9 @@ import { CopyButton, StatTile } from './shared';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
-  { id: 'budget', label: 'Budget & Releases' },
   { id: 'activities', label: 'Activity Plan' },
   { id: 'reports', label: 'Progress Reports' },
+  { id: 'photos', label: 'Field Photographs' },
   { id: 'outcomes', label: 'Outcomes' },
   { id: 'closure', label: 'Completion & Closure' },
   { id: 'workflow', label: 'Workflow & Documents' },
@@ -47,35 +46,34 @@ function IdChip({ label, value }) {
 }
 
 /**
- * Project detail, shared by the State, District and PIA screens. The page
- * decides what the signed-in role can do through three render props:
+ * Project detail, shared by the HQ, District and PIA screens. The page
+ * decides what the signed-in role can do through render props:
  *
- *   renderActions({ project, budget, user, refresh })  header actions + their dialogs
- *   renderBudgetAction({ project, budget, user })      button in the Budget tab
- *   mprHref(mpr)                                       where a progress report opens for this role
+ *   renderActions({ project, user, refresh })  header actions + their dialogs
+ *   mprHref(mpr)                               where a progress report opens for this role
  */
-export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to projects', renderActions, renderBudgetAction, mprHref, reportsAction }) {
+export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to projects', renderActions, mprHref, reportsAction }) {
   const { user } = useAuth();
   const t = useT();
   const { project, loading, error, refetch } = useProjectDetail(projectId);
 
   const [tab, setTab] = useState('overview');
-  const [budgetBox, setBudgetBox] = useState({ budget: null, loading: false, error: '' });
+  const [financeBox, setFinanceBox] = useState({ finance: null, loading: false, error: '' });
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const tabRefs = useRef({});
 
   const hasDepartments = (project?.departmentAllocations || []).length > 0;
 
-  // Budget position always comes from the backend, which recalculates it from the stored installments.
-  const loadBudget = useCallback(() => {
-    setBudgetBox((current) => ({ ...current, loading: true, error: '' }));
-    return fetchBudgetState(projectId)
-      .then((budget) => setBudgetBox({ budget, loading: false, error: '' }))
-      .catch((err) => setBudgetBox({ budget: null, loading: false, error: err?.message || 'Unable to load the budget position.' }));
+  // Sanctioned, spent and balance always come from the backend (the sanctioned allocation and the filed reports).
+  const loadFinance = useCallback(() => {
+    setFinanceBox((current) => ({ ...current, loading: true, error: '' }));
+    return fetchCompletionState(projectId)
+      .then((finance) => setFinanceBox({ finance, loading: false, error: '' }))
+      .catch((err) => setFinanceBox({ finance: null, loading: false, error: err?.message || 'Unable to load the financial position.' }));
   }, [projectId]);
 
-  useEffect(() => { if (hasDepartments) loadBudget(); }, [hasDepartments, loadBudget]);
+  useEffect(() => { if (hasDepartments) loadFinance(); }, [hasDepartments, loadFinance]);
 
   useEffect(() => {
     setTab(tabFromHash());
@@ -102,12 +100,12 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
   const refreshAll = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refetch(), hasDepartments ? loadBudget() : null]);
+      await Promise.all([refetch(), hasDepartments ? loadFinance() : null]);
       setRefreshKey((key) => key + 1);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch, loadBudget, hasDepartments]);
+  }, [refetch, loadFinance, hasDepartments]);
 
   if (loading && !project) {
     return (
@@ -133,11 +131,12 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
     );
   }
 
-  const { budget } = budgetBox;
+  const { finance } = financeBox;
+  const totals = finance?.totals;
   const departments = project.departmentAllocations || [];
   const activityCount = (project.sanctionedTargets || []).length;
-  const fully = budget?.totals.status === 'FULLY_ALLOCATED';
-  const context = { project, budget, user, refresh: refreshAll };
+  const spentPercent = totals?.sanctionedLakh > 0 ? Math.min(100, Math.round((totals.expenditureLakh / totals.sanctionedLakh) * 1000) / 10) : 0;
+  const context = { project, user, refresh: refreshAll };
 
   return (
     <div className="mx-auto max-w-7xl p-4 pb-16 sm:p-6">
@@ -153,7 +152,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-bold text-slate-900">{project.projectTitle || 'Untitled project'}</h1>
-              <Badge status={project.status} size="md" />
+              <Badge status={project.status} size="md" kind="project" />
               {project.closure?.status === 'CLOSED'
                 ? <span className="inline-flex items-center gap-1 rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"><Lock className="h-3 w-3" aria-hidden="true" /> {t('Closed')}</span>
                 : project.isActive && <span className="rounded bg-green-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Active</span>}
@@ -201,7 +200,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
 
       {project.status === 'REJECTED' && (
         <div className="mb-5">
-          <Notice tone="error" title="This project was rejected">{project.rejectionReason || 'No reason was recorded.'}</Notice>
+          <Notice tone="error" title="Returned to the HQ Maker with an objection">{project.rejectionReason || 'No objection was recorded.'} The Maker corrects it and resubmits it under the same Project ID.</Notice>
         </div>
       )}
       {project.closure?.status === 'CLOSED' && (
@@ -211,7 +210,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
             title={t('This project is closed')}
             action={<button type="button" onClick={() => openTab('closure')} className="flex-shrink-0 rounded-md border border-sky-300 bg-white px-2.5 py-1 text-xs font-semibold text-sky-900 transition-colors hover:bg-sky-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">View closure</button>}
           >
-            No budget release, monthly report or revision is possible. Outcomes can still be measured.
+            No monthly report or revision is possible. Outcomes can still be measured.
           </Notice>
         </div>
       )}
@@ -221,7 +220,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
             tone="info"
             action={<button type="button" onClick={() => openTab('reports')} className="flex-shrink-0 rounded-md border border-sky-300 bg-white px-2.5 py-1 text-xs font-semibold text-sky-900 transition-colors hover:bg-sky-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">View reports</button>}
           >
-            {project.unreviewedMprCount} monthly progress report{project.unreviewedMprCount === 1 ? ' is' : 's are'} waiting for district review on this project.
+            {project.unreviewedMprCount} monthly progress report{project.unreviewedMprCount === 1 ? ' is' : 's are'} in the verification chain on this project.
           </Notice>
         </div>
       )}
@@ -229,13 +228,13 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
       <LifecycleTrack project={project} />
 
       <dl className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        <StatTile icon={IndianRupee} label={t('Total Budget')} value={formatLakh(project.totalSanctionedBudgetLakh)} sub={`SARRA ${formatLakh(project.sarraShareLakh)} · Dept. ${formatLakh(project.deptShareLakh)}`} />
+        <StatTile icon={IndianRupee} label={t('Sanctioned Amount')} value={formatLakh(project.totalSanctionedBudgetLakh)} sub={`SARRA ${formatLakh(project.sarraShareLakh)} · Dept. ${formatLakh(project.deptShareLakh)}`} />
         <StatTile
           icon={Wallet}
-          label={t('Budget Released')}
-          value={budget ? formatLakh(budget.totals.releasedLakh) : budgetBox.loading ? '…' : '—'}
-          sub={budget ? `${budget.totals.percentAllocated}% · ${formatLakh(budget.totals.remainingLakh)} remaining` : hasDepartments ? '' : 'Not tracked for this project'}
-          tone={fully ? 'success' : 'default'}
+          label={t('Expenditure')}
+          value={totals ? formatLakh(totals.expenditureLakh) : financeBox.loading ? '…' : '—'}
+          sub={totals ? `${spentPercent}% · balance ${formatLakh(totals.balanceLakh)}` : hasDepartments ? '' : 'Not tracked for this project'}
+          tone={spentPercent >= 100 ? 'success' : 'default'}
         />
         <StatTile icon={Building2} label={t('PIA Departments')} value={String(departments.length || (project.department ? 1 : 0))} sub={departments.length ? departments.map((d) => d.departmentName).join(', ') : project.department || ''} />
         <StatTile icon={ClipboardList} label={t('Activities Planned')} value={String(activityCount)} sub={project.head?.code ? `Head ${project.head.code}` : ''} />
@@ -263,7 +262,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
               >
                 {t(item.label)}
                 {item.id === 'closure' && project.closure?.status === 'CLOSED' && <Lock className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />}
-                {item.id === 'budget' && fully && <AllocatedTick className="h-3.5 w-3.5" />}
+
                 {item.id === 'activities' && activityCount > 0 && <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600">{activityCount}</span>}
                 {item.id === 'reports' && project.unreviewedMprCount > 0 && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-amber-800">{project.unreviewedMprCount}</span>}
               </button>
@@ -273,24 +272,13 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
       </div>
 
       <div key={tab} role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} tabIndex={0} className="wz-fade-in mt-5 focus:outline-none">
-        {tab === 'overview' && <OverviewTab project={project} budget={budget} budgetError={budgetBox.error} onOpenTab={openTab} />}
-        {tab === 'budget' && (
-          <BudgetTab
-            project={project}
-            budget={budget}
-            loading={budgetBox.loading && !budget}
-            error={budgetBox.error}
-            onRetry={loadBudget}
-            actions={renderBudgetAction?.(context) || null}
-            canReverse={user?.role === 'SUPER_ADMIN' && user?.workflowRole === 'MAKER' && project.closure?.status !== 'CLOSED'}
-            onChanged={refreshAll}
-          />
-        )}
+        {tab === 'overview' && <OverviewTab project={project} finance={finance} financeError={financeBox.error} onOpenTab={openTab} />}
         {tab === 'activities' && <ActivityTab project={project} />}
         {tab === 'reports' && <ReportsTab key={refreshKey} project={project} mprHref={mprHref} action={reportsAction?.(context) || null} />}
+        {tab === 'photos' && <PhotosTab key={refreshKey} project={project} />}
         {tab === 'outcomes' && <OutcomesTab project={project} />}
         {tab === 'closure' && <ClosureTab project={project} onChanged={refreshAll} />}
-        {tab === 'workflow' && <WorkflowTab project={project} budget={budget} user={user} canSeeRevisions={user?.role !== 'PIA_OFFICER'} onChanged={refreshAll} />}
+        {tab === 'workflow' && <WorkflowTab project={project} user={user} canSeeRevisions={user?.role !== 'PIA_OFFICER'} onChanged={refreshAll} />}
       </div>
     </div>
   );

@@ -2,19 +2,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, FolderKanban, IndianRupee, Lock, Plus, Search, UserCog, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderKanban, Lock, Plus, Search, UserCog, X } from 'lucide-react';
 import axiosInstance from '@/lib/axiosInstance';
 import { fetchDistricts, fetchHeads } from '@/lib/projectApi';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/Badge';
 import { formatLakh } from '@/lib/numeric';
 import { Notice, RetryButton, Skeleton, useMasterList } from '@/components/projects/create/parts';
-import { BUDGET_ALLOCATION_ROUTE, ProgressBar } from '@/components/projects/budget/BudgetStatus';
+import { workflowRoleOf } from '@/constants/roles';
 import { PiaHandoverDialog } from '@/components/projects/detail/PiaHandoverDialog';
 
 const STAGES = {
-  state: [['PENDING_CHECKER', 'With Checker'], ['PENDING_APPROVER', 'With Approver'], ['SANCTIONED', 'Sanctioned'], ['FORWARDED_TO_DISTRICT', 'Sent to district'], ['DISTRICT_ACCEPTED', 'District accepted'],
-    ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'In progress'], ['CLOSED', 'Closed'], ['REJECTED', 'Rejected']],
+  state: [['PENDING_CHECKER', 'With HQ Checker'], ['PENDING_APPROVER', 'With HQ Approver'], ['SANCTIONED', 'Sanctioned'], ['FORWARDED_TO_DISTRICT', 'Sent to district'], ['DISTRICT_ACCEPTED', 'District accepted'],
+    ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'Active'], ['CLOSED', 'Closed'], ['REJECTED', 'Returned to Maker']],
   district: [['FORWARDED_TO_DISTRICT', 'To accept'], ['DISTRICT_ACCEPTED', 'To assign'], ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'In progress'], ['CLOSED', 'Closed']],
 };
 const LIMIT = 15;
@@ -25,7 +25,7 @@ const primaryLink = 'inline-flex items-center justify-center gap-2 rounded-lg bg
 const secondaryLink = 'inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50 focus-visible:ring-offset-2';
 
 /**
- * Project list for the State (`scope="state"`) and for a District Director
+ * Project list for SARRA HQ (`scope="state"`) and for a District SARRA Centre
  * (`scope="district"`). Search, stage and other filters are applied by the
  * server; the counts on the stage buttons respect every filter except stage.
  */
@@ -35,6 +35,7 @@ export function ProjectListPage({ scope }) {
   const isState = scope === 'state';
   const base = isState ? '/dashboard/admin/projects' : '/dashboard/dd/projects';
   const isMaker = isState && user?.workflowRole === 'MAKER';
+  const isDistrictMaker = !isState && workflowRoleOf(user) === 'MAKER';
 
   const [filters, setFilters] = useState({ status: '', district: '', headCode: '', search: '' });
   const [searchText, setSearchText] = useState('');
@@ -85,9 +86,8 @@ export function ProjectListPage({ scope }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {isMaker && <Link href={BUDGET_ALLOCATION_ROUTE} className={secondaryLink}><IndianRupee className="h-4 w-4" aria-hidden="true" /> Release Budget</Link>}
           {isMaker && <Link href="/dashboard/admin/projects/create" className={primaryLink}><Plus className="h-4 w-4" aria-hidden="true" /> New Project</Link>}
-          {!isState && <button type="button" onClick={() => setHandover(true)} className={secondaryLink}><UserCog className="h-4 w-4" aria-hidden="true" /> Hand Over PIA Charge</button>}
+          {isDistrictMaker && <button type="button" onClick={() => setHandover(true)} className={secondaryLink}><UserCog className="h-4 w-4" aria-hidden="true" /> Hand Over PIA Charge</button>}
         </div>
       </div>
 
@@ -95,7 +95,7 @@ export function ProjectListPage({ scope }) {
         <div className="mb-4">
           <Notice tone="warning" title={`${toAccept} project${toAccept === 1 ? ' is' : 's are'} waiting for your acceptance`}
             action={<button type="button" onClick={() => set('status', 'FORWARDED_TO_DISTRICT')} className="flex-shrink-0 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-900 transition-colors hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">Show</button>}>
-            Open a project to accept it and assign a PIA officer to each department.
+            {isDistrictMaker ? 'Open a project to accept it and assign the PIA and the MPR reporting responsibility of each department.' : 'The District Maker accepts them and assigns the PIA and reporting responsibility.'}
           </Notice>
         </div>
       )}
@@ -157,7 +157,7 @@ export function ProjectListPage({ scope }) {
                   {isState && <th scope="col" className="px-3 py-2.5">District</th>}
                   <th scope="col" className="px-3 py-2.5">Stage</th>
                   <th scope="col" className="px-3 py-2.5">Departments</th>
-                  <th scope="col" className="w-56 px-3 py-2.5">Budget released</th>
+                  <th scope="col" className="px-3 py-2.5 text-right">Sanctioned</th>
                   {!isState && <th scope="col" className="px-3 py-2.5">Reports</th>}
                   <th scope="col" className="px-5 py-2.5">{isState ? 'Created' : 'Received'}</th>
                 </tr>
@@ -166,10 +166,8 @@ export function ProjectListPage({ scope }) {
                 {box.rows.map((project) => {
                   const closed = project.closure?.status === 'CLOSED';
                   const departments = project.departments || [];
-                  const accepted = departments.filter((d) => d.accepted).length;
-                  const budget = project.budget || {};
-                  const tracked = budget.ineligibleCode !== 'NO_DEPARTMENTS';
-                  const full = budget.allocationStatus === 'FULLY_ALLOCATED';
+                  const ready = departments.filter((d) => d.reportingReady).length;
+                  const districtEntry = departments.filter((d) => d.reportingMode === 'DISTRICT').length;
                   const href = `${base}/${project._id}`;
                   return (
                     <tr key={project._id} onClick={() => router.push(href)} className="cursor-pointer align-top transition-colors hover:bg-slate-50/70">
@@ -180,34 +178,26 @@ export function ProjectListPage({ scope }) {
                       </th>
                       {isState && <td className="px-3 py-3 text-slate-700">{project.district}</td>}
                       <td className="px-3 py-3">
-                        {closed ? <span className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700"><Lock className="h-3 w-3" aria-hidden="true" /> Closed</span> : <Badge status={project.status} />}
+                        {closed ? <span className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700"><Lock className="h-3 w-3" aria-hidden="true" /> Closed</span> : <Badge status={project.status} kind="project" />}
                         {project.status === 'REJECTED' && project.rejectionReason && <span className="mt-1 block max-w-[14rem] truncate text-xs text-red-700" title={project.rejectionReason}>{project.rejectionReason}</span>}
                       </td>
                       <td className="px-3 py-3 text-slate-700">
                         {departments.length === 0 ? <span className="text-slate-400">{project.department || '—'}</span> : (
                           <>
                             <span className="block max-w-[14rem] truncate" title={departments.map((d) => d.name).join(', ')}>{departments.map((d) => d.name).join(', ')}</span>
-                            {['FORWARDED_TO_PIA', 'PIA_ACCEPTED', 'DISTRICT_ACCEPTED'].includes(project.status) && <span className={`block text-xs tabular-nums ${accepted === departments.length ? 'text-emerald-700' : 'text-amber-700'}`}>{accepted} of {departments.length} accepted by PIA</span>}
+                            {['FORWARDED_TO_PIA', 'PIA_ACCEPTED', 'DISTRICT_ACCEPTED'].includes(project.status) && <span className={`block text-xs tabular-nums ${ready === departments.length ? 'text-emerald-700' : 'text-amber-700'}`}>{ready} of {departments.length} ready for reporting</span>}
+                            {districtEntry > 0 && <span className="block text-xs text-cyan-700">{districtEntry} district entry</span>}
                           </>
                         )}
                       </td>
-                      <td className="px-3 py-3">
-                        {!tracked ? <span className="tabular-nums text-slate-700">{shortLakh(project.totalSanctionedBudgetLakh)}</span> : (
-                          <>
-                            <span className="text-xs font-semibold tabular-nums text-slate-700">{shortLakh(budget.totalAllocatedLakh)} <span className="font-normal text-slate-500">of {shortLakh(budget.totalBudgetLakh)}</span></span>
-                            <div className="mt-1.5"><ProgressBar percent={budget.percentAllocated} complete={full} label={`Budget released for ${project.projectTitle || 'project'}`} /></div>
-                            {isMaker && budget.eligible && (
-                              <Link href={`${BUDGET_ALLOCATION_ROUTE}?projectId=${project._id}`} onClick={(event) => event.stopPropagation()} className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">
-                                <IndianRupee className="h-3 w-3" aria-hidden="true" /> Release budget
-                              </Link>
-                            )}
-                          </>
-                        )}
+                      <td className="px-3 py-3 text-right">
+                        <span className="font-semibold tabular-nums text-slate-800">{shortLakh(project.totalSanctionedBudgetLakh)}</span>
+                        {project.sanctionId && <span className="block font-mono text-[11px] text-slate-400">{project.sanctionId}</span>}
                       </td>
                       {!isState && (
                         <td className="px-3 py-3">
                           {project.unreviewedMprCount > 0
-                            ? <span className="inline-block rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800">{project.unreviewedMprCount} to review</span>
+                            ? <span className="inline-block rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800">{project.unreviewedMprCount} in verification</span>
                             : <span className="text-xs text-slate-400">None waiting</span>}
                         </td>
                       )}

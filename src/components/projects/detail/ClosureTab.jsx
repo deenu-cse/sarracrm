@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { BadgeCheck, CheckCircle2, FileCheck2, Lock, RotateCcw, Upload, X } from 'lucide-react';
 import { Dialog } from '@/components/ui/Dialog';
-import { closeProject, fetchCompletionState, recordRefund, reviewCompletion, submitCompletion } from '@/lib/lifecycleApi';
+import { closeProject, fetchCompletionState, reviewCompletion, submitCompletion } from '@/lib/lifecycleApi';
 import { formatLakh } from '@/lib/numeric';
 import { ActionButton, FieldError, Notice, RetryButton, Skeleton, inputClass, useMasterList } from '@/components/projects/create/parts';
 import { DataItem, DocumentLink, EmptyNote, Panel, StatTile, formatDay, formatMoment } from './shared';
@@ -64,8 +64,9 @@ function Money({ label, value, tone }) {
 
 /**
  * Completion and closure of a project.
- * PIA officer files the completion report of the department, the district
- * verifies it, and the State Approver closes the project.
+ * The reporting Maker (PIA Maker, or District Technical Staff for a district-
+ * reported department) files the completion report, the District Checker or
+ * Approver verifies it, and the HQ Approver closes the project.
  */
 export function ClosureTab({ project, onChanged }) {
   const box = useMasterList(async () => [await fetchCompletionState(project._id)], `closure:${project._id}:${project.updatedAt || ''}`);
@@ -75,9 +76,7 @@ export function ClosureTab({ project, onChanged }) {
   const [form, setForm] = useState({ completionDate: '', remarks: '', certificate: null, utilisation: null });
   const [review, setReview] = useState(null); // { action, department }
   const [closing, setClosing] = useState(false);
-  const [refunding, setRefunding] = useState(false);
   const [text, setText] = useState('');
-  const [reference, setReference] = useState('');
   const [attempted, setAttempted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -91,7 +90,7 @@ export function ClosureTab({ project, onChanged }) {
     setError('');
     try {
       await work();
-      setFiling(null); setReview(null); setClosing(false); setRefunding(false);
+      setFiling(null); setReview(null); setClosing(false);
       setDone(message);
       box.reload();
       await onChanged?.();
@@ -102,7 +101,7 @@ export function ClosureTab({ project, onChanged }) {
       setBusy(false);
     }
   };
-  const reset = () => { setAttempted(false); setError(''); setText(''); setReference(''); setDone(''); };
+  const reset = () => { setAttempted(false); setError(''); setText(''); setDone(''); };
 
   if (!(project.departmentAllocations || []).length) return <EmptyNote>Completion is reported department-wise. This project has no departments.</EmptyNote>;
   if (!state && !box.error) return <div className="space-y-3" role="status" aria-label="Loading completion status"><Skeleton className="h-24" /><Skeleton className="h-40" /></div>;
@@ -130,48 +129,33 @@ export function ClosureTab({ project, onChanged }) {
       `Completion report of ${filing.name} filed with the district.`);
   };
 
-  // ── Review / close / refund ────────────────────────────────────────────────
+  // ── Review / close ─────────────────────────────────────────────────────────
   const reviewError = review?.action === 'return' && text.replace(/\s+/g, ' ').trim().length < 5 ? 'Give the reason for returning the completion report.' : '';
   const closeError = text.replace(/\s+/g, ' ').trim().length < 10 ? 'Write a closure note (at least 10 characters).' : '';
-  const refundError = reference.trim().length < 3 ? 'Enter the challan or treasury reference of the refund.' : '';
 
   return (
     <div className="space-y-5">
       {done && <Notice tone="success">{done}</Notice>}
 
       {closed ? (
-        <Panel title="Project Closed" description={`Closed by ${state.closure.closedBy || 'the Approver'} on ${formatMoment(state.closure.closedAt, true)}.`} aside={<span className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700"><Lock className="h-3.5 w-3.5" aria-hidden="true" /> Closed</span>}>
-          <dl className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        <Panel title="Project Closed" description={`Closed by ${state.closure.closedBy || 'the HQ Approver'} on ${formatMoment(state.closure.closedAt, true)}.`} aside={<span className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700"><Lock className="h-3.5 w-3.5" aria-hidden="true" /> Closed</span>}>
+          <dl className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <Money label="Sanctioned" value={state.closure.sanctionedLakh} />
-            <Money label="Released" value={state.closure.releasedLakh} />
             <Money label="Final expenditure" value={state.closure.expenditureLakh} />
-            <Money label="Unspent balance (to refund)" value={state.closure.unspentLakh} tone={state.closure.unspentLakh > 0 ? 'text-amber-700' : undefined} />
-            <Money label="Never released (saving)" value={state.closure.unreleasedLakh} />
+            <Money label="Balance (not spent)" value={state.closure.balanceLakh} tone={state.closure.balanceLakh > 0 ? 'text-amber-700' : undefined} />
           </dl>
-          <dl className="mt-4 grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
+          <dl className="mt-4 border-t border-slate-100 pt-4">
             <DataItem label="Closure note" value={state.closure.note} />
-            <DataItem
-              label="Refund of unspent balance"
-              value={{ NOT_APPLICABLE: 'Nothing to refund', PENDING: 'Pending', RECORDED: `Recorded: ${state.closure.refundReference}${state.closure.refundRecordedAt ? ` (${formatMoment(state.closure.refundRecordedAt)})` : ''}` }[state.closure.refundStatus] || '—'}
-            />
           </dl>
-          {state.closure.refundStatus === 'PENDING' && (
-            <div className="mt-4">
-              <Notice tone="warning" title={`${formatLakh(state.closure.unspentLakh)} is to be refunded to the State`}
-                action={state.canRecordRefund ? <ActionButton size="sm" onClick={() => { reset(); setRefunding(true); }}>Record Refund</ActionButton> : null}>
-                Record the challan or treasury reference once the amount is deposited.
-              </Notice>
-            </div>
-          )}
-          <p className="mt-4 text-xs text-slate-500">No budget release, monthly report, revision or change of officer is possible on a closed project. Outcomes can still be measured.</p>
+          <p className="mt-4 text-xs text-slate-500">No monthly report, revision or change of officer is possible on a closed project. Outcomes can still be measured.</p>
         </Panel>
       ) : (
         <>
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <StatTile label="Completion reports verified" value={`${progress.verified} of ${progress.departments}`} sub={progress.filed > progress.verified ? `${progress.filed - progress.verified} with the district` : ''} tone={progress.verified === progress.departments ? 'success' : 'default'} />
-            <StatTile label="Released" value={formatLakh(totals.releasedLakh)} sub={`of ${formatLakh(totals.sanctionedLakh)} sanctioned`} />
+            <StatTile label="Sanctioned" value={formatLakh(totals.sanctionedLakh)} />
             <StatTile label="Reported expenditure" value={formatLakh(totals.expenditureLakh)} />
-            <StatTile label="Unspent balance" value={formatLakh(totals.unspentLakh)} sub="Released but not spent" tone={totals.unspentLakh > 0 ? 'warning' : 'default'} />
+            <StatTile label="Balance" value={formatLakh(totals.balanceLakh)} sub="Sanctioned but not spent" tone={totals.balanceLakh > 0 ? 'warning' : 'default'} />
           </dl>
 
           {state.canClose && (
@@ -183,12 +167,12 @@ export function ClosureTab({ project, onChanged }) {
             <Notice tone="info" title="Not ready to be closed">{state.closeBlockedReason}</Notice>
           )}
           {!state.canClose && state.closeBlockedReason === null && progress.verified === progress.departments && progress.departments > 0 && (
-            <Notice tone="info">Every completion report is verified. The Approver can now close the project.</Notice>
+            <Notice tone="info">Every completion report is verified. The HQ Approver can now close the project.</Notice>
           )}
         </>
       )}
 
-      <Panel title="Completion Reports" description="Filed by the PIA officer of each department when its works are finished, then verified by the district." padded={false}>
+      <Panel title="Completion Reports" description="Filed by the reporting Maker of each department when its works are finished, then verified by the District Checker or Approver." padded={false}>
         <ul className="divide-y divide-slate-100">
           {state.departments.map((department) => {
             const completion = department.completion;
@@ -202,7 +186,7 @@ export function ClosureTab({ project, onChanged }) {
                       <span className={`rounded-md border px-2 py-0.5 text-xs font-semibold ${status.cls}`}>{status.label}</span>
                     </p>
                     <p className="mt-0.5 text-xs text-slate-500">
-                      {department.officer?.name ? `PIA officer: ${department.officer.name}` : 'No PIA officer assigned'}
+                      {department.officer?.name ? `Reporting Maker: ${department.officer.name}${department.reportingMode === 'DISTRICT' ? ' (District Technical Staff)' : ''}` : 'No reporting Maker assigned'}
                       {department.reports.total > 0 ? ` · ${department.reports.total} monthly report${department.reports.total === 1 ? '' : 's'}, last ${department.reports.lastPeriod}` : ' · no monthly report yet'}
                     </p>
                   </div>
@@ -215,13 +199,13 @@ export function ClosureTab({ project, onChanged }) {
 
                 <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4 lg:grid-cols-6">
                   <Money label="Sanctioned" value={department.sanctionedLakh} />
-                  <Money label="Released" value={department.releasedLakh} />
                   <Money label="Expenditure" value={department.expenditureLakh} />
-                  <Money label="Unspent" value={department.unspentLakh} tone={department.unspentLakh > 0 ? 'text-amber-700' : undefined} />
+                  <Money label="Balance" value={department.balanceLakh} tone={department.balanceLakh > 0 ? 'text-amber-700' : undefined} />
+                  <div><dt className="text-xs text-slate-500">Reports verified</dt><dd className="text-sm font-semibold tabular-nums text-slate-900">{department.reports.verified} of {department.reports.total}</dd></div>
                   <div><dt className="text-xs text-slate-500">Physical progress</dt><dd className="text-sm font-semibold tabular-nums text-slate-900">{department.physicalPercent}%</dd></div>
                   <div><dt className="text-xs text-slate-500">Financial progress</dt><dd className="text-sm font-semibold tabular-nums text-slate-900">{department.financialPercent}%</dd></div>
                 </dl>
-                {department.excessLakh > 0 && <p className="mt-2 text-xs font-medium text-red-700">Reported expenditure is {formatLakh(department.excessLakh)} more than the amount released.</p>}
+
                 {!completion && department.submitBlockedReason && <p className="mt-2 text-xs text-amber-800">{department.submitBlockedReason}</p>}
 
                 {completion && (
@@ -264,12 +248,12 @@ export function ClosureTab({ project, onChanged }) {
         {filing && (
           <div className="space-y-4">
             <dl className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:grid-cols-4">
-              <Money label="Released" value={filing.releasedLakh} />
+              <Money label="Sanctioned" value={filing.sanctionedLakh} />
               <Money label="Final expenditure" value={filing.expenditureLakh} />
-              <Money label="Unspent balance" value={filing.unspentLakh} tone={filing.unspentLakh > 0 ? 'text-amber-700' : undefined} />
+              <Money label="Balance" value={filing.balanceLakh} tone={filing.balanceLakh > 0 ? 'text-amber-700' : undefined} />
               <div><dt className="text-xs text-slate-500">Physical progress</dt><dd className="text-sm font-semibold tabular-nums text-slate-900">{filing.physicalPercent}%</dd></div>
             </dl>
-            <p className="text-xs text-slate-500">These figures come from the budget releases and your approved monthly reports. They cannot be typed in.</p>
+            <p className="text-xs text-slate-500">These figures come from the sanctioned allocation and your monthly progress reports. They cannot be typed in.</p>
             <div>
               <label htmlFor="completion-date" className="mb-1.5 block text-sm font-medium text-slate-700">Date works were completed <span className="text-red-600" aria-hidden="true">*</span></label>
               <input id="completion-date" type="date" max={today()} value={form.completionDate} disabled={busy} onChange={(event) => setForm((current) => ({ ...current, completionDate: event.target.value }))}
@@ -296,14 +280,14 @@ export function ClosureTab({ project, onChanged }) {
         open={Boolean(review)}
         onClose={() => { if (!busy) setReview(null); }}
         title={review?.action === 'verify' ? 'Verify this completion report?' : 'Return this completion report?'}
-        description={review?.action === 'verify' ? 'Confirm that the works are complete and the certificates are in order.' : 'It goes back to the PIA officer with your reason. Monthly reporting opens again for the department.'}
+        description={review?.action === 'verify' ? 'Confirm that the works are complete and the certificates are in order.' : 'It goes back to the reporting Maker with your reason. Monthly reporting opens again for the department.'}
         size="md"
         dismissible={!busy}
         footer={review && (
           <>
             <ActionButton variant="secondary" onClick={() => setReview(null)} disabled={busy}>Cancel</ActionButton>
             <ActionButton variant={review.action === 'verify' ? 'success' : 'primary'} loading={busy}
-              onClick={() => { setAttempted(true); if (reviewError) return; run(() => reviewCompletion(project._id, review.department.departmentId, review.action, text.replace(/\s+/g, ' ').trim()), review.action === 'verify' ? `Completion report of ${review.department.name} verified.` : `Completion report of ${review.department.name} returned to the PIA officer.`); }}>
+              onClick={() => { setAttempted(true); if (reviewError) return; run(() => reviewCompletion(project._id, review.department.departmentId, review.action, text.replace(/\s+/g, ' ').trim()), review.action === 'verify' ? `Completion report of ${review.department.name} verified.` : `Completion report of ${review.department.name} returned to the reporting Maker.`); }}>
               {busy ? 'Saving…' : review.action === 'verify' ? 'Verify' : 'Return Report'}
             </ActionButton>
           </>
@@ -312,9 +296,9 @@ export function ClosureTab({ project, onChanged }) {
         {review && (
           <div className="space-y-4">
             <dl className="grid grid-cols-3 gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-              <Money label="Released" value={review.department.completion.releasedLakh} />
+              <Money label="Sanctioned" value={review.department.completion.sanctionedLakh} />
               <Money label="Expenditure" value={review.department.completion.expenditureLakh} />
-              <Money label="Unspent" value={review.department.completion.unspentLakh} />
+              <Money label="Balance" value={review.department.completion.balanceLakh} />
             </dl>
             <div>
               <label htmlFor="completion-review-note" className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-slate-700">
@@ -329,68 +313,35 @@ export function ClosureTab({ project, onChanged }) {
         )}
       </Dialog>
 
-      {/* State Approver: close */}
+      {/* HQ Approver: close */}
       <Dialog
         open={closing}
         onClose={() => { if (!busy) setClosing(false); }}
         title="Close this project?"
-        description="This is final. After closure no budget can be released, no monthly report filed, and the project cannot be revised."
+        description="This is final. After closure no monthly report can be filed and the project cannot be revised."
         size="lg"
         dismissible={!busy}
         footer={(
           <>
             <ActionButton variant="secondary" onClick={() => setClosing(false)} disabled={busy}>Cancel</ActionButton>
             <ActionButton variant="success" icon={Lock} loading={busy}
-              onClick={() => { setAttempted(true); if (closeError) return; run(() => closeProject(project._id, { note: text.replace(/\s+/g, ' ').trim(), refundReference: reference.trim() }), 'Project closed.'); }}>
+              onClick={() => { setAttempted(true); if (closeError) return; run(() => closeProject(project._id, { note: text.replace(/\s+/g, ' ').trim() }), 'Project closed.'); }}>
               {busy ? 'Closing…' : 'Close Project'}
             </ActionButton>
           </>
         )}
       >
         <div className="space-y-4">
-          <dl className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:grid-cols-5">
+          <dl className="grid grid-cols-3 gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
             <Money label="Sanctioned" value={totals.sanctionedLakh} />
-            <Money label="Released" value={totals.releasedLakh} />
             <Money label="Final expenditure" value={totals.expenditureLakh} />
-            <Money label="Unspent (to refund)" value={totals.unspentLakh} tone={totals.unspentLakh > 0 ? 'text-amber-700' : undefined} />
-            <Money label="Never released" value={totals.unreleasedLakh} />
+            <Money label="Balance (not spent)" value={totals.balanceLakh} tone={totals.balanceLakh > 0 ? 'text-amber-700' : undefined} />
           </dl>
           <div>
             <label htmlFor="closure-note" className="mb-1.5 block text-sm font-medium text-slate-700">Closure note <span className="text-red-600" aria-hidden="true">*</span></label>
             <textarea id="closure-note" rows={3} maxLength={1000} value={text} disabled={busy} onChange={(event) => setText(event.target.value)} placeholder="e.g. All works completed and verified by the district. Assets handed over to the Gram Panchayat."
               className={`${inputClass(Boolean(attempted && closeError))} resize-none`} />
             <FieldError message={attempted ? closeError : ''} />
-          </div>
-          {totals.unspentLakh > 0 && (
-            <div>
-              <label htmlFor="closure-refund" className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-slate-700">Refund challan / treasury reference <span className="text-xs font-normal text-slate-400">(optional, can be recorded later)</span></label>
-              <input id="closure-refund" type="text" maxLength={200} value={reference} disabled={busy} onChange={(event) => setReference(event.target.value)} className={inputClass(false)} />
-            </div>
-          )}
-          {error && <Notice tone="error">{error}</Notice>}
-        </div>
-      </Dialog>
-
-      {/* Record the refund later */}
-      <Dialog
-        open={refunding}
-        onClose={() => { if (!busy) setRefunding(false); }}
-        title="Record the refund"
-        size="md"
-        dismissible={!busy}
-        footer={(
-          <>
-            <ActionButton variant="secondary" onClick={() => setRefunding(false)} disabled={busy}>Cancel</ActionButton>
-            <ActionButton loading={busy} onClick={() => { setAttempted(true); if (refundError) return; run(() => recordRefund(project._id, reference.trim()), 'Refund recorded.'); }}>{busy ? 'Saving…' : 'Record Refund'}</ActionButton>
-          </>
-        )}
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600">Unspent balance refunded: <strong className="tabular-nums text-slate-900">{formatLakh(state.closure.unspentLakh)}</strong></p>
-          <div>
-            <label htmlFor="refund-reference" className="mb-1.5 block text-sm font-medium text-slate-700">Challan / treasury reference <span className="text-red-600" aria-hidden="true">*</span></label>
-            <input id="refund-reference" type="text" maxLength={200} value={reference} disabled={busy} onChange={(event) => setReference(event.target.value)} className={inputClass(Boolean(attempted && refundError))} />
-            <FieldError message={attempted ? refundError : ''} />
           </div>
           {error && <Notice tone="error">{error}</Notice>}
         </div>

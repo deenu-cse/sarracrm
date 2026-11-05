@@ -4,10 +4,22 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { formatLakh } from '@/lib/numeric';
-import { ProgressBar } from '@/components/projects/budget/BudgetStatus';
+import { ProgressBar } from '@/components/ui/Progress';
 import { useT } from '@/contexts/LanguageContext';
 
 const formatDate = (value) => (value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
+const daysSince = (value) => (value ? Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86400000)) : 0);
+
+/** Status pill, who the report is waiting for, and whether the district entered it. */
+export function MprStatusCell({ report }) {
+  return (
+    <>
+      <Badge status={report.status} />
+      {report.awaiting && <span className="mt-1 block text-[11px] text-slate-500">with {report.awaiting} · {daysSince(report.stageEnteredAt)}d</span>}
+      {report.entryMode === 'DISTRICT' && <span className="mt-1 inline-block rounded bg-cyan-50 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-800">District entry</span>}
+    </>
+  );
+}
 
 /** Row of status filter buttons shared by the report lists. */
 export function StatusFilter({ filters, value, onChange }) {
@@ -31,7 +43,7 @@ export function StatusFilter({ filters, value, onChange }) {
   );
 }
 
-/** Table of project Monthly Progress Reports (used on the PIA and district list screens). */
+/** Table of project Monthly Progress Reports (used on the PIA, district and HQ list screens). */
 export function MprList({ reports, hrefFor, showSubmitter = false, actionLabel = 'Open' }) {
   const t = useT();
   return (
@@ -62,13 +74,14 @@ export function MprList({ reports, hrefFor, showSubmitter = false, actionLabel =
               <td className="px-3 py-3 text-slate-700">
                 {report.departmentName}
                 {showSubmitter && <span className="block text-xs text-slate-400">{report.submittedBy?.name || '—'} · {formatDate(report.submittedAt)}</span>}
+                {report.district && showSubmitter && <span className="block text-xs text-slate-400">{report.district}</span>}
               </td>
               <td className="px-3 py-3 text-right tabular-nums text-slate-800">{formatLakh(report.totals?.financialCurrentLakh)}</td>
               <td className="px-3 py-3">
                 <span className="text-xs font-semibold tabular-nums text-slate-700">{report.totals?.financialPercent ?? 0}%</span>
                 <div className="mt-1"><ProgressBar percent={report.totals?.financialPercent} complete={report.totals?.financialPercent >= 100} label={`${report.departmentName} ${report.period}: financial progress`} /></div>
               </td>
-              <td className="px-3 py-3"><Badge status={report.status} /></td>
+              <td className="px-3 py-3"><MprStatusCell report={report} /></td>
               <td className="px-5 py-3 text-right">
                 <Link href={hrefFor(report)} className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">
                   {t(typeof actionLabel === 'function' ? actionLabel(report) : actionLabel)} {report.evidenceCount > 0 && <span className="sr-only">({report.evidenceCount} evidence files)</span>}<ArrowRight className="h-3 w-3" aria-hidden="true" />

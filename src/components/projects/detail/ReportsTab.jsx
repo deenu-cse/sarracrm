@@ -2,14 +2,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
 import { fetchProjectMprs } from '@/lib/mprApi';
+import { MprStatusCell } from '@/components/mpr/MprList';
 import { formatLakh } from '@/lib/numeric';
 import { Notice, RetryButton, Skeleton, useMasterList } from '@/components/projects/create/parts';
-import { ProgressBar } from '@/components/projects/budget/BudgetStatus';
+import { ProgressBar } from '@/components/ui/Progress';
 import { EmptyNote, Panel, formatMoment } from './shared';
 
-/** Monthly progress reports filed against the project (a PIA officer sees their own departments only). */
+/** Monthly progress reports filed against the project (a PIA user sees their own departments only). */
 export function ReportsTab({ project, mprHref, action }) {
   const hasDepartments = (project.departmentAllocations || []).length > 0;
   const reports = useMasterList(() => fetchProjectMprs(project._id), hasDepartments ? project._id : null);
@@ -53,7 +53,7 @@ export function ReportsTab({ project, mprHref, action }) {
                     <span className="text-xs font-semibold tabular-nums text-slate-700">{report.totals?.financialPercent ?? 0}%</span>
                     <div className="mt-1"><ProgressBar percent={report.totals?.financialPercent} complete={report.totals?.financialPercent >= 100} label={`${report.departmentName} ${report.period}: financial progress`} /></div>
                   </td>
-                  <td className="px-3 py-3"><Badge status={report.status} /></td>
+                  <td className="px-3 py-3"><MprStatusCell report={report} /></td>
                   <td className="px-3 py-3 text-xs text-slate-600">
                     {report.submittedBy?.name || '—'}
                     <span className="block text-slate-400">{formatMoment(report.submittedAt)}</span>

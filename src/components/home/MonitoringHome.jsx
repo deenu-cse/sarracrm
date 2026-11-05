@@ -3,7 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, BarChart3, ClipboardList, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { ActionLink, COLORS, Card, Empty, FilingCard, HomeShell, Meter, Metric, MoneyFlow, SeeAll, TaskList, TrendBars, ago, lakh, shortLakh, td, th, useHome } from './HomeKit';
+import { ActionLink, COLORS, Card, Empty, FilingCard, HomeShell, Meter, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, lakh, shortLakh, td, th, useHome } from './HomeKit';
 
 function DistrictTable({ rows }) {
   if (rows.length === 0) return <div className="p-5"><Empty>No sanctioned project yet.</Empty></div>;
@@ -15,11 +15,11 @@ function DistrictTable({ rows }) {
           <tr className="border-b border-slate-100 bg-slate-50/70">
             <th scope="col" className={`${th} pl-5`}>District</th>
             <th scope="col" className={`${th} text-right`}>Projects</th>
-            <th scope="col" className={`${th} text-right`}>Released</th>
-            <th scope="col" className={`${th} w-44`}>Spent of released</th>
+            <th scope="col" className={`${th} text-right`}>Sanctioned</th>
+            <th scope="col" className={`${th} w-44`}>Spent of sanctioned</th>
             <th scope="col" className={`${th} text-right`}>Physical</th>
             <th scope="col" className={th}>Reports for the month</th>
-            <th scope="col" className={`${th} pr-5 text-right`}>For State</th>
+            <th scope="col" className={`${th} pr-5 text-right`}>In verification</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -27,17 +27,17 @@ function DistrictTable({ rows }) {
             <tr key={row.name} className="transition-colors hover:bg-slate-50/60">
               <th scope="row" className={`${td} pl-5 text-left font-semibold text-slate-900`}>{row.name}</th>
               <td className={`${td} text-right tabular-nums`}>{row.projects}</td>
-              <td className={`${td} text-right tabular-nums`}>{shortLakh(row.releasedLakh)}</td>
+              <td className={`${td} text-right tabular-nums`}>{shortLakh(row.sanctionedLakh)}</td>
               <td className={td}>
-                <span className="text-xs font-semibold tabular-nums text-slate-700">{row.utilisationPercent}%</span>
-                <div className="mt-1"><Meter percent={row.utilisationPercent} color={COLORS.spent} label={`${row.name}: spent of released`} /></div>
+                <span className="text-xs font-semibold tabular-nums text-slate-700">{row.financialPercent}%</span>
+                <div className="mt-1"><Meter percent={row.financialPercent} color={COLORS.spent} label={`${row.name}: spent of sanctioned`} /></div>
               </td>
               <td className={`${td} text-right tabular-nums`}>{row.physicalPercent}%</td>
               <td className={`${td} tabular-nums`}>
                 {row.expected === 0 ? <span className="text-xs text-slate-400">None expected</span> : <>{row.filed} of {row.expected} filed</>}
                 {row.overdue > 0 && <span className="ml-2 inline-block rounded-md border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-800">{row.overdue} overdue</span>}
               </td>
-              <td className={`${td} pr-5 text-right tabular-nums ${row.awaitingState ? 'font-semibold text-amber-700' : ''}`}>{row.awaitingState}</td>
+              <td className={`${td} pr-5 text-right tabular-nums ${row.inReview ? 'font-semibold text-amber-700' : ''}`}>{row.inReview}</td>
             </tr>
           ))}
         </tbody>
@@ -46,31 +46,6 @@ function DistrictTable({ rows }) {
   );
 }
 
-function ReportList({ reports, empty, showWait = false }) {
-  if (reports.length === 0) return <div className="p-5"><Empty>{empty}</Empty></div>;
-  return (
-    <ul className="divide-y divide-slate-100">
-      {reports.map((report) => {
-        const body = (
-          <>
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-slate-900">{report.department} · {report.period}</span>
-              <span className="block truncate text-xs text-slate-500">{report.projectCode} · {report.district}{!showWait ? ` · filed ${ago(report.submittedAt)}` : ''}</span>
-            </span>
-            <span className="flex flex-shrink-0 items-center gap-2">
-              {showWait
-                ? <span className="text-xs font-semibold tabular-nums text-slate-600">{report.daysWaiting === 0 ? 'today' : `${report.daysWaiting} day${report.daysWaiting === 1 ? '' : 's'}`}</span>
-                : <Badge status={report.status} />}
-              {report.href && <ArrowRight className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />}
-            </span>
-          </>
-        );
-        const cls = 'flex flex-wrap items-center justify-between gap-3 px-5 py-3';
-        return <li key={report.id}>{report.href ? <Link href={report.href} className={`${cls} transition-colors hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50`}>{body}</Link> : <div className={cls}>{body}</div>}</li>;
-      })}
-    </ul>
-  );
-}
 
 function Overview({ data, deadlinesHref }) {
   const k = data.kpis;
@@ -79,8 +54,8 @@ function Overview({ data, deadlinesHref }) {
     <>
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric label="Sanctioned projects" value={String(k.projects)} sub={`${k.inProgress} in progress · ${k.closed} closed · ${k.districts} district${k.districts === 1 ? '' : 's'}`} />
-        <Metric label="Funds released" value={lakh(k.releasedLakh)} sub={`${k.releasePercent}% of ${lakh(k.sanctionedLakh)}`} />
-        <Metric label="Expenditure reported" value={lakh(k.spentLakh)} sub={`${k.utilisationPercent}% of releases · ${lakh(k.unspentLakh)} unspent`} />
+        <Metric label="Sanctioned amount" value={lakh(k.sanctionedLakh)} sub={`Balance ${lakh(k.balanceLakh)}`} />
+        <Metric label="Expenditure reported" value={lakh(k.spentLakh)} sub={`${k.financialPercent}% of sanctioned`} />
         <Metric label="Physical progress" value={`${k.physicalPercent}%`} sub={`From ${k.reports} monthly report${k.reports === 1 ? '' : 's'}`} />
       </dl>
 
@@ -88,7 +63,7 @@ function Overview({ data, deadlinesHref }) {
         <FilingCard period={data.period} expected={k.expected} filed={k.filed} overdue={k.overdue} href={deadlinesHref} />
         <Card title="Where reports stand" description="All monthly reports filed so far.">
           <dl className="space-y-2.5 text-sm">
-            {[['With district for review', k.awaitingDistrict], ['Approved, awaiting State', k.awaitingState], ['Verified by State', k.verified]].map(([label, value]) => (
+            {[['In the verification chain', k.inReview], ['Verified by State', k.verified], ['Filed in total', k.reports]].map(([label, value]) => (
               <div key={label} className="flex items-baseline justify-between gap-3"><dt className="text-slate-600">{label}</dt><dd className="font-semibold tabular-nums text-slate-900">{value}</dd></div>
             ))}
           </dl>
@@ -107,19 +82,23 @@ function Overview({ data, deadlinesHref }) {
         </Card>
       </div>
 
-      <Card title="District performance" description="Funds, progress and reporting for each district with sanctioned projects." padded={false}>
+      <Card title="MPR pending actions by step" description="Reports waiting at each Maker, Checker and Approver step of the three tiers.">
+        <PendingStages stages={data.pendingByStage} />
+      </Card>
+
+      <Card title="District performance" description="Sanctioned amount, expenditure, progress and reporting for each district with sanctioned projects." padded={false}>
         <DistrictTable rows={data.districts} />
       </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card title="State funds"><MoneyFlow sanctionedLakh={k.sanctionedLakh} releasedLakh={k.releasedLakh} spentLakh={k.spentLakh} /></Card>
-        <Card title="Last six months" description="Funds released and expenditure reported, by month."><TrendBars trend={data.trend} /></Card>
+        <Card title="State funds"><MoneyFlow sanctionedLakh={k.sanctionedLakh} spentLakh={k.spentLakh} balanceLakh={k.balanceLakh} /></Card>
+        <Card title="Last six months" description="Expenditure reported each month, with reports filed and verified."><TrendBars trend={data.trend} /></Card>
       </div>
     </>
   );
 }
 
-/** Home of the M&E administrator: verify reports for the State and watch every district. */
+/** Home of the M&E administrator: monitor reporting and verification across every district. */
 export function MonitoringAdminHome() {
   const home = useHome();
   const data = home.data;
@@ -132,9 +111,9 @@ export function MonitoringAdminHome() {
       {data && (
         <>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-3"><TaskList tasks={data.tasks} emptyText="No report is waiting for State verification and nothing is overdue." /></div>
-            <Card className="lg:col-span-2" title="To verify for the State" description="Approved by the district, longest wait first." aside={<SeeAll href="/dashboard/mnd-admin/mpr" />} padded={false}>
-              <ReportList reports={data.verifyQueue} empty="No report is waiting for verification." showWait />
+            <div className="lg:col-span-3"><TaskList tasks={data.tasks} emptyText="Nothing is overdue or stuck in verification." /></div>
+            <Card className="lg:col-span-2" title="Latest project reports" description="Most recently filed across the State." aside={<SeeAll href="/dashboard/mnd-admin/mpr" />} padded={false}>
+              <ReportRows reports={data.recentReports} empty="No project report has been filed yet." />
             </Card>
           </div>
           <Overview data={data} deadlinesHref="/dashboard/mnd-admin/deadlines" />
@@ -202,8 +181,8 @@ export function MonitoringOfficerHome() {
           <h2 className="pt-2 text-sm font-semibold text-slate-900">State picture <span className="font-normal text-slate-500">(project reporting, read only)</span></h2>
           <Overview data={data} deadlinesHref={null} />
 
-          <Card title="Latest project reports" description="Most recently filed by PIA officers across the State." padded={false}>
-            <ReportList reports={data.recentReports} empty="No project report has been filed yet." />
+          <Card title="Latest project reports" description="Most recently filed across the State." padded={false}>
+            <ReportRows reports={data.recentReports} empty="No project report has been filed yet." />
           </Card>
         </>
       )}

@@ -5,7 +5,7 @@ import { MprReportPage } from '@/components/mpr/MprReportPage';
 import { RoleGuard } from '@/components/auth/RoleGuard';
 import { USER_ROLES } from '@/constants/roles';
 
-/** M&E admin: a project Monthly Progress Report, with State verification once the district has approved it. */
+/** M&E administrator: a project Monthly Progress Report (monitoring view; verification is done by the tier Checkers and Approvers). */
 export default function MneAdminProjectMprPage() {
   const { id } = useParams();
   return (

@@ -2,7 +2,10 @@ import axiosInstance from '@/lib/axiosInstance';
 import { request } from '@/lib/projectApi';
 
 /**
- * State-level workflow actions on a project (Checker → Approver → District).
+ * Workflow actions on a project across the three tiers:
+ *   HQ        Checker verifies → Approver sanctions → Maker forwards to the district
+ *   District  Maker accepts → assigns PIA Makers and MPR reporting responsibility
+ *   PIA       Maker accepts the assigned department
  * Each call rejects with an `ApiFailure` whose message is safe to show.
  */
 
@@ -26,6 +29,7 @@ export const approveProject = (projectId, { note, secretariatApprovalOrder, stat
   );
 };
 
+/** HQ Checker / Approver returns the project to the HQ Maker with an objection. */
 export const rejectProject = (projectId, reason) => request(
   () => axiosInstance.patch(path(projectId, 'reject'), { reason }),
   STALE,
@@ -38,23 +42,24 @@ export const forwardToDistrict = (projectId) => request(
 
 // ── District ─────────────────────────────────────────────────────────────────
 
-/** Accept a project forwarded by the State. The fund allocation order PDF is optional. */
-export const districtAccept = (projectId, fundAllocationOrder) => {
-  const form = new FormData();
-  if (fundAllocationOrder) form.append('fundAllocationOrder', fundAllocationOrder);
-  return request(
-    () => axiosInstance.request(path(projectId, 'district-accept'), { method: 'PATCH', body: form }),
-    STALE,
-  );
-};
+/** District Maker receives and accepts a project forwarded by SARRA HQ. */
+export const districtAccept = (projectId) => request(
+  () => axiosInstance.patch(path(projectId, 'district-accept'), {}),
+  STALE,
+);
 
-/** For each department of the project: the PIA officers of that department in this district. */
+/**
+ * Who can be assigned. Resolves to { departments, districtStaff }:
+ * each department with its PIA Makers in this district and its current
+ * reporting responsibility, and the District Makers who can act as District
+ * Technical Staff.
+ */
 export const fetchPiaCandidates = (projectId) => request(
   () => axiosInstance.get(path(projectId, 'pia-candidates')),
-  'Unable to load PIA officers. Please try again.',
-).then((list) => (Array.isArray(list) ? list : []));
+  'Unable to load the officers. Please try again.',
+).then((result) => ({ departments: Array.isArray(result?.departments) ? result.departments : [], districtStaff: Array.isArray(result?.districtStaff) ? result.districtStaff : [] }));
 
-/** assignments: [{ departmentId, piaUserId }] */
+/** assignments: [{ departmentId, reportingMode: 'PIA' | 'DISTRICT', piaUserId?, districtStaffUserId? }] */
 export const assignPiaOfficers = (projectId, assignments) => request(
   () => axiosInstance.patch(path(projectId, 'forward-pia'), { assignments }),
   STALE,

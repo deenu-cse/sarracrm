@@ -53,36 +53,35 @@ function SplitBar({ previous, current, target, label }) {
 }
 
 /**
- * Analysis of one report in context: funds released against expenditure, the
- * department's month-by-month trend, and activity-wise progress with this
- * month's contribution picked out.
+ * Analysis of one report in context: expenditure against the department's
+ * sanctioned allocation, the month-by-month trend, and activity-wise progress
+ * against the approved DPR targets with this month's contribution picked out.
  */
 export function MprAnalysis({ report, reportHref }) {
   const { funds, series, activities, totals } = report;
   const chartData = series.map((item) => ({ ...item, label: item.period.replace(/ (\d{2})(\d{2})$/, " '$2") }));
-  const overspent = funds.spentBeyondReleaseLakh > 0;
-  const releasedShare = funds.departmentBudgetLakh > 0 ? Math.min(100, (funds.releasedLakh / funds.departmentBudgetLakh) * 100) : 0;
   const spentShare = funds.departmentBudgetLakh > 0 ? Math.min(100, (funds.spentLakh / funds.departmentBudgetLakh) * 100) : 0;
+  const physicalShare = Math.min(100, totals?.physicalPercent || 0);
 
   return (
     <div className="space-y-5">
-      <Panel title="Funds Released vs Expenditure" description={`${report.departmentName}: what the State has released in installments against what has been reported as spent.`}>
+      <Panel title="Sanctioned Allocation vs Expenditure" description={`${report.departmentName}: the sanctioned financial allocation against what has been reported as spent up to this month.`}>
         <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            ['Department Budget', formatLakh(funds.departmentBudgetLakh), ''],
-            ['Released by State', formatLakh(funds.releasedLakh), `${funds.installments} installment${funds.installments === 1 ? '' : 's'}`],
-            ['Spent to Date', formatLakh(funds.spentLakh), funds.releasedLakh > 0 ? `${funds.utilisationPercent}% of released funds` : 'No funds released yet'],
-            [overspent ? 'Spent Beyond Release' : 'Unspent Balance', formatLakh(overspent ? funds.spentBeyondReleaseLakh : funds.unspentLakh), overspent ? 'More than released so far' : 'Released but not yet spent'],
+            ['Sanctioned Allocation', formatLakh(funds.departmentBudgetLakh), ''],
+            ['Spent to Date', formatLakh(funds.spentLakh), `${funds.utilisationPercent}% of the allocation`],
+            ['Balance', formatLakh(funds.balanceLakh), 'Sanctioned but not yet spent'],
+            ['Physical Progress', `${totals?.physicalPercent ?? 0}%`, 'Against approved DPR targets'],
           ].map(([label, value, sub]) => (
             <div key={label} className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">{label}</dt>
-              <dd className={`mt-0.5 text-base font-bold tabular-nums ${label === 'Spent Beyond Release' ? 'text-red-700' : 'text-slate-900'}`}>{value}</dd>
+              <dd className="mt-0.5 text-base font-bold tabular-nums text-slate-900">{value}</dd>
               {sub && <dd className="text-xs text-slate-500">{sub}</dd>}
             </div>
           ))}
         </dl>
         <div className="mt-4 space-y-2">
-          {[['Released', releasedShare, 'bg-emerald-600'], ['Spent', spentShare, overspent ? 'bg-red-600' : 'bg-navy']].map(([label, share, color]) => (
+          {[['Financial', spentShare, 'bg-navy'], ['Physical', physicalShare, 'bg-emerald-600']].map(([label, share, color]) => (
             <div key={label} className="flex items-center gap-3">
               <span className="w-16 flex-shrink-0 text-xs font-medium text-slate-600">{label}</span>
               <div role="img" aria-label={`${label}: ${share.toFixed(1)}% of department budget`} className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -91,12 +90,12 @@ export function MprAnalysis({ report, reportHref }) {
               <span className="w-14 flex-shrink-0 text-right text-xs font-semibold tabular-nums text-slate-700">{share.toFixed(1)}%</span>
             </div>
           ))}
-          <p className="text-[11px] text-slate-400">Share of the department budget of {formatLakh(funds.departmentBudgetLakh)}.</p>
+          <p className="text-[11px] text-slate-400">Financial: share of the sanctioned allocation of {formatLakh(funds.departmentBudgetLakh)}. Physical: average progress against the approved targets.</p>
         </div>
-        {overspent && (
-          <p className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-800" role="alert">
+        {spentShare - physicalShare >= 25 && (
+          <p className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900" role="alert">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-            Reported expenditure is {formatLakh(funds.spentBeyondReleaseLakh)} more than the State has released to this department so far.
+            Spending is well ahead of physical progress. Check the activity figures before verifying.
           </p>
         )}
       </Panel>

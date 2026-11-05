@@ -12,16 +12,18 @@ import BusinessAuditView from '@/components/review/BusinessAuditView';
 
 /** What each recorded action means, in words, and which group it belongs to. */
 const ACTIONS = {
-  GENERATE_PROJECT_ID: ['Project ID generated', 'projects'], CREATE_SANCTION: ['Project created / resubmitted', 'projects'], CHECKER_VERIFY_SANCTION: ['Verified by Checker', 'projects'],
-  APPROVE_SANCTION: ['Approved by Approver', 'projects'], REJECT_SANCTION: ['Rejected', 'projects'], FORWARD_SANCTION_TO_DISTRICT: ['Forwarded to district', 'projects'],
-  DISTRICT_ACCEPT_SANCTION: ['Accepted by district', 'projects'], FORWARD_SANCTION_TO_PIA: ['PIA officers assigned', 'projects'], PIA_ACCEPT_SANCTION: ['Accepted by PIA officer', 'projects'],
-  PROJECT_REVISION: ['Revised estimate proposed', 'projects'], PIA_TRANSFER: ['PIA charge handed over', 'projects'],
-  BUDGET_ALLOCATE: ['Budget released', 'budget'], BUDGET_DOCUMENT_UPLOAD: ['Release order uploaded', 'budget'], BUDGET_REVERSE: ['Budget release reversed', 'budget'],
-  MPR_SUBMIT: ['Monthly report submitted', 'reports'], MPR_RESUBMIT: ['Monthly report resubmitted', 'reports'], MPR_APPROVE: ['Monthly report approved / verified', 'reports'],
-  MPR_RETURN: ['Monthly report returned', 'reports'], MPR_REJECT: ['Monthly report rejected', 'reports'], MPR_EVIDENCE_UPLOAD: ['Report evidence changed', 'reports'],
+  GENERATE_PROJECT_ID: ['Project ID generated', 'projects'], CREATE_SANCTION: ['Project created / resubmitted', 'projects'], CHECKER_VERIFY_SANCTION: ['Verified by HQ Checker', 'projects'],
+  APPROVE_SANCTION: ['Sanctioned by HQ Approver', 'projects'], REJECT_SANCTION: ['Returned to Maker', 'projects'], RETURN_SANCTION: ['Returned to HQ Maker', 'projects'], FORWARD_SANCTION_TO_DISTRICT: ['Forwarded to district', 'projects'],
+  DISTRICT_ACCEPT_SANCTION: ['Accepted by District Maker', 'projects'], FORWARD_SANCTION_TO_PIA: ['PIA assigned', 'projects'], ASSIGN_REPORTING: ['PIA and reporting responsibility assigned', 'projects'], PIA_ACCEPT_SANCTION: ['Accepted by PIA Maker', 'projects'],
+  PROJECT_REVISION: ['Target revision proposed', 'projects'], PIA_TRANSFER: ['PIA charge handed over', 'projects'],
+  PHOTO_UPLOAD: ['Field photographs uploaded', 'projects'], PHOTO_VERIFY: ['Field photograph verified', 'projects'],
+  // Recorded only by the budget-allocation module that has since been removed.
+  BUDGET_ALLOCATE: ['Budget released (earlier system)', 'budget'], BUDGET_DOCUMENT_UPLOAD: ['Release order uploaded (earlier system)', 'budget'], BUDGET_REVERSE: ['Budget release reversed (earlier system)', 'budget'],
+  MPR_SUBMIT: ['Monthly report saved / submitted', 'reports'], MPR_RESUBMIT: ['Monthly report corrected / resubmitted', 'reports'], MPR_FORWARD: ['Monthly report verified and forwarded', 'reports'], MPR_APPROVE: ['Monthly report approved (earlier system)', 'reports'],
+  MPR_RETURN: ['Monthly report returned to Maker', 'reports'], MPR_REJECT: ['Monthly report rejected', 'reports'], MPR_DRAFT_DISCARD: ['Monthly report draft discarded', 'reports'], MPR_EVIDENCE_UPLOAD: ['Report evidence changed', 'reports'],
   FORM_SUBMIT: ['Form submitted', 'reports'], FORM_RESUBMIT: ['Form resubmitted', 'reports'], FORM_APPROVE: ['Form approved', 'reports'], FORM_REJECT: ['Form rejected', 'reports'], FORM_DRAFT_SAVE: ['Draft saved', 'reports'],
   PROJECT_COMPLETION: ['Completion report', 'closure'], PROJECT_CLOSE: ['Project closure', 'closure'], OUTCOME_RECORD: ['Outcome reading', 'closure'],
-  USER_CREATE: ['User added', 'users'], USER_SUSPEND: ['User suspended', 'users'], USER_DEACTIVATE: ['User deactivated', 'users'], USER_RESTORE: ['User restored', 'users'], PASSWORD_CHANGE: ['Password changed', 'users'],
+  USER_CREATE: ['User added', 'users'], USER_REQUEST: ['User account invited / requested', 'users'], USER_APPROVE: ['User account request approved', 'users'], USER_REJECT: ['User account request rejected', 'users'], USER_SUSPEND: ['User suspended', 'users'], USER_DEACTIVATE: ['User deactivated', 'users'], USER_RESTORE: ['User restored', 'users'], PASSWORD_CHANGE: ['Password changed', 'users'],
   LOGIN: ['Signed in', 'access'], LOGOUT: ['Signed out', 'access'], TOKEN_REFRESH: ['Session renewed', 'access'], BOOTSTRAP: ['System set up', 'access'],
   SETTINGS_UPDATE: ['Settings changed', 'system'], REPORT_DISPATCH: ['Reminders / summary sent', 'system'],
   CREATE_BLOCK: ['Block added', 'system'], CREATE_GRAM_PANCHAYAT: ['Gram Panchayat added', 'system'], CREATE_VILLAGE: ['Village added', 'system'], CREATE_DEPARTMENT: ['Department added', 'system'],
@@ -29,7 +31,7 @@ const ACTIONS = {
 
 const GROUPS = [
   { id: 'projects', label: 'Projects', icon: FolderKanban, cls: 'border-sky-200 bg-sky-50 text-sky-800' },
-  { id: 'budget', label: 'Budget', icon: IndianRupee, cls: 'border-orange-200 bg-orange-50 text-orange-800' },
+  { id: 'budget', label: 'Budget (earlier system)', icon: IndianRupee, cls: 'border-orange-200 bg-orange-50 text-orange-800' },
   { id: 'reports', label: 'Monthly reports', icon: ClipboardList, cls: 'border-indigo-200 bg-indigo-50 text-indigo-800' },
   { id: 'closure', label: 'Closure & outcomes', icon: Lock, cls: 'border-emerald-200 bg-emerald-50 text-emerald-800' },
   { id: 'users', label: 'Users', icon: Users, cls: 'border-violet-200 bg-violet-50 text-violet-800' },
@@ -38,9 +40,9 @@ const GROUPS = [
 ];
 const GROUP_BY_ID = Object.fromEntries(GROUPS.map((group) => [group.id, group]));
 const actionsOf = (groupId) => Object.entries(ACTIONS).filter(([, [, group]]) => group === groupId).map(([action]) => action);
-const ICON_OVERRIDE = { REJECT_SANCTION: Ban, MPR_RETURN: RotateCcw, BUDGET_REVERSE: RotateCcw, APPROVE_SANCTION: BadgeCheck, MPR_APPROVE: BadgeCheck, PASSWORD_CHANGE: KeyRound };
+const ICON_OVERRIDE = { REJECT_SANCTION: RotateCcw, RETURN_SANCTION: RotateCcw, MPR_RETURN: RotateCcw, MPR_REJECT: Ban, BUDGET_REVERSE: RotateCcw, APPROVE_SANCTION: BadgeCheck, MPR_APPROVE: BadgeCheck, MPR_FORWARD: BadgeCheck, PASSWORD_CHANGE: KeyRound };
 
-const ROLES = [['SUPER_ADMIN', 'State'], ['DD_LEVEL', 'District Director'], ['PIA_OFFICER', 'PIA officer'], ['MND_SUPER_ADMIN', 'M&E admin'], ['MND_OFFICER', 'M&E officer']];
+const ROLES = [['SUPER_ADMIN', 'SARRA HQ'], ['DD_LEVEL', 'District SARRA Centre'], ['PIA_OFFICER', 'PIA'], ['MND_SUPER_ADMIN', 'M&E admin'], ['MND_OFFICER', 'M&E officer']];
 const ROLE_LABEL = Object.fromEntries(ROLES);
 const EMPTY = { group: '', role: '', search: '', from: '', to: '' };
 const LIMIT = 25;

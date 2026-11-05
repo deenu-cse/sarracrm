@@ -4,19 +4,20 @@ import { CheckCircle, XCircle, Clock, ArrowRight, UserCheck } from 'lucide-react
 import { formatDate } from '@/lib/formatters';
 
 const ACTION_CONFIG = {
-  CREATED: { icon: Clock, color: 'bg-blue-100 text-blue-700', label: 'Project Created' },
-  CHECKER_VERIFIED: { icon: CheckCircle, color: 'bg-teal-100 text-teal-700', label: 'Checker Verified' },
-  APPROVED: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-700', label: 'Approved & Sanctioned' },
-  REJECTED: { icon: XCircle, color: 'bg-red-100 text-red-700', label: 'Rejected' },
+  CREATED: { icon: Clock, color: 'bg-blue-100 text-blue-700', label: 'Project Created with DPR' },
+  CHECKER_VERIFIED: { icon: CheckCircle, color: 'bg-teal-100 text-teal-700', label: 'Verified by HQ Checker' },
+  APPROVED: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-700', label: 'Sanctioned — Sanction ID issued' },
+  REJECTED: { icon: XCircle, color: 'bg-red-100 text-red-700', label: 'Returned to HQ Maker' },
   FORWARDED_TO_DISTRICT: { icon: ArrowRight, color: 'bg-cyan-100 text-cyan-700', label: 'Forwarded to District' },
   DISTRICT_ACCEPTED: { icon: UserCheck, color: 'bg-teal-100 text-teal-700', label: 'Accepted by District' },
   FORWARDED_TO_PIA: { icon: ArrowRight, color: 'bg-indigo-100 text-indigo-700', label: 'Assigned to PIA' },
-  PIA_ACCEPTED: { icon: CheckCircle, color: 'bg-green-100 text-green-700', label: 'PIA Accepted — Active' },
-  RETURNED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Returned for Correction' },
+  REPORTING_ASSIGNED: { icon: UserCheck, color: 'bg-indigo-100 text-indigo-700', label: 'PIA & Reporting Responsibility Assigned' },
+  PIA_ACCEPTED: { icon: CheckCircle, color: 'bg-green-100 text-green-700', label: 'Accepted by PIA Maker — Active' },
+  RETURNED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Returned to HQ Maker with Objection' },
   RESUBMITTED: { icon: ArrowRight, color: 'bg-blue-100 text-blue-700', label: 'Corrected & Resubmitted' },
-  REVISED: { icon: CheckCircle, color: 'bg-violet-100 text-violet-700', label: 'Estimate Revised' },
+  REVISED: { icon: CheckCircle, color: 'bg-violet-100 text-violet-700', label: 'Target Revision Approved' },
   PIA_TRANSFERRED: { icon: UserCheck, color: 'bg-indigo-100 text-indigo-700', label: 'PIA Charge Handed Over' },
-  BUDGET_REVERSED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Budget Release Reversed' },
+  BUDGET_REVERSED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Budget Release Reversed (earlier system)' },
   COMPLETION_SUBMITTED: { icon: ArrowRight, color: 'bg-blue-100 text-blue-700', label: 'Completion Report Submitted' },
   COMPLETION_VERIFIED: { icon: CheckCircle, color: 'bg-teal-100 text-teal-700', label: 'Completion Verified by District' },
   COMPLETION_RETURNED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Completion Report Returned' },
@@ -62,6 +63,8 @@ export function WorkflowTimeline({ history = [] }) {
                     {step.performedBy && (
                       <p className="text-xs text-slate-500 mt-0.5">
                         by {step.performedBy?.name || 'System'}
+                        {step.role && <span className="text-slate-400"> · {step.role}</span>}
+                        {step.designation && step.designation !== step.role && <span className="text-slate-400"> · {step.designation}</span>}
                       </p>
                     )}
                     {step.note && (
@@ -72,6 +75,7 @@ export function WorkflowTimeline({ history = [] }) {
                   </div>
                   <time className="text-xs text-slate-400 whitespace-nowrap flex-shrink-0">
                     {formatDate(step.performedAt)}
+                    {step.performedAt && <span className="block text-right">{new Date(step.performedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>}
                   </time>
                 </div>
               </div>

@@ -1,18 +1,23 @@
 import {
-  BarChart3, Bell, CalendarClock, ClipboardCheck, ClipboardList, Droplets, FileSpreadsheet, FolderKanban,
+  BarChart3, Bell, CalendarClock, ClipboardCheck, ClipboardList, ClipboardPen, Droplets, FileSpreadsheet, FolderKanban,
   LayoutDashboard, Mountain, ScrollText, Users, Waves, Waypoints,
 } from 'lucide-react';
-import { USER_ROLES } from './roles';
+import { USER_ROLES, WORKFLOW_ROLES, isSystemAdmin, workflowRoleOf } from './roles';
+
+const { MAKER, CHECKER, APPROVER } = WORKFLOW_ROLES;
+const is = (...roles) => (user) => roles.includes(workflowRoleOf(user));
 
 /**
- * Sidebar links of each role. `icon` is the lucide icon shown in the rail.
- * `adminOnly` links are for State administrators without a workflow role.
+ * Sidebar links of each account role. `icon` is the lucide icon shown in the
+ * rail. `show(user)` limits a link to some workflow roles of the tier (Maker,
+ * Checker, Approver, or the HQ administrator).
  */
 export const NAV_LINKS = {
   [USER_ROLES.PIA_OFFICER]: [
     { label: 'Dashboard', href: '/dashboard/officer', icon: LayoutDashboard },
     { label: 'My Projects', href: '/dashboard/officer/projects', icon: FolderKanban },
-    { label: 'My MPRs', href: '/dashboard/officer/mprs', icon: ClipboardList },
+    { label: 'My MPRs', href: '/dashboard/officer/mprs', icon: ClipboardList, show: is(MAKER) },
+    { label: 'MPR Verification', href: '/dashboard/officer/mprs', icon: ClipboardCheck, show: is(CHECKER, APPROVER), badge: 'queue' },
     { label: 'Deadlines', href: '/dashboard/officer/deadlines', icon: CalendarClock },
     { label: 'Notifications', href: '/dashboard/officer/notifications', icon: Bell, badge: 'notifications' },
   ],
@@ -30,15 +35,19 @@ export const NAV_LINKS = {
   [USER_ROLES.DD_LEVEL]: [
     { label: 'Dashboard', href: '/dashboard/dd', icon: LayoutDashboard },
     { label: 'District Projects', href: '/dashboard/dd/projects', icon: FolderKanban },
-    { label: 'Review MPRs', href: '/dashboard/dd/mpr-review', icon: ClipboardCheck },
+    { label: 'MPR Verification', href: '/dashboard/dd/mpr-review', icon: ClipboardCheck, badge: 'queue' },
+    { label: 'District Entry MPRs', href: '/dashboard/dd/mprs', icon: ClipboardPen, show: is(MAKER) },
     { label: 'Deadlines', href: '/dashboard/dd/deadlines', icon: CalendarClock },
+    { label: 'Users', href: '/dashboard/dd/users', icon: Users, show: is(MAKER, APPROVER) },
     { label: 'Notifications', href: '/dashboard/dd/notifications', icon: Bell, badge: 'notifications' },
   ],
   [USER_ROLES.SUPER_ADMIN]: [
     { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
     { label: 'Projects', href: '/dashboard/admin/projects', icon: FolderKanban },
+    { label: 'MPR Verification', href: '/dashboard/admin/mprs', icon: ClipboardCheck, badge: 'queue' },
+    { label: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
     { label: 'Deadlines', href: '/dashboard/admin/deadlines', icon: CalendarClock },
-    { label: 'Users', href: '/dashboard/admin/users', icon: Users, adminOnly: true },
+    { label: 'Users', href: '/dashboard/admin/users', icon: Users, show: (user) => isSystemAdmin(user) || is(MAKER, APPROVER)(user) },
     { label: 'Audit Logs', href: '/dashboard/admin/audit-logs', icon: ScrollText },
     { label: 'Notifications', href: '/dashboard/admin/notifications', icon: Bell, badge: 'notifications' },
   ],
@@ -51,11 +60,10 @@ export const NAV_LINKS = {
   ],
 };
 
-/** Links of a user, with administrator-only links removed for workflow roles. */
+/** Links of a user: the links of their account role that apply to their workflow role. */
 export const navLinksFor = (user) => {
   if (!user?.role) return [];
-  const pure = user.role === USER_ROLES.SUPER_ADMIN && (user.workflowRole == null || user.workflowRole === '');
-  return (NAV_LINKS[user.role] || []).filter((link) => !link.adminOnly || pure);
+  return (NAV_LINKS[user.role] || []).filter((link) => !link.show || link.show(user));
 };
 
 /** Where a role's notification page lives. */
