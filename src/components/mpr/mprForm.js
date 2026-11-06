@@ -109,4 +109,5 @@ export function buildEntries(activities, entries) {
 export const FORM_TYPE_TITLES = {
   '55-(1-3)': 'Monthly Progress Report — Heads 55-1, 55-2 and 55-3',
   '55(4)': 'Monthly Progress Report — Head 55-4',
+  '55(5)': 'Monthly Progress Report — Head 55-5 (Pond / Wetland)',
 };

@@ -1,6 +1,6 @@
 import {
   BarChart3, Bell, CalendarClock, ClipboardCheck, ClipboardList, ClipboardPen, Droplets, FileSpreadsheet, FolderKanban,
-  LayoutDashboard, Mountain, ScrollText, Users, Waves, Waypoints,
+  LayoutDashboard, Mountain, ScrollText, Users, Wallet, Waves, Waypoints,
 } from 'lucide-react';
 import { USER_ROLES, WORKFLOW_ROLES, isSystemAdmin, workflowRoleOf } from './roles';
 
@@ -18,6 +18,7 @@ export const NAV_LINKS = {
     { label: 'My Projects', href: '/dashboard/officer/projects', icon: FolderKanban },
     { label: 'My MPRs', href: '/dashboard/officer/mprs', icon: ClipboardList, show: is(MAKER) },
     { label: 'MPR Verification', href: '/dashboard/officer/mprs', icon: ClipboardCheck, show: is(CHECKER, APPROVER), badge: 'queue' },
+    { label: 'Head 56', href: '/dashboard/officer/head56', icon: Wallet, badge: 'h56' },
     { label: 'Deadlines', href: '/dashboard/officer/deadlines', icon: CalendarClock },
     { label: 'Notifications', href: '/dashboard/officer/notifications', icon: Bell, badge: 'notifications' },
   ],
@@ -29,6 +30,7 @@ export const NAV_LINKS = {
     { label: '55-02 River', href: '/dashboard/mnd/head55-02', icon: Waves },
     { label: '55-03 Major River', href: '/dashboard/mnd/head55-03', icon: Waypoints },
     { label: '55-04 Ground Water', href: '/dashboard/mnd/head55-04', icon: Mountain },
+    { label: 'Head 56', href: '/dashboard/mnd/head56', icon: Wallet },
     { label: 'Analytics', href: '/dashboard/mnd/analytics', icon: BarChart3 },
     { label: 'Notifications', href: '/dashboard/mnd/notifications', icon: Bell, badge: 'notifications' },
   ],
@@ -37,6 +39,7 @@ export const NAV_LINKS = {
     { label: 'District Projects', href: '/dashboard/dd/projects', icon: FolderKanban },
     { label: 'MPR Verification', href: '/dashboard/dd/mpr-review', icon: ClipboardCheck, badge: 'queue' },
     { label: 'District Entry MPRs', href: '/dashboard/dd/mprs', icon: ClipboardPen, show: is(MAKER) },
+    { label: 'Head 56', href: '/dashboard/dd/head56', icon: Wallet, badge: 'h56' },
     { label: 'Deadlines', href: '/dashboard/dd/deadlines', icon: CalendarClock },
     { label: 'Users', href: '/dashboard/dd/users', icon: Users, show: is(MAKER, APPROVER) },
     { label: 'Notifications', href: '/dashboard/dd/notifications', icon: Bell, badge: 'notifications' },
@@ -45,6 +48,7 @@ export const NAV_LINKS = {
     { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
     { label: 'Projects', href: '/dashboard/admin/projects', icon: FolderKanban },
     { label: 'MPR Verification', href: '/dashboard/admin/mprs', icon: ClipboardCheck, badge: 'queue' },
+    { label: 'Head 56', href: '/dashboard/admin/head56', icon: Wallet, badge: 'h56' },
     { label: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
     { label: 'Deadlines', href: '/dashboard/admin/deadlines', icon: CalendarClock },
     { label: 'Users', href: '/dashboard/admin/users', icon: Users, show: (user) => isSystemAdmin(user) || is(MAKER, APPROVER)(user) },
@@ -54,6 +58,7 @@ export const NAV_LINKS = {
   [USER_ROLES.MND_SUPER_ADMIN]: [
     { label: 'Dashboard', href: '/dashboard/mnd-admin', icon: LayoutDashboard },
     { label: 'All Reports', href: '/dashboard/mnd-admin/mpr', icon: ClipboardList },
+    { label: 'Head 56', href: '/dashboard/mnd-admin/head56', icon: Wallet },
     { label: 'Advanced Analytics', href: '/dashboard/mnd-admin/analytics', icon: BarChart3 },
     { label: 'Deadlines', href: '/dashboard/mnd-admin/deadlines', icon: CalendarClock },
     { label: 'Notifications', href: '/dashboard/mnd-admin/notifications', icon: Bell, badge: 'notifications' },

@@ -9,6 +9,7 @@ import { useT } from '@/contexts/LanguageContext';
 import { navLinksFor } from '@/constants/nav';
 import { roleLabelOf } from '@/constants/roles';
 import { fetchMprQueue } from '@/lib/mprApi';
+import { fetchH56Queue } from '@/lib/head56Api';
 
 export const RAIL_WIDTH = 68; // px, the collapsed sidebar (icons only)
 
@@ -21,24 +22,24 @@ const activeHref = (links, pathname) => links
  * Number of monthly reports waiting for the signed-in user's verification step.
  * Refreshed when the page changes or a notification arrives.
  */
-function useQueueCount(enabled, pathname, unread) {
+function useQueueCount(fetchQueue, enabled, pathname, unread) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!enabled) { setCount(0); return undefined; }
     let current = true;
-    fetchMprQueue({ limit: 1 }).then(({ total }) => { if (current) setCount(total); }).catch(() => { if (current) setCount(0); });
+    fetchQueue({ limit: 1 }).then(({ total }) => { if (current) setCount(total); }).catch(() => { if (current) setCount(0); });
     return () => { current = false; };
-  }, [enabled, pathname, unread]);
+  }, [fetchQueue, enabled, pathname, unread]);
   return count;
 }
 
-function NavList({ links, current, expanded, unread, queue, onNavigate }) {
+function NavList({ links, current, expanded, unread, queue, h56, onNavigate }) {
   const t = useT();
   return (
     <ul className="space-y-1 px-3">
       {links.map((link) => {
         const active = link.href === current;
-        const badge = { notifications: unread, queue }[link.badge] || 0;
+        const badge = { notifications: unread, queue, h56 }[link.badge] || 0;
         const Icon = link.icon;
         return (
           <li key={link.href}>
@@ -58,7 +59,7 @@ function NavList({ links, current, expanded, unread, queue, onNavigate }) {
               </span>
               <span className={`min-w-0 flex-1 truncate pr-3 transition-[opacity,transform] duration-200 ${expanded ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'}`}>{t(link.label)}</span>
               {badge > 0 && expanded && <span className="mr-3 rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-white">{badge > 99 ? '99+' : badge}</span>}
-              {badge > 0 && <span className="sr-only">, {badge} {link.badge === 'queue' ? 'waiting for you' : 'unread'}</span>}
+              {badge > 0 && <span className="sr-only">, {badge} {link.badge === 'notifications' ? 'unread' : 'waiting for you'}</span>}
             </Link>
           </li>
         );
@@ -125,7 +126,8 @@ export function AppSidebar({ mobileOpen, onMobileClose }) {
   const links = navLinksFor(user);
   const current = activeHref(links, pathname || '');
   const expanded = hovered || keyboard;
-  const queue = useQueueCount(links.some((link) => link.badge === 'queue'), pathname, unreadCount);
+  const queue = useQueueCount(fetchMprQueue, links.some((link) => link.badge === 'queue'), pathname, unreadCount);
+  const h56 = useQueueCount(fetchH56Queue, links.some((link) => link.badge === 'h56'), pathname, unreadCount);
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
   // The drawer closes when a link takes the user to another page.
@@ -157,7 +159,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }) {
         className={`fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-navy transition-[width,box-shadow] duration-200 ease-out md:flex print:hidden ${expanded ? 'shadow-2xl' : 'shadow-md'}`}
       >
         <Brand expanded={expanded} />
-        <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 [scrollbar-width:none]"><NavList links={links} current={current} expanded={expanded} unread={unreadCount} queue={queue} /></nav>
+        <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 [scrollbar-width:none]"><NavList links={links} current={current} expanded={expanded} unread={unreadCount} queue={queue} h56={h56} /></nav>
         <UserBlock expanded={expanded} />
       </aside>
 
@@ -170,7 +172,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }) {
               <Brand expanded />
               <button type="button" onClick={onMobileClose} aria-label="Close menu" className="rounded-lg p-2 text-blue-100 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"><X className="h-5 w-5" aria-hidden="true" /></button>
             </div>
-            <nav className="min-h-0 flex-1 overflow-y-auto py-3"><NavList links={links} current={current} expanded unread={unreadCount} queue={queue} onNavigate={onMobileClose} /></nav>
+            <nav className="min-h-0 flex-1 overflow-y-auto py-3"><NavList links={links} current={current} expanded unread={unreadCount} queue={queue} h56={h56} onNavigate={onMobileClose} /></nav>
             <UserBlock expanded />
           </aside>
         </div>

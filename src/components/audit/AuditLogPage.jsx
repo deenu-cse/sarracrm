@@ -1,8 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Activity, BadgeCheck, Ban, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, FolderKanban, IndianRupee, KeyRound, Lock, LogIn,
-  RotateCcw, ScrollText, Search, Settings, Users, X,
+  Activity, BadgeCheck, Ban, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, FolderKanban, IndianRupee, KeyRound, Lock, LogIn, RotateCcw, ScrollText, Search, Settings, Users, Wallet, X,
 } from 'lucide-react';
 import axiosInstance from '@/lib/axiosInstance';
 import { formatLakh } from '@/lib/numeric';
@@ -23,6 +22,12 @@ const ACTIONS = {
   MPR_RETURN: ['Monthly report returned to Maker', 'reports'], MPR_REJECT: ['Monthly report rejected', 'reports'], MPR_DRAFT_DISCARD: ['Monthly report draft discarded', 'reports'], MPR_EVIDENCE_UPLOAD: ['Report evidence changed', 'reports'],
   FORM_SUBMIT: ['Form submitted', 'reports'], FORM_RESUBMIT: ['Form resubmitted', 'reports'], FORM_APPROVE: ['Form approved', 'reports'], FORM_REJECT: ['Form rejected', 'reports'], FORM_DRAFT_SAVE: ['Draft saved', 'reports'],
   PROJECT_COMPLETION: ['Completion report', 'closure'], PROJECT_CLOSE: ['Project closure', 'closure'], OUTCOME_RECORD: ['Outcome reading', 'closure'],
+  H56_MASTER_UPDATE: ['Head 56 master line changed', 'head56'], H56_ALLOCATION_CREATE: ['Head 56 allocation created', 'head56'], H56_ALLOCATION_SAVE: ['Head 56 allocation saved / revised', 'head56'],
+  H56_ALLOCATION_SUBMIT: ['Head 56 allocation submitted', 'head56'], H56_ALLOCATION_VERIFY: ['Head 56 allocation verified', 'head56'], H56_ALLOCATION_PUBLISH: ['Head 56 allocation approved & published', 'head56'],
+  H56_ALLOCATION_RETURN: ['Head 56 allocation returned', 'head56'], H56_ALLOCATION_DISCARD: ['Head 56 allocation draft discarded', 'head56'], H56_MPR_SAVE: ['Head 56 report saved / submitted', 'head56'],
+  H56_MPR_DISCARD: ['Head 56 report draft discarded', 'head56'], H56_DOCUMENT: ['Head 56 supporting document changed', 'head56'], H56_MPR_FORWARD: ['Head 56 report verified and forwarded', 'head56'],
+  H56_MPR_RETURN: ['Head 56 report returned to Maker', 'head56'], H56_MPR_REJECT: ['Head 56 report rejected', 'head56'], H56_MPR_REOPEN: ['Head 56 report reopened by HQ', 'head56'],
+  H56_REVIEW: ['Head 56 monthly CEO/ACEO/CFO review', 'head56'], H56_REVIEW_WITHDRAW: ['Head 56 monthly review withdrawn', 'head56'],
   USER_CREATE: ['User added', 'users'], USER_REQUEST: ['User account invited / requested', 'users'], USER_APPROVE: ['User account request approved', 'users'], USER_REJECT: ['User account request rejected', 'users'], USER_SUSPEND: ['User suspended', 'users'], USER_DEACTIVATE: ['User deactivated', 'users'], USER_RESTORE: ['User restored', 'users'], PASSWORD_CHANGE: ['Password changed', 'users'],
   LOGIN: ['Signed in', 'access'], LOGOUT: ['Signed out', 'access'], TOKEN_REFRESH: ['Session renewed', 'access'], BOOTSTRAP: ['System set up', 'access'],
   SETTINGS_UPDATE: ['Settings changed', 'system'], REPORT_DISPATCH: ['Reminders / summary sent', 'system'],
@@ -33,6 +38,7 @@ const GROUPS = [
   { id: 'projects', label: 'Projects', icon: FolderKanban, cls: 'border-sky-200 bg-sky-50 text-sky-800' },
   { id: 'budget', label: 'Budget (earlier system)', icon: IndianRupee, cls: 'border-orange-200 bg-orange-50 text-orange-800' },
   { id: 'reports', label: 'Monthly reports', icon: ClipboardList, cls: 'border-indigo-200 bg-indigo-50 text-indigo-800' },
+  { id: 'head56', label: 'Head 56', icon: Wallet, cls: 'border-teal-200 bg-teal-50 text-teal-800' },
   { id: 'closure', label: 'Closure & outcomes', icon: Lock, cls: 'border-emerald-200 bg-emerald-50 text-emerald-800' },
   { id: 'users', label: 'Users', icon: Users, cls: 'border-violet-200 bg-violet-50 text-violet-800' },
   { id: 'access', label: 'Sign-in', icon: LogIn, cls: 'border-slate-200 bg-slate-100 text-slate-700' },

@@ -393,7 +393,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref, rep
                 ]}
               />
             </Panel>
-            <Panel title="Head-wise Detail" description="Budget heads 55-01 to 55-04." padded={false}>
+            <Panel title="Head-wise Detail" description="Budget heads 55-01 to 55-05." padded={false}>
               <DataTable
                 rows={data.byHead}
                 caption="Figures for each budget head"

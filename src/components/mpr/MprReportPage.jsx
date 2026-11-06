@@ -52,7 +52,7 @@ function NavLink({ target, href, direction }) {
 }
 
 /** The approval chain of the report, step by step, with who took each step. */
-function ChainTracker({ chain }) {
+export function ChainTracker({ chain }) {
   return (
     <ol className="flex items-start overflow-x-auto rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm print:hidden" aria-label="Approval chain">
       {chain.map((step, index) => {
