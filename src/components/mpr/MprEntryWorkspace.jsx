@@ -1,12 +1,12 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, ChevronLeft, ClipboardList, Eye, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ClipboardList, Eye, Lock, Save } from 'lucide-react';
 import { Dialog } from '@/components/ui/Dialog';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import {
-  fetchMprContext, fetchMprCorrectionForm, fetchMprForm, fetchMprWorkload,
-  previewMpr, previewMprCorrection, resubmitMpr, submitMpr,
+  fetchMprContext, fetchMprEditForm, fetchMprForm, fetchMprWorkload,
+  previewMpr, previewMprEdit, saveMprEdit, submitMpr,
 } from '@/lib/mprApi';
 import { ActionButton, Field, Notice, RetryButton, Skeleton, SuccessTick, inputClass } from '@/components/projects/create/parts';
 import { MprActivityEntry } from './MprActivityEntry';
@@ -16,8 +16,14 @@ import { EvidencePicker } from './MprEvidence';
 import { addMprEvidence } from '@/lib/lifecycleApi';
 import { useT } from '@/contexts/LanguageContext';
 
-const MPRS_ROUTE = '/dashboard/officer/mprs';
-const reportHref = (id) => `${MPRS_ROUTE}/report/${id}`;
+const OFFICER_ROUTES = {
+  list: '/dashboard/officer/mprs',
+  projects: '/dashboard/officer/projects',
+  entry: '/dashboard/officer/forms/new',
+  report: (id) => `/dashboard/officer/mprs/report/${id}`,
+};
+
+const FIRST_REVIEWER = { PIA: 'PIA Checker', DISTRICT: 'District Checker' };
 
 function Card({ step, title, description, children }) {
   return (
@@ -52,18 +58,23 @@ const projectOption = (project) => ({
 const NO_ACTIVITIES = [];
 
 /**
- * Monthly Progress Report entry for a PIA officer.
+ * Monthly Progress Report entry for the reporting Maker of a department: the
+ * PIA Maker, or District Technical Staff where the district holds the
+ * reporting responsibility (`routes` points at the screens of that role).
  *
  * Select Project → (project information loads) → Financial Year → Month →
- * Department → Head → activities → Preview → Submit.
+ * Department → Head → activities → Save as Draft, or Preview → Submit to the
+ * first reviewer (PIA Checker, or District Checker for district entry).
  *
- * With `?mprId=` it opens a report returned by the district for correction:
- * the selection is fixed and the previous figures are pre-filled.
+ * With `?mprId=` it opens a saved draft or a report returned for correction:
+ * the selection is fixed and the saved figures are pre-filled.
  */
-export function MprEntryWorkspace({ initialQuery = {} }) {
+export function MprEntryWorkspace({ initialQuery = {}, routes = OFFICER_ROUTES }) {
   // Selection the page was opened with (deep link or refresh).
   const initial = useRef({ projectId: '', departmentId: '', fy: '', month: '', mprId: '', ...initialQuery }).current;
   const correctionId = initial.mprId;
+  const MPRS_ROUTE = routes.list;
+  const reportHref = routes.report;
 
   const [workload, setWorkload] = useState({ items: [], loading: !correctionId, error: '' });
   const [projectId, setProjectId] = useState(initial.projectId);
@@ -77,6 +88,7 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
   const [remarks, setRemarks] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [validating, setValidating] = useState(false);
+  const [drafting, setDrafting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -131,8 +143,8 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
   const loadForm = useCallback(() => {
     if (correctionId) {
       setFormBox({ form: null, loading: true, error: '' });
-      fetchMprCorrectionForm(correctionId).then(applyForm)
-        .catch((err) => setFormBox({ form: null, loading: false, error: err?.message || 'Unable to load the report for correction. Please try again.' }));
+      fetchMprEditForm(correctionId).then(applyForm)
+        .catch((err) => setFormBox({ form: null, loading: false, error: err?.message || 'Unable to load the report. Please try again.' }));
       return;
     }
     if (!periodReady) { setFormBox({ form: null, loading: false, error: '' }); return; }
@@ -161,6 +173,8 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
   const totals = useMemo(() => summarize(activities, evaluations), [activities, evaluations]);
   const hasInput = Object.values(entries).some((entry) => entry.physical || entry.financial) || Boolean(remarks.trim());
   const blocked = Boolean(form?.blocker);
+  const returnedReport = form?.status === 'RETURNED_FOR_CORRECTION';
+  const firstReviewer = FIRST_REVIEWER[form?.reportingMode || 'PIA'];
 
   useEffect(() => {
     if (!hasInput || saved) return undefined;
@@ -195,7 +209,7 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
     setValidating(true);
     try {
       // The backend validates and returns the exact figures it will save.
-      const result = correctionId ? await previewMprCorrection(correctionId, payload()) : await previewMpr(payload());
+      const result = correctionId ? await previewMprEdit(correctionId, payload()) : await previewMpr(payload());
       setSubmitError('');
       setPreview(result);
     } catch (err) {
@@ -205,22 +219,51 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
     }
   };
 
+  /** Upload the chosen evidence to a saved report. A failed upload never undoes the report. */
+  const attachEvidence = async (id) => {
+    if (!evidence.length) return '';
+    try {
+      await addMprEvidence(id, evidence);
+      return '';
+    } catch (uploadError) {
+      return `${uploadError?.message || 'The files could not be uploaded.'} The report itself is saved; add the files from the report page.`;
+    }
+  };
+
+  /** Keep the report with the Maker: no preview, but the server still enforces every limit. */
+  const saveDraft = async () => {
+    if (submittingRef.current) return;
+    setShowErrors(true);
+    setActionError('');
+    if (totals.errors > 0) {
+      setActionError(`${totals.errors} activit${totals.errors === 1 ? 'y exceeds its' : 'ies exceed their'} target. Fix the highlighted figures to continue.`);
+      return;
+    }
+    submittingRef.current = true;
+    setDrafting(true);
+    try {
+      const result = correctionId ? await saveMprEdit(correctionId, { ...payload(), asDraft: true }) : await submitMpr({ ...payload(), asDraft: true });
+      const evidenceNote = await attachEvidence(result.id);
+      setEvidence([]);
+      setSaved({ ...result, draft: true, period: form.period, department: form.department.name, evidenceCount: evidenceNote ? 0 : evidence.length, evidenceNote });
+      requestAnimationFrame(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    } catch (err) {
+      setActionError(err?.message || 'Unable to save the draft. Please try again.');
+    } finally {
+      submittingRef.current = false;
+      setDrafting(false);
+    }
+  };
+
   const submit = async () => {
     if (submittingRef.current) return; // double click
     submittingRef.current = true;
     setSubmitting(true);
     setSubmitError('');
     try {
-      const result = correctionId ? await resubmitMpr(correctionId, payload()) : await submitMpr(payload());
+      const result = correctionId ? await saveMprEdit(correctionId, payload()) : await submitMpr(payload());
       // The report is saved. Evidence is optional, so a failed upload is reported but never undoes the report.
-      let evidenceNote = '';
-      if (evidence.length) {
-        try {
-          await addMprEvidence(result.id, evidence);
-        } catch (uploadError) {
-          evidenceNote = `${uploadError?.message || 'The files could not be uploaded.'} The report itself is saved; add the files from the report page.`;
-        }
-      }
+      const evidenceNote = await attachEvidence(result.id);
       setPreview(null);
       setEvidence([]);
       setSaved({ ...result, period: form.period, department: form.department.name, evidenceCount: evidenceNote ? 0 : evidence.length, evidenceNote });
@@ -261,7 +304,7 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
         </Link>
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><ClipboardList className="h-5 w-5" /></span>
         <div className="min-w-0">
-          <h1 className="text-xl font-bold text-slate-900">{t(correctionId ? 'Correct Monthly Progress Report' : 'Monthly Progress Report')}</h1>
+          <h1 className="text-xl font-bold text-slate-900">{t(correctionId ? (returnedReport ? 'Correct Monthly Progress Report' : 'Continue Draft Report') : 'Monthly Progress Report')}</h1>
           <p className="text-sm text-slate-500">
             {head ? <>Form <strong className="font-semibold text-slate-700">{head.formType}</strong> · Head {head.code} — {head.name}</> : t('Report physical and financial progress for your department. Amounts are in ₹ Lakh.')}
           </p>
@@ -274,15 +317,21 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
             <div className="flex flex-wrap items-center gap-5">
               <SuccessTick size={56} />
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-bold text-slate-900">{t(correctionId ? 'Report Resubmitted' : 'MPR Submitted Successfully')}</h2>
+                <h2 className="text-lg font-bold text-slate-900">{saved.draft ? 'Draft Saved' : t(returnedReport ? 'Report Resubmitted' : 'MPR Submitted Successfully')}</h2>
                 <p className="mt-0.5 text-sm text-slate-700">
-                  <span className="font-mono font-semibold">{saved.mprNo}</span> — {saved.department}, {saved.period}. {t('It has been sent to the district for review.')}
+                  <span className="font-mono font-semibold">{saved.mprNo}</span> — {saved.department}, {saved.period}.{' '}
+                  {saved.draft ? 'It stays with you until you submit it.' : `It has been sent to the ${FIRST_REVIEWER[saved.entryMode || 'PIA']} for verification.`}
                   {saved.evidenceCount > 0 && ` ${saved.evidenceCount} evidence file${saved.evidenceCount === 1 ? '' : 's'} attached.`}
                 </p>
                 {saved.evidenceNote && <p role="alert" className="mt-1 text-sm font-medium text-amber-800">{saved.evidenceNote}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                {!correctionId && <ActionButton variant="secondary" onClick={fileAnother}>{t('File Another Month')}</ActionButton>}
+                {!correctionId && !saved.draft && <ActionButton variant="secondary" onClick={fileAnother}>{t('File Another Month')}</ActionButton>}
+                {saved.draft && (
+                  <Link href={`${routes.entry}?mprId=${saved.id}`} className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">
+                    Continue Editing
+                  </Link>
+                )}
                 <Link href={reportHref(saved.id)} className="inline-flex items-center justify-center rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-navy-light hover:shadow-md active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/50 focus-visible:ring-offset-2">
                   {t('View Report')}
                 </Link>
@@ -294,11 +343,14 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
         {!saved && (
           <>
             {correctionId && form?.returnReason && (
-              <Notice tone="warning" title={`Returned by the district for correction${form.mprNo ? ` — ${form.mprNo}` : ''}`}>{form.returnReason}</Notice>
+              <Notice tone="warning" title={`Returned for correction by the ${form.returnedByRole || 'reviewer'}${form.mprNo ? ` — ${form.mprNo}` : ''}`}>{form.returnReason}</Notice>
+            )}
+            {correctionId && form?.status === 'DRAFT' && (
+              <Notice tone="info" title={`Draft${form.mprNo ? ` — ${form.mprNo}` : ''}`}>Saved but not submitted. Submit it to send it to the {firstReviewer}.</Notice>
             )}
 
             {/* 1. Project */}
-            <Card step="1" title={t('Project')} description={t(correctionId ? 'The project and period of a returned report cannot be changed.' : 'Only projects assigned to you are listed. Project details are filled automatically.')}>
+            <Card step="1" title={t('Project')} description={t(correctionId ? 'The project and period of a saved report cannot be changed.' : 'Only projects you hold the reporting responsibility for are listed. Project details are filled automatically.')}>
               {!correctionId && (
                 <div className="mb-5 max-w-2xl">
                   <Field id="mpr-project" label={t('Project Name / Unique ID')} required error={!workload.loading ? workload.error : ''}>
@@ -318,7 +370,7 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
                   </Field>
                   {!workload.loading && !workload.error && workload.items.length === 0 && (
                     <p className="mt-2 text-sm text-slate-500">
-                      No project is ready for reporting. Accept an assigned project under <Link href="/dashboard/officer/projects" className="font-semibold text-navy hover:underline">My Projects</Link> first.
+                      No project is ready for reporting. It appears here once the department is assigned to you and ready (see <Link href={routes.projects} className="font-semibold text-navy hover:underline">projects</Link>).
                     </p>
                   )}
                 </div>
@@ -338,6 +390,8 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
                   <ReadOnly label={t('Block')} value={info.block} />
                   <ReadOnly label={t('Gram Panchayat')} value={info.gramPanchayat} />
                   <ReadOnly label={t('Village')} value={info.village} />
+                  {info.sanctionId && <ReadOnly label={t('Sanction ID')} value={info.sanctionId} />}
+                  {info.financialYear && <ReadOnly label={t('Project Financial Year')} value={info.financialYear} />}
                 </dl>
               )}
               {!info && !contextBox.loading && !contextBox.error && !correctionId && (
@@ -440,13 +494,11 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
                       <textarea id="mpr-remarks" rows={2} maxLength={1000} value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder={t("Anything the district should know about this month's progress")} className={`${inputClass(false)} resize-none`} />
                     </div>
 
-                    {!correctionId && (
-                      <div className="mt-5">
-                        <p className="mb-0.5 flex items-center gap-1.5 text-sm font-medium text-slate-700">{t('Evidence')} <span className="text-xs font-normal text-slate-400">{t('(optional)')}</span></p>
-                        <p className="mb-2 text-xs text-slate-500">{t('Site photographs or measurement sheets for this month. A report can be submitted without any.')}</p>
-                        <EvidencePicker items={evidence} onChange={setEvidence} disabled={submitting || validating} />
-                      </div>
-                    )}
+                    <div className="mt-5">
+                      <p className="mb-0.5 flex items-center gap-1.5 text-sm font-medium text-slate-700">{t('Evidence')} <span className="text-xs font-normal text-slate-400">{t('(optional)')}</span></p>
+                      <p className="mb-2 text-xs text-slate-500">{correctionId ? 'Files already attached stay on the report; add more here or manage them on the report page.' : t('Field photographs and supporting documents for this month.')}</p>
+                      <EvidencePicker items={evidence} onChange={setEvidence} disabled={submitting || validating || drafting} />
+                    </div>
                   </>
                 )}
               </Card>
@@ -464,8 +516,13 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
                   <div className="flex flex-wrap items-center justify-end gap-4">
                     {actionError && <p role="alert" className="wz-fade-in max-w-xl text-right text-sm font-medium text-red-700">{actionError}</p>}
                     {!actionError && totals.entered === 0 && <p className="text-xs text-slate-500">No progress entered: this will be filed as a nil report for {form.period}.</p>}
-                    <ActionButton size="lg" icon={Eye} loading={validating} onClick={openPreview} className={showErrors && totals.errors > 0 ? 'wz-shake' : ''}>
-                      {t(validating ? 'Validating…' : 'Preview')}
+                    {!returnedReport && (
+                      <ActionButton size="lg" variant="secondary" icon={Save} loading={drafting} disabled={validating} onClick={saveDraft}>
+                        {drafting ? 'Saving…' : 'Save as Draft'}
+                      </ActionButton>
+                    )}
+                    <ActionButton size="lg" icon={Eye} loading={validating} disabled={drafting} onClick={openPreview} className={showErrors && totals.errors > 0 ? 'wz-shake' : ''}>
+                      {t(validating ? 'Validating…' : 'Preview & Submit')}
                     </ActionButton>
                   </div>
                 </div>
@@ -485,7 +542,7 @@ export function MprEntryWorkspace({ initialQuery = {} }) {
         footer={(
           <>
             <ActionButton variant="secondary" icon={ArrowLeft} onClick={() => setPreview(null)} disabled={submitting}>{t('Back to Edit')}</ActionButton>
-            <ActionButton variant="success" iconRight={ArrowRight} loading={submitting} onClick={submit}>{submitting ? (evidence.length ? 'Submitting and uploading…' : t('Submitting MPR…')) : t('Proceed')}</ActionButton>
+            <ActionButton variant="success" iconRight={ArrowRight} loading={submitting} onClick={submit}>{submitting ? (evidence.length ? 'Submitting and uploading…' : t('Submitting MPR…')) : `Submit to ${firstReviewer}`}</ActionButton>
           </>
         )}
       >

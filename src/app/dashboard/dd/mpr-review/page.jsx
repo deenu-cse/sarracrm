@@ -139,8 +139,8 @@ export default function DDMPRReviewPage() {
           <ClipboardCheck className="w-5 h-5 text-teal-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-slate-900">MPR Review</h1>
-          <p className="text-slate-500 text-sm">Review and approve Monthly Progress Reports from PIA Officers</p>
+          <h1 className="text-2xl font-black text-slate-900">MPR Verification</h1>
+          <p className="text-slate-500 text-sm">District Maker receives, District Checker verifies, District Approver approves and forwards to SARRA HQ</p>
         </div>
       </div>
 

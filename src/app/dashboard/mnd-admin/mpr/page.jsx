@@ -12,8 +12,9 @@ import { fetchStateMprs } from '@/lib/mprApi';
 import { RegisterDownload } from '@/components/mpr/MprEvidence';
 import { downloadMprRegister } from '@/lib/lifecycleApi';
 
-// Statuses that exist for project MPRs. Any other status filter can only match the older report types.
-const PROJECT_MPR_STATUSES = ['SUBMITTED', 'DISTRICT_APPROVED', 'RETURNED_TO_PIA', 'STATE_VERIFIED'];
+// Statuses and groups that exist for project MPRs. Any other status filter can only match the older report types.
+const PROJECT_MPR_STATUSES = ['AT_PIA', 'AT_DISTRICT', 'AT_HQ', 'VERIFIED_BY_STATE', 'RETURNED_FOR_CORRECTION', 'REJECTED'];
+const sumOf = (counts, keys) => keys.reduce((total, key) => total + (counts?.[key] || 0), 0);
 
 export default function MNDAdminMPRList() {
   const router = useRouter();
@@ -138,7 +139,7 @@ export default function MNDAdminMPRList() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">MPR Intelligence Hub</h1>
-            <p className="text-slate-500 font-medium mt-1">Centralized review and analytics for all state-level reports.</p>
+            <p className="text-slate-500 font-medium mt-1">Monitoring view of every report. Verification is done by the PIA, District and HQ Checkers and Approvers.</p>
           </div>
           <div className="flex gap-3">
              <RegisterDownload label="Project MPR Register (Excel)" download={() => downloadMprRegister({ search: filters.search, status: PROJECT_MPR_STATUSES.includes(filters.status) ? filters.status : '', financialYear: /^\d{4}-\d{2}$/.test(filters.financialYear || '') ? filters.financialYear : '' })} />
@@ -177,13 +178,22 @@ export default function MNDAdminMPRList() {
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
           >
             <option value="">All Statuses</option>
-            <option value="SUBMITTED">Pending Review</option>
-            <option value="DISTRICT_APPROVED">Approved by District</option>
-            <option value="STATE_VERIFIED">Verified by State</option>
-            <option value="RETURNED_TO_PIA">Returned to PIA</option>
-            <option value="UNDER_REVIEW">Under Review</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
+            <optgroup label="Project MPR">
+              <option value="AT_PIA">At PIA verification</option>
+              <option value="AT_DISTRICT">At District verification</option>
+              <option value="AT_HQ">At HQ verification</option>
+              <option value="VERIFIED_BY_STATE">Verified by State</option>
+              <option value="RETURNED_FOR_CORRECTION">Returned for Correction</option>
+              <option value="REJECTED">Rejected</option>
+            </optgroup>
+            <optgroup label="Earlier report types">
+              <option value="SUBMITTED">Pending Review</option>
+              <option value="DISTRICT_APPROVED">Approved by District</option>
+              <option value="STATE_VERIFIED">Verified by State</option>
+              <option value="RETURNED_TO_PIA">Returned to PIA</option>
+              <option value="UNDER_REVIEW">Under Review</option>
+              <option value="APPROVED">Approved</option>
+            </optgroup>
           </select>
 
           <select 
@@ -214,13 +224,14 @@ export default function MNDAdminMPRList() {
         )}
 
         {projectSummary && projectSummary.total > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
             {[
               ['Project MPRs', projectSummary.total, ''],
-              ['Awaiting District', projectSummary.counts.SUBMITTED, 'SUBMITTED'],
-              ['Awaiting State Verification', projectSummary.counts.DISTRICT_APPROVED, 'DISTRICT_APPROVED'],
-              ['Verified by State', projectSummary.counts.STATE_VERIFIED, 'STATE_VERIFIED'],
-              ['Returned to PIA', projectSummary.counts.RETURNED_TO_PIA, 'RETURNED_TO_PIA'],
+              ['At PIA', sumOf(projectSummary.counts, ['PENDING_PIA_CHECKER', 'PENDING_PIA_APPROVER']), 'AT_PIA'],
+              ['At District', sumOf(projectSummary.counts, ['SUBMITTED_TO_DISTRICT', 'PENDING_DISTRICT_CHECKER', 'PENDING_DISTRICT_APPROVER']), 'AT_DISTRICT'],
+              ['At HQ', sumOf(projectSummary.counts, ['SUBMITTED_TO_HQ', 'PENDING_HQ_CHECKER', 'PENDING_HQ_APPROVER']), 'AT_HQ'],
+              ['Verified by State', projectSummary.counts.VERIFIED_BY_STATE || 0, 'VERIFIED_BY_STATE'],
+              ['Returned', projectSummary.counts.RETURNED_FOR_CORRECTION || 0, 'RETURNED_FOR_CORRECTION'],
             ].map(([label, count, status]) => (
               <button
                 key={label}

@@ -228,7 +228,7 @@ export function MonitoringSettings() {
               <>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{summary.periodLabel}, whole State</p>
                 <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  {[['Projects', summary.totals.projects], ['Sanctioned', formatLakh(summary.totals.sanctionedLakh)], ['Released', formatLakh(summary.totals.releasedLakh)], ['Spent', formatLakh(summary.totals.spentLakh)],
+                  {[['Projects', summary.totals.projects], ['Sanctioned', formatLakh(summary.totals.sanctionedLakh)], ['Spent', formatLakh(summary.totals.spentLakh)], ['Balance', formatLakh(summary.totals.balanceLakh)],
                     ['Spent in the month', formatLakh(summary.totals.spentInMonthLakh)], ['Reports filed', `${summary.totals.reportsFiled} of ${summary.totals.reportsExpected}`]].map(([label, value]) => (
                     <div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold tabular-nums text-slate-900">{value}</dd></div>
                   ))}

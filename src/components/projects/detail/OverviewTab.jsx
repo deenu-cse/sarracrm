@@ -4,7 +4,8 @@ import { ArrowRight, MapPin } from 'lucide-react';
 import { WorkflowTimeline } from '@/components/ui/WorkflowTimeline';
 import { formatLakh } from '@/lib/numeric';
 import { Notice } from '@/components/projects/create/parts';
-import { AllocatedTick, ProgressBar } from '@/components/projects/budget/BudgetStatus';
+import { ProgressBar } from '@/components/ui/Progress';
+import { ENTRY_MODE_LABELS } from '@/constants/status';
 import { DataItem, EmptyNote, Panel, formatDay, formatMoment } from './shared';
 
 function TabLink({ onClick, children }) {
@@ -19,13 +20,35 @@ function TabLink({ onClick, children }) {
   );
 }
 
+const nameOf = (value) => (value && typeof value === 'object' ? value.name : '');
+
+/** Who reports a department's MPR, and whether reporting can start. */
+function ReportingCell({ department }) {
+  const district = department.reportingMode === 'DISTRICT';
+  const ready = district ? Boolean(department.districtStaffUserId) : Boolean(department.piaAcceptedAt);
+  return (
+    <>
+      <span className={`inline-flex rounded px-1.5 py-0.5 text-[11px] font-semibold ${district ? 'bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-700'}`}>
+        {ENTRY_MODE_LABELS[district ? 'DISTRICT' : 'PIA']}
+      </span>
+      <span className={`mt-1 block text-xs ${ready ? 'text-emerald-700' : 'text-amber-700'}`}>
+        {district
+          ? (department.districtStaffUserId ? `By ${nameOf(department.districtStaffUserId) || 'District Technical Staff'}` : 'Staff not mapped')
+          : (department.piaAcceptedAt ? 'PIA accepted' : department.piaUserId ? 'Awaiting PIA acceptance' : 'Not assigned')}
+      </span>
+    </>
+  );
+}
+
 /** At-a-glance view: who, where, how much, and what happened last. */
-export function OverviewTab({ project, budget, budgetError, onOpenTab }) {
+export function OverviewTab({ project, finance, financeError, onOpenTab }) {
   const { location, approvalDates, head } = project;
   const departments = project.departmentAllocations || [];
   const history = project.workflowHistory || [];
   const recent = history.slice(-3).reverse();
   const trail = [location?.district || project.district, location?.block, location?.gramPanchayat, location?.village].filter(Boolean);
+  const totals = finance?.totals;
+  const spentPercent = totals?.sanctionedLakh > 0 ? Math.min(100, Math.round((totals.expenditureLakh / totals.sanctionedLakh) * 1000) / 10) : 0;
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -54,37 +77,39 @@ export function OverviewTab({ project, budget, budgetError, onOpenTab }) {
             <DataItem label="SLEC Approval" value={formatDay(approvalDates?.slec)} />
             <DataItem label="HPC Approval" value={formatDay(approvalDates?.hpc)} />
             <DataItem label="Number of PIA" value={project.numberOfPIA ? String(project.numberOfPIA) : ''} />
-            <DataItem label="Created By" value={project.makerUserId?.name} />
+            <DataItem label="HQ Maker" value={project.makerUserId?.name} />
+            <DataItem label="HQ Checker" value={project.checkerUserId?.name} />
+            <DataItem label="HQ Approver" value={project.approverUserId?.name} />
             <DataItem label="Created On" value={formatMoment(project.makerAt || project.createdAt, true)} />
             {project.makerNote && <DataItem label="Maker Note" value={project.makerNote} className="col-span-2" />}
           </dl>
         </Panel>
 
         <Panel
-          title="Departments"
-          description={departments.length ? `${departments.length} PIA department${departments.length === 1 ? '' : 's'} with their budget and release position` : undefined}
-          aside={departments.length > 0 && <TabLink onClick={() => onOpenTab('budget')}>Budget &amp; releases</TabLink>}
+          title="Departments (PIA)"
+          description={departments.length ? `${departments.length} PIA department${departments.length === 1 ? '' : 's'} with their sanctioned allocation and MPR reporting responsibility` : undefined}
+          aside={departments.length > 0 && <TabLink onClick={() => onOpenTab('activities')}>Activity plan</TabLink>}
           padded={false}
         >
           {departments.length === 0 ? (
-            <div className="p-5"><EmptyNote>This project has no department-wise budget{project.department ? ` (department: ${project.department})` : ''}.</EmptyNote></div>
+            <div className="p-5"><EmptyNote>This project has no department-wise allocation{project.department ? ` (department: ${project.department})` : ''}.</EmptyNote></div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[780px] text-sm">
+              <table className="w-full min-w-[820px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                     <th scope="col" className="px-5 py-2.5">Department</th>
                     <th scope="col" className="px-3 py-2.5 text-right">Dept. Share</th>
                     <th scope="col" className="px-3 py-2.5 text-right">SARRA Share</th>
-                    <th scope="col" className="px-3 py-2.5 text-right">Total</th>
-                    <th scope="col" className="px-3 py-2.5">PIA Officer</th>
-                    <th scope="col" className="w-44 px-5 py-2.5">Released</th>
+                    <th scope="col" className="px-3 py-2.5 text-right">Sanctioned</th>
+                    <th scope="col" className="px-3 py-2.5">PIA Maker</th>
+                    <th scope="col" className="px-3 py-2.5">MPR Reporting</th>
+                    <th scope="col" className="w-36 px-5 py-2.5">Spent</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {departments.map((department) => {
-                    const position = budget?.departments.find((item) => item.departmentId === String(department.departmentId));
-                    const full = position?.status === 'FULLY_ALLOCATED';
+                    const row = finance?.departments?.find((item) => item.departmentId === String(department.departmentId));
                     return (
                       <tr key={department.departmentId}>
                         <th scope="row" className="px-5 py-3 text-left font-medium text-slate-900">
@@ -97,19 +122,20 @@ export function OverviewTab({ project, budget, budgetError, onOpenTab }) {
                         <td className="px-3 py-3">
                           {department.piaUserId ? (
                             <>
-                              <span className="block font-medium text-slate-800">{department.piaUserId.name || 'Assigned'}</span>
+                              <span className="block font-medium text-slate-800">{nameOf(department.piaUserId) || 'Assigned'}</span>
                               <span className={`text-xs ${department.piaAcceptedAt ? 'text-emerald-700' : 'text-amber-700'}`}>{department.piaAcceptedAt ? 'Accepted' : 'Awaiting acceptance'}</span>
                             </>
                           ) : <span className="text-xs text-slate-400">Not assigned</span>}
                         </td>
+                        <td className="px-3 py-3"><ReportingCell department={department} /></td>
                         <td className="px-5 py-3">
-                          {position ? (
+                          {row ? (
                             <>
                               <div className="flex items-center justify-between gap-2 text-xs">
-                                <span className={`font-semibold tabular-nums ${full ? 'text-emerald-700' : 'text-slate-700'}`}>{position.percentAllocated}%</span>
-                                {full ? <AllocatedTick className="h-3.5 w-3.5" /> : <span className="text-slate-400">{position.installments.length} of {budget.rules.maxInstallments} inst.</span>}
+                                <span className="font-semibold tabular-nums text-slate-700">{row.financialPercent}%</span>
+                                <span className="tabular-nums text-slate-400">{formatLakh(row.expenditureLakh)}</span>
                               </div>
-                              <div className="mt-1"><ProgressBar percent={position.percentAllocated} complete={full} label={`${department.departmentName}: budget released`} /></div>
+                              <div className="mt-1"><ProgressBar percent={row.financialPercent} complete={row.financialPercent >= 100} label={`${department.departmentName}: expenditure`} /></div>
                             </>
                           ) : <span className="text-xs text-slate-400">—</span>}
                         </td>
@@ -124,19 +150,19 @@ export function OverviewTab({ project, budget, budgetError, onOpenTab }) {
       </div>
 
       <div className="space-y-5">
-        <Panel title="Budget Position" aside={budget && <TabLink onClick={() => onOpenTab('budget')}>Details</TabLink>}>
-          {budgetError && <Notice tone="error">{budgetError}</Notice>}
-          {!budgetError && !budget && <EmptyNote>Budget release is tracked for projects with department-wise budget.</EmptyNote>}
-          {budget && (
+        <Panel title="Financial Position" aside={finance && <TabLink onClick={() => onOpenTab('reports')}>Progress reports</TabLink>}>
+          {financeError && <Notice tone="error">{financeError}</Notice>}
+          {!financeError && !totals && <EmptyNote>Loading the financial position…</EmptyNote>}
+          {totals && (
             <>
-              <p className="text-2xl font-bold tabular-nums text-slate-900">{budget.totals.percentAllocated}%</p>
-              <p className="text-xs text-slate-500">of the project budget released</p>
-              <div className="mt-3"><ProgressBar percent={budget.totals.percentAllocated} complete={budget.totals.status === 'FULLY_ALLOCATED'} label="Project budget released" /></div>
+              <p className="text-2xl font-bold tabular-nums text-slate-900">{spentPercent}%</p>
+              <p className="text-xs text-slate-500">of the sanctioned allocation spent (as reported in MPRs)</p>
+              <div className="mt-3"><ProgressBar percent={spentPercent} complete={spentPercent >= 100} label="Sanctioned allocation spent" /></div>
               <dl className="mt-4 space-y-2 text-sm">
                 {[
-                  ['Total budget', formatLakh(budget.totals.totalBudgetLakh), 'text-slate-900'],
-                  ['Released', formatLakh(budget.totals.releasedLakh), 'text-emerald-700'],
-                  ['Remaining', formatLakh(budget.totals.remainingLakh), budget.totals.remainingLakh > 0 ? 'text-amber-700' : 'text-emerald-700'],
+                  ['Sanctioned', formatLakh(totals.sanctionedLakh), 'text-slate-900'],
+                  ['Expenditure', formatLakh(totals.expenditureLakh), 'text-emerald-700'],
+                  ['Balance', formatLakh(totals.balanceLakh), totals.balanceLakh > 0 ? 'text-amber-700' : 'text-emerald-700'],
                 ].map(([label, value, tone]) => (
                   <div key={label} className="flex items-center justify-between gap-3">
                     <dt className="text-slate-500">{label}</dt>
@@ -144,12 +170,6 @@ export function OverviewTab({ project, budget, budgetError, onOpenTab }) {
                   </div>
                 ))}
               </dl>
-              {budget.totals.status === 'FULLY_ALLOCATED' && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><AllocatedTick className="h-3.5 w-3.5" /> Budget Fully Allocated</p>
-              )}
-              {!budget.eligible && budget.ineligibleCode !== 'FULLY_ALLOCATED' && (
-                <p className="mt-3 text-xs text-slate-500">{budget.ineligibleReason}</p>
-              )}
             </>
           )}
         </Panel>

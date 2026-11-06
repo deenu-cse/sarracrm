@@ -7,9 +7,9 @@ import { FullPageSpinner } from '@/components/ui/Spinner';
 
 const statusClass = (status) => {
   if (!status) return 'bg-slate-100 text-slate-600';
-  if (['APPROVED', 'PIA_ACCEPTED', 'DISTRICT_APPROVED', 'STATE_VERIFIED'].includes(status)) return 'bg-emerald-50 text-emerald-700';
-  if (['REJECTED', 'RETURNED_TO_PIA'].includes(status)) return 'bg-rose-50 text-rose-700';
-  if (status.includes('PENDING') || status === 'SUBMITTED') return 'bg-amber-50 text-amber-700';
+  if (['APPROVED', 'SANCTIONED', 'PIA_ACCEPTED', 'VERIFIED_BY_STATE', 'DISTRICT_APPROVED', 'STATE_VERIFIED'].includes(status)) return 'bg-emerald-50 text-emerald-700';
+  if (['REJECTED', 'RETURNED_FOR_CORRECTION', 'RETURNED_TO_PIA'].includes(status)) return 'bg-rose-50 text-rose-700';
+  if (status.includes('PENDING') || status.startsWith('SUBMITTED')) return 'bg-amber-50 text-amber-700';
   return 'bg-blue-50 text-blue-700';
 };
 

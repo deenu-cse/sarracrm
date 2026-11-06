@@ -12,11 +12,11 @@ import { DISTRICT_SHAPES, MAP_HEIGHT, MAP_WIDTH } from './uttarakhandDistricts';
 const METRICS = [
   { key: 'projects', label: 'Projects', format: (v) => formatIndian(v, { maxDecimals: 0 }) },
   { key: 'budgetLakh', label: 'Sanctioned budget', format: formatLakh },
-  { key: 'releasedLakh', label: 'Funds released', format: formatLakh },
   { key: 'spentLakh', label: 'Expenditure reported', format: formatLakh },
-  { key: 'utilisationPercent', label: 'Utilisation of releases', format: (v) => `${v}%`, max: 100 },
+  { key: 'spendPercent', label: 'Financial progress', format: (v) => `${v}%`, max: 100 },
   { key: 'physicalPercent', label: 'Physical progress', format: (v) => `${v}%`, max: 100 },
-  { key: 'awaitingDistrict', label: 'Reports awaiting district', format: (v) => formatIndian(v, { maxDecimals: 0 }) },
+  { key: 'atDistrict', label: 'Reports at district verification', format: (v) => formatIndian(v, { maxDecimals: 0 }) },
+  { key: 'verified', label: 'Reports verified by State', format: (v) => formatIndian(v, { maxDecimals: 0 }) },
 ];
 
 // One hue, light to dark: more is darker.
@@ -112,8 +112,8 @@ export function DistrictMap({ rows, onSelect, selected }) {
             <>
               <p className="font-semibold text-slate-900">{shown.name}{selected === shown.name && <span className="ml-2 rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Filtered</span>}</p>
               <dl className="mt-2 space-y-1.5">
-                {[['Projects', shown.projects], ['Sanctioned', formatLakh(shown.budgetLakh)], ['Released', formatLakh(shown.releasedLakh)], ['Spent', formatLakh(shown.spentLakh)],
-                  ['Utilisation', `${shown.utilisationPercent}%`], ['Physical progress', `${shown.physicalPercent}%`], ['Reports', shown.reports], ['Awaiting district', shown.awaitingDistrict]].map(([label, value]) => (
+                {[['Projects', shown.projects], ['Sanctioned', formatLakh(shown.budgetLakh)], ['Spent', formatLakh(shown.spentLakh)], ['Balance', formatLakh(shown.balanceLakh)],
+                  ['Financial progress', `${shown.spendPercent}%`], ['Physical progress', `${shown.physicalPercent}%`], ['Reports', shown.reports], ['Verified by State', shown.verified]].map(([label, value]) => (
                   <div key={label} className="flex items-baseline justify-between gap-3">
                     <dt className="text-slate-500">{label}</dt>
                     <dd className="font-semibold tabular-nums text-slate-900">{value}</dd>

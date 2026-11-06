@@ -1,15 +1,15 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { CalendarClock, FolderKanban, IndianRupee, Lock, PlusCircle, ScrollText, UserPlus, Users } from 'lucide-react';
+import { BarChart3, CalendarClock, ClipboardCheck, FolderKanban, Lock, PlusCircle, ScrollText, UserPlus, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, td, th, useHome } from './HomeKit';
+import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, td, th, useHome } from './HomeKit';
 
 const ROLE_TEXT = {
-  MAKER: { line: 'State · Maker', empty: 'No rejected project, pending forward or refund is waiting on you.' },
-  CHECKER: { line: 'State · Checker', empty: 'No project or revised estimate is waiting for verification.' },
-  APPROVER: { line: 'State · Approver', empty: 'No project, revised estimate or closure is waiting for approval.' },
-  ADMIN: { line: 'State Administrator', empty: 'Every district with projects has an active District Director.' },
+  MAKER: { line: 'SARRA HQ · Maker', empty: 'No returned project, project to forward or report to compile is waiting on you.' },
+  CHECKER: { line: 'SARRA HQ · Checker', empty: 'No project, target revision or report is waiting for your verification.' },
+  APPROVER: { line: 'SARRA HQ · Approver', empty: 'No project, target revision, report or closure is waiting for your approval.' },
+  ADMIN: { line: 'SARRA HQ · Administrator', empty: 'Every district with projects has an active District Maker.' },
 };
 
 const STAGE_HREF = '/dashboard/admin/projects';
@@ -17,7 +17,7 @@ const STAGE_HREF = '/dashboard/admin/projects';
 /** Where every project stands, from creation to closure. The step that belongs to this role is marked. */
 function Pipeline({ stages, mine }) {
   const flow = stages.filter((stage) => stage.status !== 'REJECTED');
-  const rejected = stages.find((stage) => stage.status === 'REJECTED');
+  const returned = stages.find((stage) => stage.status === 'REJECTED');
   const top = Math.max(...flow.map((stage) => stage.count), 1);
   return (
     <div>
@@ -36,14 +36,14 @@ function Pipeline({ stages, mine }) {
           );
         })}
       </ol>
-      {rejected?.count > 0 && <p className="mt-3 text-sm text-slate-600"><span className="font-semibold text-red-700">{rejected.count} rejected</span> and waiting for the Maker to correct and resubmit.</p>}
+      {returned?.count > 0 && <p className="mt-3 text-sm text-slate-600"><span className="font-semibold text-red-700">{returned.count} returned</span> to the HQ Maker for correction and resubmission.</p>}
     </div>
   );
 }
 
 const MINE = { MAKER: ['SANCTIONED'], CHECKER: ['PENDING_CHECKER'], APPROVER: ['PENDING_APPROVER'], ADMIN: [] };
 
-/** Home of the State level. Maker, Checker, Approver and the administrator each see their own work first. */
+/** Consolidated SARRA HQ dashboard. Maker, Checker, Approver and the administrator each see their own work first. */
 export function StateHome() {
   const home = useHome();
   const data = home.data;
@@ -52,36 +52,36 @@ export function StateHome() {
   const k = data?.kpis;
 
   const actions = {
-    MAKER: <><ActionLink href="/dashboard/admin/projects/budget-allocation" icon={IndianRupee}>Release Budget</ActionLink><ActionLink href="/dashboard/admin/projects/create" icon={PlusCircle} primary>New Project</ActionLink></>,
-    CHECKER: <ActionLink href={STAGE_HREF} icon={FolderKanban} primary>Projects</ActionLink>,
-    APPROVER: <ActionLink href={STAGE_HREF} icon={FolderKanban} primary>Projects</ActionLink>,
+    MAKER: <><ActionLink href="/dashboard/admin/mprs" icon={ClipboardCheck}>MPR Verification</ActionLink><ActionLink href="/dashboard/admin/projects/create" icon={PlusCircle} primary>New Project</ActionLink></>,
+    CHECKER: <><ActionLink href="/dashboard/admin/mprs" icon={ClipboardCheck}>MPR Verification</ActionLink><ActionLink href={STAGE_HREF} icon={FolderKanban} primary>Projects</ActionLink></>,
+    APPROVER: <><ActionLink href="/dashboard/admin/mprs" icon={ClipboardCheck}>MPR Verification</ActionLink><ActionLink href={STAGE_HREF} icon={FolderKanban} primary>Projects</ActionLink></>,
     ADMIN: <><ActionLink href="/dashboard/admin/audit-logs" icon={ScrollText}>Audit Logs</ActionLink><ActionLink href="/dashboard/admin/users/new" icon={UserPlus} primary>Add User</ActionLink></>,
   }[role];
 
   const metrics = k && {
     MAKER: [
       ['Projects created', String(k.projects), `${k.pendingChecker} with Checker · ${k.pendingApprover} with Approver`, 'default', STAGE_HREF],
-      ['Sanctioned budget', lakh(k.sanctionedLakh), `${k.sanctioned} sanctioned project${k.sanctioned === 1 ? '' : 's'}`],
-      ['Yet to release', lakh(k.remainingLakh), `${k.toRelease} project${k.toRelease === 1 ? '' : 's'} not fully released`, k.remainingLakh > 0 ? 'warning' : 'default', '/dashboard/admin/projects/budget-allocation'],
-      ['Rejected', String(k.rejected), 'To correct and resubmit', k.rejected ? 'danger' : 'default'],
+      ['Returned to you', String(k.returned), 'To correct and resubmit', k.returned ? 'danger' : 'default', STAGE_HREF],
+      ['Reports to compile', String(k.myActions), `${k.mprInReview} in verification across the State`, k.myActions ? 'warning' : 'default', '/dashboard/admin/mprs'],
+      ['Sanctioned amount', lakh(k.sanctionedLakh), `${k.sanctioned} sanctioned project${k.sanctioned === 1 ? '' : 's'}`],
     ],
     CHECKER: [
-      ['Waiting for you', String(k.pendingChecker), 'Projects to verify', k.pendingChecker ? 'warning' : 'default', STAGE_HREF],
-      ['With Approver', String(k.pendingApprover), 'Verified, awaiting approval'],
+      ['Projects to verify', String(k.pendingChecker), 'DPR, targets and allocation', k.pendingChecker ? 'warning' : 'default', STAGE_HREF],
+      ['Reports to verify', String(k.myActions), 'State-level data consistency', k.myActions ? 'warning' : 'default', '/dashboard/admin/mprs'],
       ['Sanctioned', String(k.sanctioned), lakh(k.sanctionedLakh)],
-      ['Rejected', String(k.rejected), 'Back with the Maker'],
+      ['Returned to Maker', String(k.returned), 'Back with the HQ Maker'],
     ],
     APPROVER: [
-      ['Waiting for you', String(k.pendingApprover), 'Projects to approve', k.pendingApprover ? 'warning' : 'default', STAGE_HREF],
-      ['Sanctioned budget', lakh(k.sanctionedLakh), `${k.sanctioned} project${k.sanctioned === 1 ? '' : 's'} in ${k.districts} district${k.districts === 1 ? '' : 's'}`],
-      ['In progress', String(k.inProgress), `${k.physicalPercent}% average physical progress`],
+      ['Projects to sanction', String(k.pendingApprover), 'Verified by the HQ Checker', k.pendingApprover ? 'warning' : 'default', STAGE_HREF],
+      ['Reports for final approval', String(k.myActions), `${k.mprVerified} verified by State so far`, k.myActions ? 'warning' : 'default', '/dashboard/admin/mprs'],
+      ['Active projects', String(k.inProgress), `${k.physicalPercent}% average physical progress`],
       ['Closed', String(k.closed), 'Completed and closed'],
     ],
     ADMIN: [
       ['Users', String(data.users?.total ?? 0), `${data.users?.active ?? 0} active`, 'default', '/dashboard/admin/users'],
-      ['Suspended', String(data.users?.suspended ?? 0), `${data.users?.deactivated ?? 0} deactivated`, data.users?.suspended ? 'warning' : 'default', '/dashboard/admin/users'],
+      ['Account requests', String(data.users?.pendingApproval ?? 0), 'Awaiting a tier Approver', data.users?.pendingApproval ? 'warning' : 'default', '/dashboard/admin/users'],
       ['Projects', String(k.projects), `${k.sanctioned} sanctioned · ${k.closed} closed`, 'default', STAGE_HREF],
-      ['Sanctioned budget', lakh(k.sanctionedLakh), `${lakh(k.releasedLakh)} released`],
+      ['Sanctioned amount', lakh(k.sanctionedLakh), `${lakh(k.spentLakh)} spent`],
     ],
   }[role];
 
@@ -95,9 +95,15 @@ export function StateHome() {
             {metrics.map(([label, value, sub, tone, href]) => <Metric key={label} label={label} value={value} sub={sub} tone={tone} href={href} />)}
           </dl>
 
+          {role !== 'ADMIN' && data.reviewQueue?.length > 0 && (
+            <Card title="Reports awaiting your action" description={`At the ${data.roleLabel} step, longest wait first.`} aside={<SeeAll href="/dashboard/admin/mprs" />} padded={false}>
+              <ReportRows reports={data.reviewQueue} empty="Nothing is waiting." />
+            </Card>
+          )}
+
           {role === 'ADMIN' && data.users && (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-              <Card className="lg:col-span-3" title="Users by role" description="Active accounts out of all accounts in each role." aside={<SeeAll href="/dashboard/admin/users">Manage users</SeeAll>} padded={false}>
+              <Card className="lg:col-span-3" title="Users by tier and role" description="Active accounts out of all accounts in each role." aside={<SeeAll href="/dashboard/admin/users">Manage users</SeeAll>} padded={false}>
                 <table className="w-full">
                   <caption className="sr-only">Users by role</caption>
                   <thead><tr className="border-b border-slate-100 bg-slate-50/70"><th scope="col" className={`${th} pl-5`}>Role</th><th scope="col" className={`${th} text-right`}>Active</th><th scope="col" className={`${th} pr-5 text-right`}>All</th></tr></thead>
@@ -118,7 +124,7 @@ export function StateHome() {
                     {data.users.recent.map((account) => (
                       <li key={account.id} className="px-5 py-3">
                         <p className="flex items-center justify-between gap-2 text-sm font-semibold text-slate-900"><span className="truncate">{account.name}</span>{account.status !== 'ACTIVE' && <span className="flex-shrink-0 rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">{account.status.toLowerCase()}</span>}</p>
-                        <p className="truncate text-xs text-slate-500">{account.role.replace(/_/g, ' ').toLowerCase()} · added {ago(account.createdAt)}</p>
+                        <p className="truncate text-xs text-slate-500">{account.role} · added {ago(account.createdAt)}</p>
                       </li>
                     ))}
                   </ul>
@@ -131,50 +137,68 @@ export function StateHome() {
             <Pipeline stages={data.pipeline} mine={MINE[role] || []} />
           </Card>
 
+          <Card title="MPR pending actions by step" description="Reports of the whole State waiting at each Maker, Checker and Approver step of the three tiers." aside={<SeeAll href="/dashboard/admin/mprs">MPR verification</SeeAll>}>
+            <PendingStages stages={data.pendingByStage} />
+            <p className="mt-3 text-xs text-slate-500">{k.mprVerified} verified by State · {k.mprReturned} returned for correction.</p>
+          </Card>
+
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card title="State funds" description="Sanctioned projects, all districts.">
-              <MoneyFlow sanctionedLakh={k.sanctionedLakh} releasedLakh={k.releasedLakh} spentLakh={k.spentLakh} />
+            <Card title="State funds" description="Sanctioned projects, all 13 districts." aside={<SeeAll href="/dashboard/admin/analytics"><BarChart3 className="h-3 w-3" aria-hidden="true" /> Analytics</SeeAll>}>
+              <MoneyFlow sanctionedLakh={k.sanctionedLakh} spentLakh={k.spentLakh} balanceLakh={k.balanceLakh} />
             </Card>
-            <Card title="Last six months" description="Funds released and expenditure reported, by month.">
+            <Card title="Last six months" description="Expenditure reported each month, with reports filed and verified.">
               <TrendBars trend={data.trend} />
             </Card>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-            <Card className="lg:col-span-3" title="Recently changed projects" aside={<SeeAll href={STAGE_HREF} />} padded={false}>
+            <Card className="lg:col-span-2" title="Recently changed projects" aside={<SeeAll href={STAGE_HREF} />} padded={false}>
               {data.recentProjects.length === 0 ? <div className="p-5"><Empty>No project has been created yet.</Empty></div> : (
                 <ul className="divide-y divide-slate-100">
                   {data.recentProjects.map((project) => (
                     <li key={project.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
                       <span className="min-w-0">
-                        <Link href={project.href} className={`block max-w-md truncate text-sm ${rowLink}`}>{project.name}</Link>
+                        <Link href={project.href} className={`block max-w-xs truncate text-sm ${rowLink}`}>{project.name}</Link>
                         <span className="block truncate text-xs text-slate-500"><span className="font-mono">{project.code}</span> · {project.district} · changed {ago(project.updatedAt)}</span>
                       </span>
                       <span className="flex items-center gap-3">
                         <span className="text-sm font-semibold tabular-nums text-slate-700">{shortLakh(project.totalLakh)}</span>
-                        {project.closed ? <span className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700"><Lock className="h-3 w-3" aria-hidden="true" /> Closed</span> : <Badge status={project.status} />}
+                        {project.closed ? <span className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700"><Lock className="h-3 w-3" aria-hidden="true" /> Closed</span> : <Badge status={project.status} kind="project" />}
                       </span>
                     </li>
                   ))}
                 </ul>
               )}
             </Card>
-            <Card className="lg:col-span-2" title="Districts" description="Sanctioned projects and how much of the release is spent." aside={<SeeAll href="/dashboard/admin/deadlines"><CalendarClock className="h-3 w-3" aria-hidden="true" /> Deadlines</SeeAll>} padded={false}>
+            <Card className="lg:col-span-3" title="District-wise comparison" description="Sanctioned amount, expenditure, physical progress and reports in verification." aside={<SeeAll href="/dashboard/admin/deadlines"><CalendarClock className="h-3 w-3" aria-hidden="true" /> Deadlines</SeeAll>} padded={false}>
               {data.districts.length === 0 ? <div className="p-5"><Empty>No sanctioned project yet.</Empty></div> : (
-                <table className="w-full">
-                  <caption className="sr-only">Districts</caption>
-                  <thead><tr className="border-b border-slate-100 bg-slate-50/70"><th scope="col" className={`${th} pl-5`}>District</th><th scope="col" className={`${th} text-right`}>Projects</th><th scope="col" className={`${th} text-right`}>Released</th><th scope="col" className={`${th} pr-5 text-right`}>Spent</th></tr></thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {data.districts.map((row) => (
-                      <tr key={row.name}>
-                        <th scope="row" className={`${td} pl-5 text-left font-medium text-slate-900`}>{row.name}</th>
-                        <td className={`${td} text-right tabular-nums`}>{row.projects}</td>
-                        <td className={`${td} text-right tabular-nums`}>{shortLakh(row.releasedLakh)}</td>
-                        <td className={`${td} pr-5 text-right tabular-nums`}>{row.utilisationPercent}%</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[560px]">
+                    <caption className="sr-only">Districts</caption>
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50/70">
+                        <th scope="col" className={`${th} pl-5`}>District</th>
+                        <th scope="col" className={`${th} text-right`}>Projects</th>
+                        <th scope="col" className={`${th} text-right`}>Sanctioned</th>
+                        <th scope="col" className={`${th} text-right`}>Spent</th>
+                        <th scope="col" className={`${th} text-right`}>Physical</th>
+                        <th scope="col" className={`${th} pr-5 text-right`}>In verification</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {data.districts.map((row) => (
+                        <tr key={row.name}>
+                          <th scope="row" className={`${td} pl-5 text-left font-medium text-slate-900`}>{row.name}</th>
+                          <td className={`${td} text-right tabular-nums`}>{row.projects}</td>
+                          <td className={`${td} text-right tabular-nums`}>{shortLakh(row.sanctionedLakh)}</td>
+                          <td className={`${td} text-right tabular-nums`}>{row.financialPercent}%</td>
+                          <td className={`${td} text-right tabular-nums`}>{row.physicalPercent}%</td>
+                          <td className={`${td} pr-5 text-right tabular-nums ${row.inReview ? 'font-semibold text-amber-700' : ''}`}>{row.inReview}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </Card>
           </div>

@@ -5,13 +5,13 @@ import { SANCTION_STATUS } from '@/constants/status';
 import { formatMoment } from './shared';
 
 const STAGES = [
-  { key: 'created', label: 'Created', date: (p) => p.makerAt || p.createdAt },
-  { key: 'checked', label: 'Checker Verified', date: (p) => p.checkerAt },
-  { key: 'sanctioned', label: 'Sanctioned', date: (p) => p.approverAt },
-  { key: 'toDistrict', label: 'Sent to District', date: (p) => p.forwardedToDistrictAt },
-  { key: 'districtAccepted', label: 'District Accepted', date: (p) => p.districtAcceptedAt },
-  { key: 'toPia', label: 'Assigned to PIA', date: (p) => p.piaForwardedAt },
-  { key: 'active', label: 'Active', date: (p) => p.piaAcceptedAt },
+  { key: 'created', label: 'HQ Maker: DPR entry', date: (p) => p.makerAt || p.createdAt },
+  { key: 'checked', label: 'HQ Checker: verified', date: (p) => p.checkerAt },
+  { key: 'sanctioned', label: 'HQ Approver: sanctioned', date: (p) => p.approverAt },
+  { key: 'toDistrict', label: 'Forwarded to District', date: (p) => p.forwardedToDistrictAt },
+  { key: 'districtAccepted', label: 'District Maker: accepted', date: (p) => p.districtAcceptedAt },
+  { key: 'toPia', label: 'PIA & reporting assigned', date: (p) => p.piaForwardedAt },
+  { key: 'active', label: 'Active: implementation', date: (p) => p.piaAcceptedAt },
 ];
 
 // How many stages are complete for each status.
@@ -27,12 +27,13 @@ const COMPLETED = {
 };
 
 /**
- * Where the project is in its life: Created → Checker → Sanctioned → District → PIA → Active.
- * State is given in text as well as colour.
+ * Where the project is in its life: HQ Maker → HQ Checker → HQ Approver →
+ * District → PIA → Active. State is given in text as well as colour.
  */
 export function LifecycleTrack({ project }) {
+  // Stored as REJECTED: returned to the HQ Maker with an objection.
   const rejected = project.status === SANCTION_STATUS.REJECTED;
-  // A rejected project stopped after whichever review stages it had passed.
+  // A returned project stopped after whichever review stages it had passed.
   const completed = rejected ? (project.checkerAt ? 2 : 1) : (COMPLETED[project.status] ?? 0);
 
   return (
@@ -42,7 +43,7 @@ export function LifecycleTrack({ project }) {
           const done = index < completed;
           const current = index === completed;
           const failed = rejected && current;
-          const state = failed ? 'Rejected' : done ? 'Completed' : current ? 'Pending' : 'Upcoming';
+          const state = failed ? 'Returned to Maker' : done ? 'Completed' : current ? 'Pending' : 'Upcoming';
           const date = done ? stage.date(project) : failed ? project.rejectedAt : null;
 
           return (
@@ -59,7 +60,7 @@ export function LifecycleTrack({ project }) {
                 </span>
                 <span className="pr-3">
                   <span className={`block whitespace-nowrap text-xs font-semibold ${failed ? 'text-red-700' : done || current ? 'text-slate-900' : 'text-slate-400'}`}>
-                    {failed ? 'Rejected' : stage.label}
+                    {failed ? 'Returned to Maker' : stage.label}
                   </span>
                   <span className={`block whitespace-nowrap text-[11px] ${failed ? 'text-red-600' : done ? 'text-emerald-700' : current ? 'text-navy' : 'text-slate-400'}`}>
                     {date ? formatMoment(date) : state}

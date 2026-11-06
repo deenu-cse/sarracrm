@@ -6,8 +6,8 @@ import { formatLakh } from '@/lib/numeric';
 import { ExportButton, downloadCsv } from '@/components/projects/detail/shared';
 
 // Categorical colours, validated together for colour-blind separation on a light
-// surface. Fixed meaning everywhere on the page: budget, released, spent.
-export const COLORS = { budget: '#2a78d6', released: '#eb6834', spent: '#1baf7a' };
+// surface. Fixed meaning everywhere on the page: budget (sanctioned), spent, balance.
+export const COLORS = { budget: '#2a78d6', spent: '#1baf7a', balance: '#eb6834' };
 
 const AXIS = { fontSize: 11, fill: '#64748b' };
 export const compactLakh = (value) => {
@@ -74,7 +74,7 @@ function ChartTooltip({ active, payload, label }) {
 const legendText = (value) => <span style={{ color: '#334155' }}>{value}</span>;
 const LEGEND = { verticalAlign: 'top', align: 'right', iconType: 'circle', iconSize: 8, wrapperStyle: { fontSize: 12, paddingBottom: 8 }, formatter: legendText };
 
-/** Funds released and expenditure reported, month by month or as running totals. One axis: ₹ lakh. */
+/** Expenditure reported, month by month or as a running total. One axis: ₹ lakh. */
 export function TrendChart({ data, cumulative }) {
   if (cumulative) {
     return (
@@ -85,7 +85,6 @@ export function TrendChart({ data, cumulative }) {
           <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={compactLakh} width={68} />
           <Tooltip content={<ChartTooltip />} />
           <Legend {...LEGEND} />
-          <Line dataKey="cumulativeReleasedLakh" name="Released (running total)" stroke={COLORS.released} strokeWidth={2} dot={{ r: 3, fill: COLORS.released, stroke: '#fff', strokeWidth: 2 }} isAnimationActive={false} />
           <Line dataKey="cumulativeSpentLakh" name="Spent (running total)" stroke={COLORS.spent} strokeWidth={2} dot={{ r: 3, fill: COLORS.spent, stroke: '#fff', strokeWidth: 2 }} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
@@ -99,14 +98,13 @@ export function TrendChart({ data, cumulative }) {
         <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={compactLakh} width={68} />
         <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(15, 23, 42, 0.04)' }} />
         <Legend {...LEGEND} />
-        <Bar dataKey="releasedLakh" name="Released" fill={COLORS.released} radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
-        <Bar dataKey="spentLakh" name="Spent" fill={COLORS.spent} radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false} />
+        <Bar dataKey="spentLakh" name="Spent" fill={COLORS.spent} radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-/** Budget, released and spent side by side for each district / department. One axis: ₹ lakh. */
+/** Sanctioned, spent and balance side by side for each district / department. One axis: ₹ lakh. */
 export function ComparisonChart({ rows }) {
   const data = rows.slice(0, 13);
   return (
@@ -119,8 +117,8 @@ export function ComparisonChart({ rows }) {
           <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(15, 23, 42, 0.04)' }} />
           <Legend {...LEGEND} />
           <Bar dataKey="budgetLakh" name="Sanctioned budget" fill={COLORS.budget} radius={[0, 4, 4, 0]} maxBarSize={12} isAnimationActive={false} />
-          <Bar dataKey="releasedLakh" name="Released" fill={COLORS.released} radius={[0, 4, 4, 0]} maxBarSize={12} isAnimationActive={false} />
           <Bar dataKey="spentLakh" name="Spent" fill={COLORS.spent} radius={[0, 4, 4, 0]} maxBarSize={12} isAnimationActive={false} />
+          <Bar dataKey="balanceLakh" name="Balance" fill={COLORS.balance} radius={[0, 4, 4, 0]} maxBarSize={12} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

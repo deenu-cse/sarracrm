@@ -30,16 +30,60 @@ export const SANCTION_STATUS = {
 
 export const SANCTION_STATUS_LABELS = {
   [SANCTION_STATUS.DRAFT]: 'Draft',
-  [SANCTION_STATUS.PENDING_CHECKER]: 'Pending Checker Verification',
-  [SANCTION_STATUS.PENDING_APPROVER]: 'Pending Approval',
+  [SANCTION_STATUS.PENDING_CHECKER]: 'Pending HQ Checker',
+  [SANCTION_STATUS.PENDING_APPROVER]: 'Pending HQ Approver',
   [SANCTION_STATUS.SANCTIONED]: 'Sanctioned',
   [SANCTION_STATUS.FORWARDED_TO_DISTRICT]: 'Forwarded to District',
   [SANCTION_STATUS.DISTRICT_ACCEPTED]: 'Accepted by District',
   [SANCTION_STATUS.FORWARDED_TO_PIA]: 'Assigned to PIA',
-  [SANCTION_STATUS.PIA_ACCEPTED]: 'Active (PIA Accepted)',
-  [SANCTION_STATUS.REJECTED]: 'Rejected'
+  [SANCTION_STATUS.PIA_ACCEPTED]: 'Active (Implementation)',
+  // Stored as REJECTED; the Maker corrects and resubmits it under the same Project ID.
+  [SANCTION_STATUS.REJECTED]: 'Returned to Maker'
 };
 
+/** Statuses of a project Monthly Progress Report through the three tiers (Maker → Checker → Approver each). */
+export const PROJECT_MPR_STATUS = {
+  DRAFT: 'DRAFT',
+  PENDING_PIA_CHECKER: 'PENDING_PIA_CHECKER',
+  PENDING_PIA_APPROVER: 'PENDING_PIA_APPROVER',
+  SUBMITTED_TO_DISTRICT: 'SUBMITTED_TO_DISTRICT',
+  PENDING_DISTRICT_CHECKER: 'PENDING_DISTRICT_CHECKER',
+  PENDING_DISTRICT_APPROVER: 'PENDING_DISTRICT_APPROVER',
+  SUBMITTED_TO_HQ: 'SUBMITTED_TO_HQ',
+  PENDING_HQ_CHECKER: 'PENDING_HQ_CHECKER',
+  PENDING_HQ_APPROVER: 'PENDING_HQ_APPROVER',
+  VERIFIED_BY_STATE: 'VERIFIED_BY_STATE',
+  RETURNED_FOR_CORRECTION: 'RETURNED_FOR_CORRECTION',
+  REJECTED: 'REJECTED',
+};
+
+export const PROJECT_MPR_STATUS_LABELS = {
+  DRAFT: 'Draft',
+  PENDING_PIA_CHECKER: 'Pending PIA Checker',
+  PENDING_PIA_APPROVER: 'Pending PIA Approver',
+  SUBMITTED_TO_DISTRICT: 'Submitted to District',
+  PENDING_DISTRICT_CHECKER: 'Pending District Checker',
+  PENDING_DISTRICT_APPROVER: 'Pending District Approver',
+  SUBMITTED_TO_HQ: 'Submitted to HQ',
+  PENDING_HQ_CHECKER: 'Pending HQ Checker',
+  PENDING_HQ_APPROVER: 'Pending HQ Approver',
+  VERIFIED_BY_STATE: 'Verified by State',
+  RETURNED_FOR_CORRECTION: 'Returned for Correction',
+  REJECTED: 'Rejected',
+};
+
+/** Status groups the MPR lists can filter by (the backend understands these names). */
+export const MPR_STATUS_GROUPS = {
+  WITH_MAKER: ['DRAFT', 'RETURNED_FOR_CORRECTION'],
+  AT_PIA: ['PENDING_PIA_CHECKER', 'PENDING_PIA_APPROVER'],
+  AT_DISTRICT: ['SUBMITTED_TO_DISTRICT', 'PENDING_DISTRICT_CHECKER', 'PENDING_DISTRICT_APPROVER'],
+  AT_HQ: ['SUBMITTED_TO_HQ', 'PENDING_HQ_CHECKER', 'PENDING_HQ_APPROVER'],
+};
+export const MPR_IN_REVIEW = [...MPR_STATUS_GROUPS.AT_PIA, ...MPR_STATUS_GROUPS.AT_DISTRICT, ...MPR_STATUS_GROUPS.AT_HQ];
+
+export const ENTRY_MODE_LABELS = { PIA: 'PIA entry', DISTRICT: 'District Technical Staff entry' };
+
+// Earlier Praroop-format reports keep their own statuses.
 export const MPR_STATUS = {
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED',

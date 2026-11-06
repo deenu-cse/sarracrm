@@ -9,8 +9,8 @@ export const lookOf = (notification) => {
   if (notification.type === 'REMINDER') return { Icon: AlarmClock, cls: /overdue|waited|stuck/.test(title) ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600', label: 'Reminder' };
   if (/closed$/.test(title)) return { Icon: Lock, cls: 'bg-slate-100 text-slate-600', label: 'Closure' };
   if (status === 'REJECTED') return { Icon: XCircle, cls: 'bg-red-50 text-red-600', label: 'Rejected' };
-  if (status === 'RETURNED_TO_PIA' || /returned/.test(title)) return { Icon: RotateCcw, cls: 'bg-amber-50 text-amber-600', label: 'Returned' };
-  if (['SANCTIONED', 'APPROVED', 'DISTRICT_APPROVED', 'STATE_VERIFIED', 'PIA_ACCEPTED', 'DISTRICT_ACCEPTED'].includes(status) || /approved|verified|accepted/.test(title)) return { Icon: CheckCircle2, cls: 'bg-emerald-50 text-emerald-600', label: 'Approved' };
+  if (['RETURNED_FOR_CORRECTION', 'RETURNED_TO_PIA'].includes(status) || /returned/.test(title)) return { Icon: RotateCcw, cls: 'bg-amber-50 text-amber-600', label: 'Returned' };
+  if (['SANCTIONED', 'APPROVED', 'VERIFIED_BY_STATE', 'DISTRICT_APPROVED', 'STATE_VERIFIED', 'PIA_ACCEPTED', 'DISTRICT_ACCEPTED'].includes(status) || /approved|verified|accepted/.test(title)) return { Icon: CheckCircle2, cls: 'bg-emerald-50 text-emerald-600', label: 'Approved' };
   if (notification.relatedResource === 'ProjectMPR' || /mpr|report/.test(title)) return { Icon: FileText, cls: 'bg-sky-50 text-sky-600', label: 'Report' };
   return { Icon: Bell, cls: 'bg-navy/10 text-navy', label: 'Update' };
 };

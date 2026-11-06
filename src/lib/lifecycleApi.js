@@ -41,10 +41,41 @@ export const closeProject = (projectId, payload) => request(
   'The project could not be closed. Please try again.',
 );
 
-export const recordRefund = (projectId, refundReference) => request(
-  () => axiosInstance.patch(`/sanctions/${id(projectId)}/closure/refund`, { refundReference }),
-  'The refund could not be recorded. Please try again.',
+// ── Field photographs (pre-, mid- and post-intervention, M&E) ────────────────
+
+export const fetchProjectPhotos = (projectId, filters = {}) => request(
+  () => axiosInstance.get(`/sanctions/${id(projectId)}/photos?${query(filters)}`),
+  'Unable to load the photographs. Please try again.',
 );
+
+/** `details` = { departmentId, activityCode, stage, capturedAt, latitude, longitude, accuracy, physicalProgress }; `items` = [{ file, caption }] */
+export const uploadProjectPhotos = (projectId, details, items) => {
+  const form = new FormData();
+  Object.entries(details).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== '') form.append(key, value); });
+  items.forEach((item) => {
+    form.append('photos', item.file);
+    form.append('captions', item.caption || '');
+  });
+  return request(
+    () => axiosInstance.post(`/sanctions/${id(projectId)}/photos`, form),
+    'The photographs could not be uploaded. Please check your connection and try again.',
+  );
+};
+
+export const verifyProjectPhoto = (projectId, photoId, status, remarks) => request(
+  () => axiosInstance.patch(`/sanctions/${id(projectId)}/photos/${id(photoId)}/verify`, { status, remarks }),
+  'The photograph could not be updated. Please try again.',
+);
+
+export const deleteProjectPhoto = (projectId, photoId) => request(
+  () => axiosInstance.delete(`/sanctions/${id(projectId)}/photos/${id(photoId)}`),
+  'The photograph could not be removed. Please try again.',
+);
+
+export const fetchRecentPhotos = (filters = {}) => request(
+  () => axiosInstance.get(`/sanctions/photos/recent?${query(filters)}`),
+  'Unable to load photographs. Please try again.',
+).then((list) => (Array.isArray(list) ? list : []));
 
 // ── Outcomes ─────────────────────────────────────────────────────────────────
 

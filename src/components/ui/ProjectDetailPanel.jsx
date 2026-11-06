@@ -112,14 +112,6 @@ export function ProjectDetailPanel({ project, actions }) {
             total={project.totalSanctionedBudgetLakh}
             color="bg-orange-400"
           />
-          {project.allocatedAmountLakh > 0 && (
-            <BudgetBar
-              label="Allocated to District"
-              value={project.allocatedAmountLakh}
-              total={project.totalSanctionedBudgetLakh}
-              color="bg-cyan-500"
-            />
-          )}
         </Card>
 
         {/* Department-wise allocation and activity plan */}
@@ -200,7 +192,7 @@ export function ProjectDetailPanel({ project, actions }) {
         )}
 
         {/* Documents */}
-        {(project.secretariatApprovalOrder?.url || project.stateSanctionOrder?.url || project.fundAllocationOrder?.url) && (
+        {(project.secretariatApprovalOrder?.url || project.stateSanctionOrder?.url) && (
           <Card>
             <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Documents</h3>
             <div className="space-y-2">
@@ -222,16 +214,6 @@ export function ProjectDetailPanel({ project, actions }) {
                   className="flex items-center gap-2 text-sm text-navy hover:underline font-medium"
                 >
                   <FileText className="w-4 h-4" /> State Sanction Order
-                </a>
-              )}
-              {project.fundAllocationOrder?.url && (
-                <a
-                  href={project.fundAllocationOrder.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-navy hover:underline font-medium"
-                >
-                  <FileText className="w-4 h-4" /> Fund Allocation Order
                 </a>
               )}
             </div>
