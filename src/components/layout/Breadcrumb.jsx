@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getDashboardRoute } from '@/lib/routes';
 
 // Words that read wrongly when a path segment is simply capitalised.
-const WORDS = { mpr: 'MPR', mprs: 'MPRs', dpr: 'DPR', dd: 'District', 'mpr-review': 'Review MPRs', 'audit-logs': 'Audit Logs', head56: 'Head 56', allocation: 'Allocation', report: 'Report' };
+const WORDS = { mpr: 'MPR', mprs: 'MPRs', dpr: 'DPR', dd: 'District', 'mpr-review': 'Review MPRs', 'audit-logs': 'Audit Logs', head56: 'Head 56', allocation: 'Allocation', report: 'Report', committees: 'Committees', meeting: 'Meeting', dnss: 'DNSS', jsa: 'JSA Progress', training: 'Training', new: 'New' };
 const looksLikeId = (segment) => /^[a-f0-9]{24}$/i.test(segment) || (segment.length > 15 && !/^[a-z]+(-[a-z]+)+$/.test(segment));
 const labelOf = (segment) => {
   if (WORDS[segment]) return WORDS[segment];
