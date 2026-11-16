@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Activity, BadgeCheck, Ban, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, FolderKanban, IndianRupee, KeyRound, Lock, LogIn, RotateCcw, ScrollText, Search, Settings, Users, Wallet, X,
+  Activity, BadgeCheck, Ban, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, FolderKanban, IndianRupee, KeyRound, Landmark, Lock, LogIn, RotateCcw, ScrollText, Search, Settings, Users, Wallet, X,
 } from 'lucide-react';
 import axiosInstance from '@/lib/axiosInstance';
 import { formatLakh } from '@/lib/numeric';
@@ -28,6 +28,11 @@ const ACTIONS = {
   H56_MPR_DISCARD: ['Head 56 report draft discarded', 'head56'], H56_DOCUMENT: ['Head 56 supporting document changed', 'head56'], H56_MPR_FORWARD: ['Head 56 report verified and forwarded', 'head56'],
   H56_MPR_RETURN: ['Head 56 report returned to Maker', 'head56'], H56_MPR_REJECT: ['Head 56 report rejected', 'head56'], H56_MPR_REOPEN: ['Head 56 report reopened by HQ', 'head56'],
   H56_REVIEW: ['Head 56 monthly CEO/ACEO/CFO review', 'head56'], H56_REVIEW_WITHDRAW: ['Head 56 monthly review withdrawn', 'head56'],
+  MEETING_CREATE: ['Committee meeting entered', 'forms'], MEETING_UPDATE: ['Committee meeting changed', 'forms'], MEETING_DELETE: ['Committee meeting draft deleted', 'forms'], MEETING_FILE: ['Meeting minutes / photographs changed', 'forms'],
+  MEETING_SUBMIT: ['Committee meeting sent to HQ Approver', 'forms'], MEETING_APPROVE: ['Committee meeting approved by HQ', 'forms'], MEETING_RETURN: ['Committee meeting returned to Maker', 'forms'],
+  DNSS_CREATE: ['DNSS entered', 'forms'], DNSS_UPDATE: ['DNSS changed', 'forms'], DNSS_DELETE: ['DNSS deleted', 'forms'], DNSS_FILE: ['DNSS documents changed', 'forms'],
+  TRAINING_CREATE: ['Training programme recorded', 'forms'], TRAINING_UPDATE: ['Training programme changed', 'forms'], TRAINING_DELETE: ['Training programme deleted', 'forms'], TRAINING_FILE: ['Training photographs / documents changed', 'forms'],
+  JSA_REPORT_CREATE: ['JSA report started', 'forms'], JSA_REPORT_UPDATE: ['JSA report changed', 'forms'], JSA_REPORT_DELETE: ['JSA report deleted', 'forms'], JSA_PROGRESS: ['JSA weekly progress entered', 'forms'], JSA_SETTINGS: ['JSA recharge factors changed', 'forms'],
   USER_CREATE: ['User added', 'users'], USER_REQUEST: ['User account invited / requested', 'users'], USER_APPROVE: ['User account request approved', 'users'], USER_REJECT: ['User account request rejected', 'users'], USER_SUSPEND: ['User suspended', 'users'], USER_DEACTIVATE: ['User deactivated', 'users'], USER_RESTORE: ['User restored', 'users'], PASSWORD_CHANGE: ['Password changed', 'users'],
   LOGIN: ['Signed in', 'access'], LOGOUT: ['Signed out', 'access'], TOKEN_REFRESH: ['Session renewed', 'access'], BOOTSTRAP: ['System set up', 'access'],
   SETTINGS_UPDATE: ['Settings changed', 'system'], REPORT_DISPATCH: ['Reminders / summary sent', 'system'],
@@ -39,6 +44,7 @@ const GROUPS = [
   { id: 'budget', label: 'Budget (earlier system)', icon: IndianRupee, cls: 'border-orange-200 bg-orange-50 text-orange-800' },
   { id: 'reports', label: 'Monthly reports', icon: ClipboardList, cls: 'border-indigo-200 bg-indigo-50 text-indigo-800' },
   { id: 'head56', label: 'Head 56', icon: Wallet, cls: 'border-teal-200 bg-teal-50 text-teal-800' },
+  { id: 'forms', label: 'Committees, JSA & training', icon: Landmark, cls: 'border-cyan-200 bg-cyan-50 text-cyan-800' },
   { id: 'closure', label: 'Closure & outcomes', icon: Lock, cls: 'border-emerald-200 bg-emerald-50 text-emerald-800' },
   { id: 'users', label: 'Users', icon: Users, cls: 'border-violet-200 bg-violet-50 text-violet-800' },
   { id: 'access', label: 'Sign-in', icon: LogIn, cls: 'border-slate-200 bg-slate-100 text-slate-700' },
@@ -46,7 +52,7 @@ const GROUPS = [
 ];
 const GROUP_BY_ID = Object.fromEntries(GROUPS.map((group) => [group.id, group]));
 const actionsOf = (groupId) => Object.entries(ACTIONS).filter(([, [, group]]) => group === groupId).map(([action]) => action);
-const ICON_OVERRIDE = { REJECT_SANCTION: RotateCcw, RETURN_SANCTION: RotateCcw, MPR_RETURN: RotateCcw, MPR_REJECT: Ban, BUDGET_REVERSE: RotateCcw, APPROVE_SANCTION: BadgeCheck, MPR_APPROVE: BadgeCheck, MPR_FORWARD: BadgeCheck, PASSWORD_CHANGE: KeyRound };
+const ICON_OVERRIDE = { REJECT_SANCTION: RotateCcw, RETURN_SANCTION: RotateCcw, MPR_RETURN: RotateCcw, MPR_REJECT: Ban, BUDGET_REVERSE: RotateCcw, APPROVE_SANCTION: BadgeCheck, MPR_APPROVE: BadgeCheck, MPR_FORWARD: BadgeCheck, PASSWORD_CHANGE: KeyRound, MEETING_APPROVE: BadgeCheck, MEETING_RETURN: RotateCcw };
 
 const ROLES = [['SUPER_ADMIN', 'SARRA HQ'], ['DD_LEVEL', 'District SARRA Centre'], ['PIA_OFFICER', 'PIA'], ['MND_SUPER_ADMIN', 'M&E admin'], ['MND_OFFICER', 'M&E officer']];
 const ROLE_LABEL = Object.fromEntries(ROLES);

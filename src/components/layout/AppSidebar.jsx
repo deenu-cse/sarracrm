@@ -10,6 +10,7 @@ import { navLinksFor } from '@/constants/nav';
 import { roleLabelOf } from '@/constants/roles';
 import { fetchMprQueue } from '@/lib/mprApi';
 import { fetchH56Queue } from '@/lib/head56Api';
+import { fetchMeetingQueue } from '@/lib/formsApi';
 
 export const RAIL_WIDTH = 68; // px, the collapsed sidebar (icons only)
 
@@ -33,13 +34,13 @@ function useQueueCount(fetchQueue, enabled, pathname, unread) {
   return count;
 }
 
-function NavList({ links, current, expanded, unread, queue, h56, onNavigate }) {
+function NavList({ links, current, expanded, unread, queue, h56, meetings, onNavigate }) {
   const t = useT();
   return (
     <ul className="space-y-1 px-3">
       {links.map((link) => {
         const active = link.href === current;
-        const badge = { notifications: unread, queue, h56 }[link.badge] || 0;
+        const badge = { notifications: unread, queue, h56, meetings }[link.badge] || 0;
         const Icon = link.icon;
         return (
           <li key={link.href}>
@@ -128,6 +129,8 @@ export function AppSidebar({ mobileOpen, onMobileClose }) {
   const expanded = hovered || keyboard;
   const queue = useQueueCount(fetchMprQueue, links.some((link) => link.badge === 'queue'), pathname, unreadCount);
   const h56 = useQueueCount(fetchH56Queue, links.some((link) => link.badge === 'h56'), pathname, unreadCount);
+  // Committee meetings waiting for the HQ Approver (zero for everyone else).
+  const meetings = useQueueCount(fetchMeetingQueue, links.some((link) => link.badge === 'meetings') && user?.workflowRole === 'APPROVER', pathname, unreadCount);
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
   // The drawer closes when a link takes the user to another page.
@@ -159,7 +162,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }) {
         className={`fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-navy transition-[width,box-shadow] duration-200 ease-out md:flex print:hidden ${expanded ? 'shadow-2xl' : 'shadow-md'}`}
       >
         <Brand expanded={expanded} />
-        <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 [scrollbar-width:none]"><NavList links={links} current={current} expanded={expanded} unread={unreadCount} queue={queue} h56={h56} /></nav>
+        <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 [scrollbar-width:none]"><NavList links={links} current={current} expanded={expanded} unread={unreadCount} queue={queue} h56={h56} meetings={meetings} /></nav>
         <UserBlock expanded={expanded} />
       </aside>
 
@@ -172,7 +175,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }) {
               <Brand expanded />
               <button type="button" onClick={onMobileClose} aria-label="Close menu" className="rounded-lg p-2 text-blue-100 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"><X className="h-5 w-5" aria-hidden="true" /></button>
             </div>
-            <nav className="min-h-0 flex-1 overflow-y-auto py-3"><NavList links={links} current={current} expanded unread={unreadCount} queue={queue} h56={h56} onNavigate={onMobileClose} /></nav>
+            <nav className="min-h-0 flex-1 overflow-y-auto py-3"><NavList links={links} current={current} expanded unread={unreadCount} queue={queue} h56={h56} meetings={meetings} onNavigate={onMobileClose} /></nav>
             <UserBlock expanded />
           </aside>
         </div>
