@@ -154,7 +154,7 @@ export default function MNDFormAnalytics({ params }) {
             <p className="text-xs text-slate-400 font-medium uppercase tracking-widest mb-1">
               Dashboard &bull; Reports &bull; {form.applicationNo} &bull; Analytics
             </p>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+            <h1 className="text-2xl font-extrabold text-navy flex items-center gap-3">
               <BarChart3 className="text-blue-600" />
               Report Insights
             </h1>

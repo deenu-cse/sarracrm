@@ -244,7 +244,7 @@ function ProjectWizard({ mode, sourceId }) {
             <FolderPlus className="h-5 w-5" />
           </span>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">{MODE_TITLES[mode]}</h1>
+            <h1 className="text-2xl font-extrabold text-navy">{MODE_TITLES[mode]}</h1>
             <p className="text-sm text-slate-500">
               Step {state.step + 1} of {STEPS.length} · {STEPS[state.step].label}
             </p>

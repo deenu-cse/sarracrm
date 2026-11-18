@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,6 +8,10 @@
   body {
     @apply bg-background text-slate-800 font-sans antialiased;
   }
+  /* Bold, coloured page titles and bold table headings everywhere (SARRA report design). */
+  :where(.app-content main) h1 { font-weight: 800; color: #0a3d62; letter-spacing: -0.01em; }
+  :where(.app-content main) h2 { font-weight: 700; }
+  :where(.app-content main) thead th { font-weight: 700; }
 }
 
 @layer utilities {

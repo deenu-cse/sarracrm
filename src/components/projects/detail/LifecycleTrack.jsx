@@ -9,8 +9,9 @@ const STAGES = [
   { key: 'checked', label: 'HQ Checker: verified', date: (p) => p.checkerAt },
   { key: 'sanctioned', label: 'HQ Approver: sanctioned', date: (p) => p.approverAt },
   { key: 'toDistrict', label: 'Forwarded to District', date: (p) => p.forwardedToDistrictAt },
-  { key: 'districtAccepted', label: 'District Maker: accepted', date: (p) => p.districtAcceptedAt },
-  { key: 'toPia', label: 'PIA & reporting assigned', date: (p) => p.piaForwardedAt },
+  { key: 'districtAccepted', label: 'District Maker: accepted & PIA selected', date: (p) => p.districtAcceptedAt },
+  { key: 'districtChecked', label: 'District Checker: verified', date: (p) => p.districtCheckedAt },
+  { key: 'toPia', label: 'District Approver: PIA assigned', date: (p) => p.districtApprovedAt || p.piaForwardedAt },
   { key: 'active', label: 'Active: implementation', date: (p) => p.piaAcceptedAt },
 ];
 
@@ -21,9 +22,11 @@ const COMPLETED = {
   [SANCTION_STATUS.PENDING_APPROVER]: 2,
   [SANCTION_STATUS.SANCTIONED]: 3,
   [SANCTION_STATUS.FORWARDED_TO_DISTRICT]: 4,
-  [SANCTION_STATUS.DISTRICT_ACCEPTED]: 5,
-  [SANCTION_STATUS.FORWARDED_TO_PIA]: 6,
-  [SANCTION_STATUS.PIA_ACCEPTED]: 7,
+  [SANCTION_STATUS.DISTRICT_ACCEPTED]: 4,
+  [SANCTION_STATUS.DISTRICT_PENDING_CHECKER]: 5,
+  [SANCTION_STATUS.DISTRICT_PENDING_APPROVER]: 6,
+  [SANCTION_STATUS.FORWARDED_TO_PIA]: 7,
+  [SANCTION_STATUS.PIA_ACCEPTED]: 8,
 };
 
 /**
@@ -37,8 +40,8 @@ export function LifecycleTrack({ project }) {
   const completed = rejected ? (project.checkerAt ? 2 : 1) : (COMPLETED[project.status] ?? 0);
 
   return (
-    <nav aria-label="Project lifecycle" className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
-      <ol className="flex items-start overflow-x-auto pb-1">
+    <nav aria-label="Project lifecycle" className="overflow-x-auto rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
+      <ol className="grid min-w-[880px] gap-2" style={{ gridTemplateColumns: `repeat(${STAGES.length}, minmax(0, 1fr))` }}>
         {STAGES.map((stage, index) => {
           const done = index < completed;
           const current = index === completed;
@@ -47,32 +50,30 @@ export function LifecycleTrack({ project }) {
           const date = done ? stage.date(project) : failed ? project.rejectedAt : null;
 
           return (
-            <li key={stage.key} className="flex min-w-[7.75rem] flex-1 items-start last:flex-none sm:min-w-0" aria-current={current && !failed ? 'step' : undefined}>
-              <div className="flex flex-col items-start gap-2">
+            <li key={stage.key} className="min-w-0" aria-current={current && !failed ? 'step' : undefined}>
+              <div className="flex items-center">
                 <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-[11px] font-bold tabular-nums transition-colors duration-200
+                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 text-xs font-extrabold tabular-nums transition-colors duration-200
                     ${failed ? 'border-red-600 bg-red-600 text-white'
                       : done ? 'border-emerald-600 bg-emerald-600 text-white'
-                      : current ? 'border-navy bg-white text-navy ring-4 ring-navy/10'
+                      : current ? 'border-amber-500 bg-amber-50 text-amber-700 ring-4 ring-amber-200/60'
                       : 'border-slate-200 bg-white text-slate-400'}`}
                 >
-                  {failed ? <X className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" /> : done ? <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" /> : index + 1}
+                  {failed ? <X className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" /> : done ? <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" /> : index + 1}
                 </span>
-                <span className="pr-3">
-                  <span className={`block whitespace-nowrap text-xs font-semibold ${failed ? 'text-red-700' : done || current ? 'text-slate-900' : 'text-slate-400'}`}>
-                    {failed ? 'Returned to Maker' : stage.label}
+                {index < STAGES.length - 1 && (
+                  <span aria-hidden="true" className="mx-1.5 h-1 flex-1 rounded-full bg-slate-200">
+                    <span className={`block h-full rounded-full bg-emerald-500 transition-[width] duration-500 ${done && !failed ? 'w-full' : 'w-0'}`} />
                   </span>
-                  <span className={`block whitespace-nowrap text-[11px] ${failed ? 'text-red-600' : done ? 'text-emerald-700' : current ? 'text-navy' : 'text-slate-400'}`}>
-                    {date ? formatMoment(date) : state}
-                  </span>
-                  <span className="sr-only">{state}</span>
-                </span>
+                )}
               </div>
-              {index < STAGES.length - 1 && (
-                <span aria-hidden="true" className="mt-3.5 h-0.5 min-w-[1.25rem] flex-1 rounded-full bg-slate-200">
-                  <span className={`block h-full rounded-full bg-emerald-600 transition-[width] duration-500 ${index < completed - 1 || (done && !rejected && index < completed) ? 'w-full' : 'w-0'}`} />
-                </span>
-              )}
+              <span className={`mt-2 block pr-2 text-[12px] font-bold leading-tight ${failed ? 'text-red-700' : done ? 'text-slate-900' : current ? 'text-amber-800' : 'text-slate-400'}`}>
+                {failed ? 'Returned to Maker' : stage.label}
+              </span>
+              <span className={`mt-0.5 block text-[11px] font-semibold ${failed ? 'text-red-600' : done ? 'text-emerald-700' : current ? 'text-amber-700' : 'text-slate-400'}`}>
+                {date ? formatMoment(date) : state}
+              </span>
+              <span className="sr-only">{state}</span>
             </li>
           );
         })}

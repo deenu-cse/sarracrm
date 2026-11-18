@@ -9,6 +9,7 @@ import { fetchCompletionState } from '@/lib/lifecycleApi';
 import { formatLakh } from '@/lib/numeric';
 import { Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
 import { LifecycleTrack } from './LifecycleTrack';
+import { AssignmentReview } from './DistrictActions';
 import { OverviewTab } from './OverviewTab';
 import { ActivityTab } from './ActivityTab';
 import { PhotosTab } from './PhotosTab';
@@ -151,7 +152,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
           </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900">{project.projectTitle || 'Untitled project'}</h1>
+              <h1 className="text-2xl font-extrabold text-navy">{project.projectTitle || 'Untitled project'}</h1>
               <Badge status={project.status} size="md" kind="project" />
               {project.closure?.status === 'CLOSED'
                 ? <span className="inline-flex items-center gap-1 rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"><Lock className="h-3 w-3" aria-hidden="true" /> {t('Closed')}</span>
@@ -226,6 +227,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
       )}
 
       <LifecycleTrack project={project} />
+      <AssignmentReview project={project} user={user} onDone={refreshAll} />
 
       <dl className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <StatTile icon={IndianRupee} label={t('Sanctioned Amount')} value={formatLakh(project.totalSanctionedBudgetLakh)} sub={`SARRA ${formatLakh(project.sarraShareLakh)} · Dept. ${formatLakh(project.deptShareLakh)}`} />

@@ -484,7 +484,7 @@ export default function OfficerFormAnalytics({ params }) {
       <div className="mb-5">
         <p className="text-sm text-slate-500">Dashboard → Forms → {form?.applicationNo} → Analytics</p>
         <div className="flex justify-between items-center flex-wrap gap-2">
-          <h1 className="text-2xl font-bold text-slate-800">Analytics — {form?.applicationNo}</h1>
+          <h1 className="text-2xl font-extrabold text-navy">Analytics — {form?.applicationNo}</h1>
           <span className="text-sm text-slate-600">{form?.formType} | {district || "—"} | {form?.section1_deptDetails?.department || "—"} | {form?.status}</span>
         </div>
       </div>

@@ -10,6 +10,7 @@ import { Pagination } from '@/components/ui/Pagination';
 import { ActionButton, Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
 import { Tabs, FilterSelect } from '@/components/head56/shared';
 import { downloadDnssExcel, downloadMeetingsExcel, fetchDnssList, fetchMeetings } from '@/lib/formsApi';
+import { CARD_COLORS, colorFor } from '@/lib/cardColors';
 import { PageHeader, StatusPill, card, day, linkButton, num, useRoleBase } from './shared';
 
 export const COMMITTEES = {
@@ -33,10 +34,11 @@ function useExport(run) {
 }
 
 function Stat({ label, value, tone = 'text-slate-900' }) {
+  const c = CARD_COLORS[colorFor(label)];
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-      <dd className={`mt-1 text-xl font-bold tabular-nums ${tone}`}>{value}</dd>
+    <div className={`rounded-2xl border px-4 py-3 shadow-sm ${c.card}`}>
+      <dt className={`text-[13px] font-bold ${c.label}`}>{label}</dt>
+      <dd className={`mt-1 text-2xl font-extrabold tabular-nums ${tone}`}>{value}</dd>
     </div>
   );
 }

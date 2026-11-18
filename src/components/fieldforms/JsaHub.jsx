@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { CloudRain, Droplets, Plus, Settings2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { CARD_COLORS, colorFor } from '@/lib/cardColors';
 import { USER_ROLES, workflowRoleOf } from '@/constants/roles';
 import { DISTRICTS } from '@/constants/districts';
 import { Dialog } from '@/components/ui/Dialog';
@@ -76,7 +77,7 @@ function Progress({ campaign, setCampaign, stateWide }) {
               ['Targeted recharge', `${r.recharge.totals.potentialMillion} M cu.m`, `${num(r.recharge.totals.potentialRecharge, 0)} cu.m in the monsoon`],
               [`Recharge as on ${r.asOnLabel}`, `${r.recharge.totals.tillDateMillion} M cu.m`, `${num(r.recharge.totals.rechargeTillDate, 0)} cu.m`],
             ].map(([label, value, sub]) => (
-              <div key={label} className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"><dt className="text-xs font-medium text-slate-500">{label}</dt><dd className="mt-1 text-xl font-bold tabular-nums text-slate-900">{value}</dd><dd className="text-xs text-slate-500">{sub}</dd></div>
+              <div key={label} className={`rounded-2xl border px-4 py-3 shadow-sm ${CARD_COLORS[colorFor(label)].card}`}><dt className={`text-[13px] font-bold ${CARD_COLORS[colorFor(label)].label}`}>{label}</dt><dd className="mt-1 text-2xl font-extrabold tabular-nums text-slate-900">{value}</dd><dd className="text-xs text-slate-500">{sub}</dd></div>
             ))}
           </dl>
 

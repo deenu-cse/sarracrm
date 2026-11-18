@@ -54,7 +54,7 @@ export function Head56Hub() {
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy/10 text-navy" aria-hidden="true"><Wallet className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Budget Head 56 — Non-Salary Grant</h1>
+            <h1 className="text-2xl font-extrabold text-navy">Budget Head 56 — Non-Salary Grant</h1>
             <p className="text-sm text-slate-500">56-गैर वेतन हेतु अनुदान · allocation, monthly physical and financial progress (Prarup-2) · {roleLabelOf(user)}</p>
           </div>
         </div>

@@ -307,7 +307,7 @@ export default function DDAnalyticsDashboard() {
         <div className="max-w-[1440px] mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-800">District Analytics Dashboard</h1>
+              <h1 className="text-2xl font-extrabold text-navy">District Analytics Dashboard</h1>
               <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
                 <MapPin className="w-3.5 h-3.5" /> {user?.district} District · {user?.department} ·
                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Updated: {format(new Date(), "dd MMM, hh:mm a")}</span>

@@ -36,6 +36,8 @@ const STATUS_STYLES = {
   [SANCTION_STATUS.SANCTIONED]: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
   [SANCTION_STATUS.FORWARDED_TO_DISTRICT]: 'bg-cyan-100 text-cyan-800 border border-cyan-200',
   [SANCTION_STATUS.DISTRICT_ACCEPTED]: 'bg-teal-100 text-teal-800 border border-teal-200',
+  [SANCTION_STATUS.DISTRICT_PENDING_CHECKER]: 'bg-amber-100 text-amber-800 border border-amber-200',
+  [SANCTION_STATUS.DISTRICT_PENDING_APPROVER]: 'bg-orange-100 text-orange-800 border border-orange-200',
   [SANCTION_STATUS.FORWARDED_TO_PIA]: 'bg-indigo-100 text-indigo-800 border border-indigo-200',
   [SANCTION_STATUS.PIA_ACCEPTED]: 'bg-green-100 text-green-900 border border-green-300 font-semibold',
   [SANCTION_STATUS.REJECTED]: 'bg-red-100 text-red-800 border border-red-200',

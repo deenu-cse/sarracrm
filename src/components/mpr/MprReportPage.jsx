@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Dialog } from '@/components/ui/Dialog';
 import { discardMprDraft, fetchMpr, forwardMpr, rejectMpr, returnMpr } from '@/lib/mprApi';
 import { ENTRY_MODE_LABELS } from '@/constants/status';
-import { formatLakh } from '@/lib/numeric';
+import { formatMoney as formatLakh, useMoneyUnit } from '@/lib/moneyUnit';
+import { MoneyUnitToggle } from '@/components/ui/MoneyUnitToggle';
 import { ActionButton, FieldError, Notice, RetryButton, Skeleton, inputClass } from '@/components/projects/create/parts';
 import { downloadCsv } from '@/components/projects/detail/shared';
 import { MprAnalysis } from './MprAnalysis';
@@ -89,6 +90,7 @@ export function ChainTracker({ chain }) {
  * this role (previous / next month, and the trend table).
  */
 export function MprReportPage({ mprId, backHref, backLabel = 'Back', correctionHref, reportHref, projectHref }) {
+  useMoneyUnit(); // re-render every amount when the unit for reports changes
   const router = useRouter();
   const [box, setBox] = useState({ report: null, loading: true, error: '' });
   const [tab, setTab] = useState('report');
@@ -183,7 +185,7 @@ export function MprReportPage({ mprId, backHref, backLabel = 'Back', correctionH
           </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900">{report.departmentName} — {report.period}</h1>
+              <h1 className="text-2xl font-extrabold text-navy">{report.departmentName} — {report.period}</h1>
               <Badge status={report.status} size="md" />
               <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${report.entryMode === 'DISTRICT' ? 'bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-700'}`}>{ENTRY_MODE_LABELS[report.entryMode] || ENTRY_MODE_LABELS.PIA}</span>
             </div>
@@ -200,6 +202,7 @@ export function MprReportPage({ mprId, backHref, backLabel = 'Back', correctionH
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 print:hidden">
+          <MoneyUnitToggle compact />
           <button type="button" onClick={exportCsv} aria-label="Export this report as CSV" title="Export CSV" className="rounded-lg border border-slate-300 bg-white p-2.5 text-slate-600 transition-[background-color,border-color] duration-150 hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">
             <Download className="h-4 w-4" aria-hidden="true" />
           </button>

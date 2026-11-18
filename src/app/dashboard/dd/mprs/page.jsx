@@ -27,7 +27,7 @@ export default function DistrictEntryMprsPage() {
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><ClipboardPen className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">District Entry MPRs</h1>
+            <h1 className="text-2xl font-extrabold text-navy">District Entry MPRs</h1>
             <p className="text-sm text-slate-500">Monthly progress you report as District Technical Staff, on behalf of the PIA. Submitted reports go to the District Checker.</p>
           </div>
         </div>

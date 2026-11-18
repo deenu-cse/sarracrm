@@ -3,7 +3,20 @@ import React from 'react';
 import Link from 'next/link';
 import { BarChart3, CalendarClock, ClipboardCheck, FolderKanban, Lock, PlusCircle, ScrollText, UserPlus, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, td, th, useHome } from './HomeKit';
+import { DataTable } from '@/components/analytics/AnalyticsParts';
+import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, useHome } from './HomeKit';
+
+/** District-wise comparison in the report design: sanctioned, expenditure and balance, progress and reports. */
+export const DISTRICT_COLUMNS = [
+  { key: 'name', label: 'District' },
+  { key: 'projects', label: 'Projects', align: 'right', sum: true },
+  { key: 'sanctionedLakh', label: 'Sanctioned', money: true, sum: true, group: 'Financial', tone: 'blue' },
+  { key: 'spentLakh', label: 'Expenditure', money: true, sum: true, group: 'Financial', tone: 'blue' },
+  { key: 'balanceLakh', label: 'Balance', money: true, sum: true, group: 'Financial', tone: 'blue' },
+  { key: 'financialPercent', label: '% Spent', percent: true, group: 'Progress', tone: 'green', total: (rows) => { const b = rows.reduce((s, r) => s + (Number(r.sanctionedLakh) || 0), 0); const x = rows.reduce((s, r) => s + (Number(r.spentLakh) || 0), 0); return b > 0 ? Math.round((x / b) * 1000) / 10 : 0; } },
+  { key: 'physicalPercent', label: '% Physical', percent: true, group: 'Progress', tone: 'green' },
+  { key: 'inReview', label: 'In verification', align: 'right', sum: true, group: 'Monthly reports', tone: 'orange' },
+];
 
 const ROLE_TEXT = {
   MAKER: { line: 'SARRA HQ · Maker', empty: 'No returned project, project to forward or report to compile is waiting on you.' },
@@ -151,8 +164,8 @@ export function StateHome() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-            <Card className="lg:col-span-2" title="Recently changed projects" aside={<SeeAll href={STAGE_HREF} />} padded={false}>
+          <div className="grid grid-cols-1 gap-6">
+            <Card title="Recently changed projects" aside={<SeeAll href={STAGE_HREF} />} padded={false}>
               {data.recentProjects.length === 0 ? <div className="p-5"><Empty>No project has been created yet.</Empty></div> : (
                 <ul className="divide-y divide-slate-100">
                   {data.recentProjects.map((project) => (
@@ -170,36 +183,9 @@ export function StateHome() {
                 </ul>
               )}
             </Card>
-            <Card className="lg:col-span-3" title="District-wise comparison" description="Sanctioned amount, expenditure, physical progress and reports in verification." aside={<SeeAll href="/dashboard/admin/deadlines"><CalendarClock className="h-3 w-3" aria-hidden="true" /> Deadlines</SeeAll>} padded={false}>
-              {data.districts.length === 0 ? <div className="p-5"><Empty>No sanctioned project yet.</Empty></div> : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[560px]">
-                    <caption className="sr-only">Districts</caption>
-                    <thead>
-                      <tr className="border-b border-slate-100 bg-slate-50/70">
-                        <th scope="col" className={`${th} pl-5`}>District</th>
-                        <th scope="col" className={`${th} text-right`}>Projects</th>
-                        <th scope="col" className={`${th} text-right`}>Sanctioned</th>
-                        <th scope="col" className={`${th} text-right`}>Spent</th>
-                        <th scope="col" className={`${th} text-right`}>Physical</th>
-                        <th scope="col" className={`${th} pr-5 text-right`}>In verification</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {data.districts.map((row) => (
-                        <tr key={row.name}>
-                          <th scope="row" className={`${td} pl-5 text-left font-medium text-slate-900`}>{row.name}</th>
-                          <td className={`${td} text-right tabular-nums`}>{row.projects}</td>
-                          <td className={`${td} text-right tabular-nums`}>{shortLakh(row.sanctionedLakh)}</td>
-                          <td className={`${td} text-right tabular-nums`}>{row.financialPercent}%</td>
-                          <td className={`${td} text-right tabular-nums`}>{row.physicalPercent}%</td>
-                          <td className={`${td} pr-5 text-right tabular-nums ${row.inReview ? 'font-semibold text-amber-700' : ''}`}>{row.inReview}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+            <Card title="District-wise comparison" description="Sanctioned amount, expenditure and balance, physical progress and reports in verification." aside={<SeeAll href="/dashboard/admin/deadlines"><CalendarClock className="h-3 w-3" aria-hidden="true" /> Deadlines</SeeAll>} padded={false}>
+              <DataTable rows={data.districts} columns={DISTRICT_COLUMNS} rowKey={(row) => row.name} caption="Districts" csvName="district_comparison.csv"
+                defaultSort={{ key: 'name', direction: 'asc' }} minWidth={820} emptyText="No sanctioned project yet." />
             </Card>
           </div>
         </>

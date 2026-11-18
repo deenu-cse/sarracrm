@@ -12,6 +12,8 @@ const STATUS_COLORS = {
   PENDING_APPROVER: 'bg-orange-50 text-orange-700 border-orange-200',
   FORWARDED_TO_DISTRICT: 'bg-blue-50 text-blue-700 border-blue-200',
   DISTRICT_ACCEPTED: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  DISTRICT_PENDING_CHECKER: 'bg-amber-50 text-amber-800 border-amber-200',
+  DISTRICT_PENDING_APPROVER: 'bg-orange-50 text-orange-800 border-orange-200',
   FORWARDED_TO_PIA: 'bg-violet-50 text-violet-700 border-violet-200',
   PIA_ACCEPTED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   SANCTIONED: 'bg-teal-50 text-teal-700 border-teal-200',
