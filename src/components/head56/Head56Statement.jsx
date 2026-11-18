@@ -6,10 +6,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { USER_ROLES } from '@/constants/roles';
 import { Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
 import { Head56Table } from './Head56Table';
+import { unitCaption, useMoneyUnit } from '@/lib/moneyUnit';
+import { MoneyUnitToggle } from '@/components/ui/MoneyUnitToggle';
 import { DownloadButtons, FilterSelect, fyOptions, startedMonths } from './shared';
 
 /** The consolidated Prarup-2 statement of a month for a selection of units, with Excel and PDF export. */
 export function Head56Statement({ financialYear, onYearChange }) {
+  const unit = useMoneyUnit();
   const { user } = useAuth();
   const stateWide = [USER_ROLES.SUPER_ADMIN, USER_ROLES.MND_SUPER_ADMIN, USER_ROLES.MND_OFFICER].includes(user?.role);
   const months = startedMonths(financialYear);
@@ -42,7 +45,10 @@ export function Head56Statement({ financialYear, onYearChange }) {
             Verified by State only
           </label>
         </div>
-        {data && <DownloadButtons onDownload={(format) => downloadH56Statement(query, format)} />}
+        <div className="flex flex-wrap items-center gap-3">
+          <MoneyUnitToggle />
+          {data && <DownloadButtons onDownload={(format) => downloadH56Statement(query, format)} />}
+        </div>
       </section>
 
       {box.loading && !data && <Skeleton className="h-96" />}
@@ -51,8 +57,8 @@ export function Head56Statement({ financialYear, onYearChange }) {
         <section className={`rounded-xl border border-slate-200 bg-white shadow-sm transition-opacity ${box.loading ? 'opacity-60' : ''}`}>
           <header className="border-b border-slate-100 px-5 py-3">
             <p className="text-xs font-semibold text-slate-500">SARRA अन्तर्गत 56-गैर वेतन हेतु अनुदान के अन्तर्गत आवंटित बजट के सापेक्ष वित्तीय एवं भौतिक प्रगति विवरण प्रारूप –2</p>
-            <h2 className="mt-1 text-sm font-semibold text-slate-900">{data.scopeLabel} · FY {data.financialYear}, {data.period}</h2>
-            <p className="text-xs text-slate-500">{data.units} unit allocation(s) · {data.reports} report(s) filed for the month · {data.verifiedOnly ? 'verified reports only' : 'all filed reports (in the chain, returned or verified)'} · amounts in ₹ lakh</p>
+            <h2 className="mt-1 text-base font-extrabold text-navy">{data.scopeLabel} · FY {data.financialYear}, {data.period}</h2>
+            <p className="text-xs text-slate-500">{data.units} unit allocation(s) · {data.reports} report(s) filed for the month · {data.verifiedOnly ? 'verified reports only' : 'all filed reports (in the chain, returned or verified)'} · amounts {unitCaption(unit)} (downloads in ₹ lakh)</p>
           </header>
           <Head56Table rows={data.rows} total={data.total} variant="STATEMENT" caption={`Prarup-2 statement, ${data.period}`} />
         </section>

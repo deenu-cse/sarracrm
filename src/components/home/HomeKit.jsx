@@ -6,16 +6,20 @@ import { Badge } from '@/components/ui/Badge';
 import axiosInstance from '@/lib/axiosInstance';
 import { request } from '@/lib/projectApi';
 import { useAuth } from '@/hooks/useAuth';
-import { formatIndian, formatLakh } from '@/lib/numeric';
+import { formatIndian } from '@/lib/numeric';
+import { formatMoney, useMoneyUnit } from '@/lib/moneyUnit';
+import { MoneyUnitToggle } from '@/components/ui/MoneyUnitToggle';
+import { CARD_COLORS, colorFor } from '@/components/analytics/AnalyticsParts';
 import { Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
 
 /** Shared pieces of the role home pages. Each role composes its own page from these. */
 
 export const COLORS = { sanctioned: '#2a78d6', spent: '#1baf7a', balance: '#eb6834' };
 export const count = (value) => formatIndian(value || 0, { maxDecimals: 0 });
-export const lakh = (value) => formatLakh(value || 0);
+/** An amount held in lakh, in the unit chosen for reports (Rupees / Thousand / Lakh / Crore). */
+export const lakh = (value) => formatMoney(value || 0);
 /** Shorter money for tight places: "₹ 12.50 L". */
-export const shortLakh = (value) => lakh(value).replace(' Lakh', ' L');
+export const shortLakh = (value) => formatMoney(value || 0, undefined, { short: true });
 export const day = (value) => {
   if (!value) return '—';
   const [y, m, d] = String(value).slice(0, 10).split('-').map(Number);
@@ -51,6 +55,7 @@ const greeting = () => {
 /** Page frame: greeting, who you are, today's date, the main actions, then the page. */
 export function HomeShell({ home, roleLine, actions, children }) {
   const { user } = useAuth();
+  useMoneyUnit(); // re-render every amount when the unit for reports changes
   const [today, setToday] = useState('');
   const [hello, setHello] = useState('Welcome');
   // Set on the client only, so the server and first client render agree.
@@ -77,11 +82,12 @@ export function HomeShell({ home, roleLine, actions, children }) {
     <div className="mx-auto max-w-7xl p-4 pb-16 sm:p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{roleLine}</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{hello}{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
-          <p className="mt-0.5 text-sm text-slate-500">{today || ' '}</p>
+          <p className="inline-flex rounded-full bg-gradient-to-r from-blue-600 to-emerald-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">{roleLine}</p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-navy">{hello}{user?.name ? `, ${user.name.split(' ')[0]}` : ''}</h1>
+          <p className="mt-0.5 text-sm font-semibold text-slate-500">{today || ' '}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <MoneyUnitToggle />
           <button type="button" onClick={home.reload} disabled={home.loading} aria-label="Refresh" title="Refresh"
             className="rounded-lg border border-slate-300 bg-white p-2.5 text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40 disabled:opacity-60">
             <RefreshCw className={`h-4 w-4 ${home.loading ? 'animate-spin' : ''}`} aria-hidden="true" />
@@ -106,12 +112,15 @@ export function ActionLink({ href, icon: Icon, children, primary = false }) {
 
 export function Card({ title, description, aside, children, padded = true, className = '' }) {
   return (
-    <section className={`rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}>
+    <section className={`overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
       {(title || aside) && (
-        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
-          <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-            {description && <p className="mt-0.5 text-xs text-slate-500">{description}</p>}
+        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <span className="mt-0.5 h-5 w-1.5 flex-shrink-0 rounded-full bg-gradient-to-b from-blue-600 to-emerald-500" aria-hidden="true" />
+            <div className="min-w-0">
+              <h2 className="text-[15px] font-extrabold text-navy">{title}</h2>
+              {description && <p className="mt-0.5 text-xs font-medium text-slate-500">{description}</p>}
+            </div>
           </div>
           {aside}
         </header>
@@ -180,16 +189,20 @@ export function TaskList({ tasks, emptyTitle = 'Nothing is waiting for you', emp
   );
 }
 
-export function Metric({ label, value, sub, tone = 'default', icon: Icon, href }) {
+export function Metric({ label, value, sub, tone = 'default', icon: Icon, href, color }) {
   const tones = { default: 'text-slate-900', success: 'text-emerald-700', warning: 'text-amber-700', danger: 'text-red-700' };
+  const c = CARD_COLORS[color || colorFor(label)];
   const body = (
     <>
-      <dt className="flex items-center gap-1.5 text-xs font-medium text-slate-500">{Icon && <Icon className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />}{label}</dt>
-      <dd className={`mt-1 text-xl font-bold tabular-nums ${tones[tone] || tones.default}`}>{value}</dd>
-      {sub && <dd className="mt-0.5 truncate text-xs text-slate-500">{sub}</dd>}
+      <dt className="flex items-center gap-2.5">
+        {Icon && <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${c.disc}`} aria-hidden="true"><Icon className="h-[18px] w-[18px]" /></span>}
+        <span className={`text-[13px] font-bold leading-tight ${c.label}`}>{label}</span>
+      </dt>
+      <dd className={`mt-2 text-2xl font-extrabold tabular-nums ${tones[tone] || tones.default}`}>{value}</dd>
+      {sub && <dd className="mt-0.5 truncate text-xs font-medium text-slate-600">{sub}</dd>}
     </>
   );
-  const cls = 'block rounded-xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm';
+  const cls = `block rounded-2xl border px-4 py-3.5 shadow-sm ${c.card}`;
   return href
     ? <Link href={href} className={`${cls} transition-[border-color,box-shadow] hover:border-navy/40 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40`}>{body}</Link>
     : <div className={cls}>{body}</div>;

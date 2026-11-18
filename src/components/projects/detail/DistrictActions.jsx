@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, Clock, UserCheck, Users } from 'lucide-react';
+import { Check, CheckCircle2, Clock, RotateCcw, Send, UserCheck, Users } from 'lucide-react';
 import { Dialog } from '@/components/ui/Dialog';
 import { SANCTION_STATUS, ENTRY_MODE_LABELS } from '@/constants/status';
 import { workflowRoleOf } from '@/constants/roles';
 import { get } from '@/lib/api';
-import { assignPiaOfficers, districtAccept, fetchPiaCandidates, transferPia } from '@/lib/projectWorkflowApi';
-import axiosInstance from '@/lib/axiosInstance';
+import {
+  approveDistrictAssignment, assignLegacyPia, assignPiaOfficers, districtAccept, fetchPiaCandidates, returnDistrictAssignment, transferPia, verifyDistrictAssignment,
+} from '@/lib/projectWorkflowApi';
 import { formatLakh } from '@/lib/numeric';
 import { ActionButton, Notice, RetryButton, Skeleton, inputClass } from '@/components/projects/create/parts';
 import { DoneTick } from '@/components/ui/Progress';
@@ -41,7 +42,7 @@ function AcceptDialog({ open, project, onClose, onDone }) {
       open={open}
       onClose={() => { if (!busy) onClose(); }}
       title="Accept this project?"
-      description={`Confirms that the ${project.district} District SARRA Centre takes up the project. Next you assign the PIA and the MPR reporting responsibility of each department.`}
+      description={`Confirms that the ${project.district} District SARRA Centre takes up the project. Next you select the PIA and the MPR reporting responsibility of each department; the District Checker verifies it and the District Approver approves it.`}
       size="md"
       dismissible={!busy}
       footer={(
@@ -129,10 +130,10 @@ function TransferRow({ department, project, onTransferred }) {
   );
 }
 
-const initialChoice = (department) => ({
-  reportingMode: department.reportingMode || 'PIA',
-  piaUserId: department.assigned?.id || (department.officers.length === 1 ? department.officers[0].id : ''),
-  districtStaffUserId: department.districtStaff?.id || '',
+const initialChoice = (department, proposed) => ({
+  reportingMode: proposed?.reportingMode || department.reportingMode || 'PIA',
+  piaUserId: proposed?.piaUserId || department.assigned?.id || (department.officers.length === 1 ? department.officers[0].id : ''),
+  districtStaffUserId: proposed && proposed.districtStaffUserId !== undefined ? proposed.districtStaffUserId || '' : department.districtStaff?.id || '',
 });
 
 /**
@@ -141,20 +142,21 @@ const initialChoice = (department) => ({
  * District entry by District Technical Staff (PIA approval chain bypassed).
  */
 function AssignDialog({ open, project, onClose, onDone }) {
-  const [box, setBox] = useState({ departments: [], districtStaff: [], loading: true, error: '' });
+  const [box, setBox] = useState({ departments: [], districtStaff: [], pending: null, loading: true, error: '' });
   const [choice, setChoice] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const busyRef = useRef(false);
 
   const load = () => {
-    setBox({ departments: [], districtStaff: [], loading: true, error: '' });
+    setBox({ departments: [], districtStaff: [], pending: null, loading: true, error: '' });
     fetchPiaCandidates(project._id)
-      .then(({ departments, districtStaff }) => {
-        setBox({ departments, districtStaff, loading: false, error: '' });
-        setChoice(Object.fromEntries(departments.map((d) => [d.departmentId, initialChoice(d)])));
+      .then(({ departments, districtStaff, pending }) => {
+        setBox({ departments, districtStaff, pending, loading: false, error: '' });
+        const returned = pending?.stage === 'RETURNED' ? new Map((pending.assignments || []).map((a) => [a.departmentId, a])) : new Map();
+        setChoice(Object.fromEntries(departments.map((d) => [d.departmentId, initialChoice(d, returned.get(d.departmentId))])));
       })
-      .catch((err) => setBox({ departments: [], districtStaff: [], loading: false, error: err?.message || 'Unable to load the officers. Please try again.' }));
+      .catch((err) => setBox({ departments: [], districtStaff: [], pending: null, loading: false, error: err?.message || 'Unable to load the officers. Please try again.' }));
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -166,7 +168,7 @@ function AssignDialog({ open, project, onClose, onDone }) {
   const changes = box.departments.map((d) => {
     const next = choice[d.departmentId];
     if (!next) return null;
-    const saved = initialChoice({ ...d, officers: [] });
+    const saved = initialChoice({ ...d, officers: [] }, null);
     const piaChanged = !d.accepted && next.piaUserId && next.piaUserId !== (d.assigned?.id || '');
     const modeChanged = next.reportingMode !== saved.reportingMode;
     const staffChanged = (next.districtStaffUserId || '') !== (d.districtStaff?.id || '');
@@ -208,15 +210,15 @@ function AssignDialog({ open, project, onClose, onDone }) {
     <Dialog
       open={open}
       onClose={() => { if (!busy) onClose(); }}
-      title="Assign PIA and Reporting Responsibility"
-      description="Each department gets its PIA Maker and a reporting responsibility. Only one report can exist for a project, department and month, whichever option is used."
+      title="Select PIA and Reporting Responsibility"
+      description="Each department gets its PIA Maker and a reporting responsibility. Your selection goes to the District Checker, then the District Approver; the PIA is assigned when the Approver approves it."
       size="xl"
       dismissible={!busy}
       footer={(
         <>
           <ActionButton variant="secondary" onClick={onClose} disabled={busy}>Cancel</ActionButton>
           <ActionButton icon={UserCheck} loading={busy} disabled={!changes.length} disabledReason="Change the assignment of at least one department" onClick={confirm}>
-            {busy ? 'Saving…' : `Save ${changes.length || ''} Assignment${changes.length === 1 ? '' : 's'}`.replace('  ', ' ')}
+            {busy ? 'Sending…' : 'Send to District Checker'}
           </ActionButton>
         </>
       )}
@@ -225,6 +227,7 @@ function AssignDialog({ open, project, onClose, onDone }) {
       {!box.loading && box.error && <Notice tone="error" action={<RetryButton onClick={load} />}>{box.error}</Notice>}
       {!box.loading && !box.error && (
         <div className="space-y-4">
+          {box.pending?.stage === 'RETURNED' && <Notice tone="warning" title="Returned to you">{box.pending.returnReason || 'Correct the selection and send it again.'}</Notice>}
           <ul className="space-y-3">
             {box.departments.map((department) => {
               const next = choice[department.departmentId] || initialChoice(department);
@@ -317,11 +320,11 @@ function LegacyAssignDialog({ open, project, onClose, onDone }) {
     setBusy(true);
     setError('');
     try {
-      await axiosInstance.patch(`/sanctions/${project._id}/forward-pia`, { piaUserId: selected });
+      await assignLegacyPia(project._id, selected);
       onClose();
       await onDone();
     } catch (err) {
-      setError(err?.response?.data?.message || 'The officer could not be assigned. Please try again.');
+      setError(err?.message || 'The selection could not be sent. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -331,13 +334,13 @@ function LegacyAssignDialog({ open, project, onClose, onDone }) {
     <Dialog
       open={open}
       onClose={() => { if (!busy) onClose(); }}
-      title="Assign to PIA Maker"
+      title="Select the PIA Maker"
       size="md"
       dismissible={!busy}
       footer={(
         <>
           <ActionButton variant="secondary" onClick={onClose} disabled={busy}>Cancel</ActionButton>
-          <ActionButton loading={busy} disabled={!selected} disabledReason="Select a PIA Maker" onClick={confirm}>Assign to PIA</ActionButton>
+          <ActionButton loading={busy} disabled={!selected} disabledReason="Select a PIA Maker" onClick={confirm}>Send to District Checker</ActionButton>
         </>
       )}
     >
@@ -355,25 +358,33 @@ function LegacyAssignDialog({ open, project, onClose, onDone }) {
   );
 }
 
-/** What the signed-in district user can do with the project right now. Accepting and assigning is the District Maker's. */
+const IN_REVIEW = ['CHECKER', 'APPROVER'];
+
+/** What the signed-in district user can do with the project right now. Accepting and selecting the PIA is the District Maker's. */
 export function DistrictActions({ project, user, onDone }) {
   const [open, setOpen] = useState(null);
   const { status } = project;
-  const maker = workflowRoleOf(user) === 'MAKER';
+  const role = workflowRoleOf(user);
+  const maker = role === 'MAKER';
   const departments = project.departmentAllocations || [];
   const departmentWise = departments.length > 0;
   const unassigned = departments.filter((d) => !d.piaUserId && !d.districtStaffUserId);
   const awaitingAcceptance = departments.filter((d) => d.reportingMode !== 'DISTRICT' && d.piaUserId && !d.piaAcceptedAt);
+  const stage = project.pendingAssignment?.stage || null;
+  const inReview = IN_REVIEW.includes(stage);
 
   const canAccept = maker && status === SANCTION_STATUS.FORWARDED_TO_DISTRICT;
-  const canAssign = maker && (departmentWise
-    ? [SANCTION_STATUS.DISTRICT_ACCEPTED, SANCTION_STATUS.FORWARDED_TO_PIA, SANCTION_STATUS.PIA_ACCEPTED].includes(status) && project.closure?.status !== 'CLOSED'
+  const canAssign = maker && !inReview && project.closure?.status !== 'CLOSED' && (departmentWise
+    ? [SANCTION_STATUS.DISTRICT_ACCEPTED, SANCTION_STATUS.FORWARDED_TO_PIA, SANCTION_STATUS.PIA_ACCEPTED].includes(status)
     : status === SANCTION_STATUS.DISTRICT_ACCEPTED);
 
   let waiting = '';
   if (status === SANCTION_STATUS.FORWARDED_TO_DISTRICT && !maker) waiting = 'Waiting for the District Maker to accept this project.';
-  else if (status === SANCTION_STATUS.DISTRICT_ACCEPTED && !maker) waiting = 'Accepted. Waiting for the District Maker to assign the PIA and reporting responsibility.';
-  else if (status === SANCTION_STATUS.FORWARDED_TO_PIA && unassigned.length === 0) {
+  else if (status === SANCTION_STATUS.DISTRICT_ACCEPTED && !maker) waiting = stage === 'RETURNED' ? 'Returned to the District Maker to correct the PIA selection.' : 'Accepted. Waiting for the District Maker to select the PIA and reporting responsibility.';
+  else if (inReview) {
+    const mine = (stage === 'CHECKER' && role === 'CHECKER') || (stage === 'APPROVER' && role === 'APPROVER');
+    if (!mine) waiting = stage === 'CHECKER' ? 'PIA selection sent. Waiting for the District Checker to verify it.' : 'Verified. Waiting for the District Approver to approve the PIA assignment.';
+  } else if (status === SANCTION_STATUS.FORWARDED_TO_PIA && unassigned.length === 0) {
     waiting = departmentWise
       ? `Waiting for ${awaitingAcceptance.length} PIA Maker${awaitingAcceptance.length === 1 ? '' : 's'} to accept.`
       : 'Assigned to a PIA Maker. Waiting for acceptance.';
@@ -385,8 +396,8 @@ export function DistrictActions({ project, user, onDone }) {
     <div className="flex flex-wrap items-center gap-2">
       {canAccept && <ActionButton variant="success" icon={CheckCircle2} onClick={() => setOpen('accept')}>Accept Project</ActionButton>}
       {canAssign && (
-        <ActionButton variant={unassigned.length > 0 || !departmentWise ? 'primary' : 'secondary'} icon={Users} onClick={() => setOpen('assign')}>
-          {departmentWise && unassigned.length === 0 ? 'Change Assignment / Transfer Charge' : 'Assign PIA & Reporting'}
+        <ActionButton variant={unassigned.length > 0 || !departmentWise || stage === 'RETURNED' ? 'primary' : 'secondary'} icon={Users} onClick={() => setOpen('assign')}>
+          {stage === 'RETURNED' ? 'Correct PIA Selection' : departmentWise && unassigned.length === 0 ? 'Change Assignment / Transfer Charge' : 'Select PIA & Reporting'}
         </ActionButton>
       )}
       {waiting && (
@@ -400,5 +411,124 @@ export function DistrictActions({ project, user, onDone }) {
         ? <AssignDialog open={open === 'assign'} project={project} onClose={() => setOpen(null)} onDone={onDone} />
         : <LegacyAssignDialog open={open === 'assign'} project={project} onClose={() => setOpen(null)} onDone={onDone} />}
     </div>
+  );
+}
+
+const when = (value) => (value ? new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '');
+
+/**
+ * The District Maker's PIA selection while it is reviewed: the District Checker
+ * verifies it, the District Approver approves it (the PIA is then assigned), and
+ * either can return it with remarks. Everyone who opens the project sees where it is.
+ */
+export function AssignmentReview({ project, user, onDone }) {
+  const proposal = project.pendingAssignment;
+  const [mode, setMode] = useState(null); // 'verify' | 'approve' | 'return'
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  if (!proposal?.stage) return null;
+
+  const role = workflowRoleOf(user);
+  const ownDistrict = user?.role === 'DD_LEVEL' && user?.district === project.district;
+  const canVerify = ownDistrict && proposal.stage === 'CHECKER' && role === 'CHECKER';
+  const canApprove = ownDistrict && proposal.stage === 'APPROVER' && role === 'APPROVER';
+  const returned = proposal.stage === 'RETURNED';
+  const tone = returned ? 'border-red-200 bg-red-50/60' : 'border-amber-200 bg-amber-50/60';
+  const heading = returned
+    ? `PIA selection returned to the District Maker${proposal.returnedByRole ? ` by the ${proposal.returnedByRole}` : ''}`
+    : proposal.stage === 'CHECKER' ? 'PIA selection waiting for the District Checker' : 'PIA selection waiting for the District Approver';
+
+  const run = async () => {
+    if (busy) return;
+    if (mode === 'return' && text.replace(/\s+/g, ' ').trim().length < 5) { setError('Write the remarks for the District Maker (at least 5 characters).'); return; }
+    setBusy(true);
+    setError('');
+    try {
+      if (mode === 'verify') await verifyDistrictAssignment(project._id, text.trim());
+      else if (mode === 'approve') await approveDistrictAssignment(project._id, text.trim());
+      else await returnDistrictAssignment(project._id, text.trim());
+      setMode(null);
+      setText('');
+      await onDone();
+    } catch (err) {
+      setError(err?.message || 'This action could not be completed. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className={`mt-5 rounded-xl border-2 ${tone} p-4 sm:p-5`} aria-label="PIA assignment review">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-bold text-slate-900">{heading}</h2>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Selected by {proposal.submittedBy?.name || 'the District Maker'}{proposal.submittedAt ? ` on ${when(proposal.submittedAt)}` : ''}
+            {proposal.checkedBy ? ` · verified by ${proposal.checkedBy.name} on ${when(proposal.checkedAt)}` : ''}
+          </p>
+        </div>
+        <ol className="flex items-center gap-1.5 text-[11px] font-bold" aria-label="Review steps">
+          {[['Maker', true], ['Checker', proposal.stage === 'APPROVER'], ['Approver', false]].map(([label, done], index) => (
+            <li key={label} className="flex items-center gap-1.5">
+              {index > 0 && <span className="h-0.5 w-4 rounded bg-slate-300" aria-hidden="true" />}
+              <span className={`rounded-full px-2 py-0.5 ${done ? 'bg-emerald-600 text-white' : (label === 'Checker' && proposal.stage === 'CHECKER') || (label === 'Approver' && proposal.stage === 'APPROVER') ? 'bg-amber-500 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-300'}`}>{label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      {returned && proposal.returnReason && <div className="mt-3"><Notice tone="error" title="Remarks">{proposal.returnReason}</Notice></div>}
+      {proposal.checkerNote && !returned && <p className="mt-2 text-xs text-slate-700"><strong>Checker’s note:</strong> {proposal.checkerNote}</p>}
+
+      <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full min-w-[560px] text-sm">
+          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr><th scope="col" className="px-4 py-2">Department</th><th scope="col" className="px-3 py-2">PIA Maker</th><th scope="col" className="px-3 py-2">MPR reported by</th><th scope="col" className="px-4 py-2">District Technical Staff</th></tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {(proposal.assignments || []).length ? proposal.assignments.map((a) => (
+              <tr key={a.departmentId}>
+                <th scope="row" className="px-4 py-2.5 text-left font-semibold text-slate-900">{a.departmentName}</th>
+                <td className="px-3 py-2.5">{a.pia ? <>{a.pia.name}{a.pia.designation && <span className="block text-xs text-slate-500">{a.pia.designation}</span>}</> : '—'}</td>
+                <td className="px-3 py-2.5"><span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${a.reportingMode === 'DISTRICT' ? 'bg-cyan-100 text-cyan-800' : 'bg-indigo-100 text-indigo-800'}`}>{ENTRY_MODE_LABELS[a.reportingMode] || a.reportingMode}</span></td>
+                <td className="px-4 py-2.5">{a.districtStaff?.name || '—'}</td>
+              </tr>
+            )) : (
+              <tr><td colSpan={4} className="px-4 py-2.5">{proposal.pia ? `PIA Maker: ${proposal.pia.name}` : proposal.summary}</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {(canVerify || canApprove) && (
+        <div className="mt-4 space-y-3">
+          {mode && (
+            <div>
+              <label htmlFor="assign-review-text" className="mb-1 block text-xs font-semibold text-slate-700">{mode === 'return' ? 'Remarks for the District Maker (required)' : 'Note (optional)'}</label>
+              <textarea id="assign-review-text" rows={3} maxLength={1000} value={text} disabled={busy} onChange={(e) => setText(e.target.value)} className={inputClass(false)} />
+            </div>
+          )}
+          {error && <Notice tone="error">{error}</Notice>}
+          <div className="flex flex-wrap gap-2">
+            {!mode && (
+              <>
+                <ActionButton variant="success" icon={canApprove ? Check : Send} onClick={() => { setMode(canApprove ? 'approve' : 'verify'); setError(''); }}>
+                  {canApprove ? 'Approve & Assign to PIA' : 'Verify & Send to Approver'}
+                </ActionButton>
+                <ActionButton variant="secondary" icon={RotateCcw} onClick={() => { setMode('return'); setError(''); }}>Return to Maker</ActionButton>
+              </>
+            )}
+            {mode && (
+              <>
+                <ActionButton variant={mode === 'return' ? 'primary' : 'success'} loading={busy} onClick={run}>
+                  {mode === 'return' ? 'Return to District Maker' : mode === 'approve' ? 'Confirm approval' : 'Confirm verification'}
+                </ActionButton>
+                <ActionButton variant="secondary" disabled={busy} onClick={() => { setMode(null); setText(''); setError(''); }}>Cancel</ActionButton>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

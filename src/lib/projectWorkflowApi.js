@@ -60,8 +60,26 @@ export const fetchPiaCandidates = (projectId) => request(
 ).then((result) => ({ departments: Array.isArray(result?.departments) ? result.departments : [], districtStaff: Array.isArray(result?.districtStaff) ? result.districtStaff : [] }));
 
 /** assignments: [{ departmentId, reportingMode: 'PIA' | 'DISTRICT', piaUserId?, districtStaffUserId? }] */
+/** District Maker sends the PIA / reporting selection to the District Checker. */
 export const assignPiaOfficers = (projectId, assignments) => request(
   () => axiosInstance.patch(path(projectId, 'forward-pia'), { assignments }),
+  STALE,
+);
+export const assignLegacyPia = (projectId, piaUserId) => request(
+  () => axiosInstance.patch(path(projectId, 'forward-pia'), { piaUserId }),
+  STALE,
+);
+/** District Checker verifies the selection; District Approver approves it (the PIA is then assigned). */
+export const verifyDistrictAssignment = (projectId, note) => request(
+  () => axiosInstance.patch(path(projectId, 'district-verify'), { note }),
+  STALE,
+);
+export const approveDistrictAssignment = (projectId, note) => request(
+  () => axiosInstance.patch(path(projectId, 'district-approve'), { note }),
+  STALE,
+);
+export const returnDistrictAssignment = (projectId, reason) => request(
+  () => axiosInstance.patch(path(projectId, 'district-return'), { reason }),
   STALE,
 );
 

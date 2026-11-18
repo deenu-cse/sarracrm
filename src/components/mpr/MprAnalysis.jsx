@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { formatLakh } from '@/lib/numeric';
+import { formatMoney as formatLakh } from '@/lib/moneyUnit';
 import { formatQuantity } from './mprForm';
 
 // Two series, validated together for colour-blind separation on a light surface.

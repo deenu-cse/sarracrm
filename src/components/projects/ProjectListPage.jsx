@@ -14,8 +14,8 @@ import { PiaHandoverDialog } from '@/components/projects/detail/PiaHandoverDialo
 
 const STAGES = {
   state: [['PENDING_CHECKER', 'With HQ Checker'], ['PENDING_APPROVER', 'With HQ Approver'], ['SANCTIONED', 'Sanctioned'], ['FORWARDED_TO_DISTRICT', 'Sent to district'], ['DISTRICT_ACCEPTED', 'District accepted'],
-    ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'Active'], ['CLOSED', 'Closed'], ['REJECTED', 'Returned to Maker']],
-  district: [['FORWARDED_TO_DISTRICT', 'To accept'], ['DISTRICT_ACCEPTED', 'To assign'], ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'In progress'], ['CLOSED', 'Closed']],
+    ['DISTRICT_PENDING_CHECKER', 'With District Checker'], ['DISTRICT_PENDING_APPROVER', 'With District Approver'], ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'Active'], ['CLOSED', 'Closed'], ['REJECTED', 'Returned to Maker']],
+  district: [['FORWARDED_TO_DISTRICT', 'To accept'], ['DISTRICT_ACCEPTED', 'To assign'], ['DISTRICT_PENDING_CHECKER', 'With District Checker'], ['DISTRICT_PENDING_APPROVER', 'With District Approver'], ['FORWARDED_TO_PIA', 'Assigned to PIA'], ['PIA_ACCEPTED', 'In progress'], ['CLOSED', 'Closed']],
 };
 const LIMIT = 15;
 const shortLakh = (value) => formatLakh(value || 0).replace(' Lakh', ' L');
@@ -81,7 +81,7 @@ export function ProjectListPage({ scope }) {
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><FolderKanban className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">{isState ? 'Projects' : 'District Projects'}</h1>
+            <h1 className="text-2xl font-extrabold text-navy">{isState ? 'Projects' : 'District Projects'}</h1>
             <p className="text-sm text-slate-500">{isState ? 'Every project in the State, from creation to closure.' : `Projects forwarded to ${user?.district || 'your district'}.`}</p>
           </div>
         </div>

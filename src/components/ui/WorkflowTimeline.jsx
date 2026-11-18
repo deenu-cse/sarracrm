@@ -10,6 +10,9 @@ const ACTION_CONFIG = {
   REJECTED: { icon: XCircle, color: 'bg-red-100 text-red-700', label: 'Returned to HQ Maker' },
   FORWARDED_TO_DISTRICT: { icon: ArrowRight, color: 'bg-cyan-100 text-cyan-700', label: 'Forwarded to District' },
   DISTRICT_ACCEPTED: { icon: UserCheck, color: 'bg-teal-100 text-teal-700', label: 'Accepted by District' },
+  DISTRICT_SUBMITTED: { icon: ArrowRight, color: 'bg-amber-100 text-amber-700', label: 'PIA Selected — Sent to District Checker' },
+  DISTRICT_VERIFIED: { icon: CheckCircle, color: 'bg-teal-100 text-teal-700', label: 'Verified by District Checker' },
+  DISTRICT_RETURNED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Returned to District Maker' },
   FORWARDED_TO_PIA: { icon: ArrowRight, color: 'bg-indigo-100 text-indigo-700', label: 'Assigned to PIA' },
   REPORTING_ASSIGNED: { icon: UserCheck, color: 'bg-indigo-100 text-indigo-700', label: 'PIA & Reporting Responsibility Assigned' },
   PIA_ACCEPTED: { icon: CheckCircle, color: 'bg-green-100 text-green-700', label: 'Accepted by PIA Maker — Active' },
@@ -23,7 +26,7 @@ const ACTION_CONFIG = {
   COMPLETION_RETURNED: { icon: XCircle, color: 'bg-yellow-100 text-yellow-700', label: 'Completion Report Returned' },
   CLOSED: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-700', label: 'Project Closed' },
   SUBMITTED: { icon: ArrowRight, color: 'bg-blue-100 text-blue-700', label: 'Submitted' },
-  DISTRICT_APPROVED: { icon: CheckCircle, color: 'bg-teal-100 text-teal-700', label: 'District Approved' },
+  DISTRICT_APPROVED: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-700', label: 'Approved by District Approver — Sent to PIA' },
   STATE_VERIFIED: { icon: CheckCircle, color: 'bg-emerald-100 text-emerald-700', label: 'State Verified' },
 };
 

@@ -181,7 +181,7 @@ export function Head56Entry() {
       <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Budget Head 56 · Non-Salary Grant (गैर वेतन हेतु अनुदान)</p>
-          <h1 className="mt-1 text-xl font-bold text-slate-900">{reportId ? `${form?.mprNo} — ${form?.statusLabel}` : 'New monthly progress report'}</h1>
+          <h1 className="mt-1 text-2xl font-extrabold text-navy">{reportId ? `${form?.mprNo} — ${form?.statusLabel}` : 'New monthly progress report'}</h1>
           {unit && <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600"><LevelPill level={unit.level} /> {unit.unitName}</p>}
         </div>
         {form?.allocation && <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm">Allocation version <strong>{form.allocation.version}</strong> (published {new Date(form.allocation.publishedAt).toLocaleDateString('en-IN')})</p>}

@@ -35,7 +35,7 @@ export default function OfficerFormsPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">My DPR Forms</h1>
+          <h1 className="text-2xl font-extrabold text-navy">My DPR Forms</h1>
           <p className="text-slate-500">Manage and track your submissions</p>
         </div>
         <div className="flex gap-3">

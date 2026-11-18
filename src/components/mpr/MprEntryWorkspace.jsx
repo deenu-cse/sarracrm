@@ -304,7 +304,7 @@ export function MprEntryWorkspace({ initialQuery = {}, routes = OFFICER_ROUTES }
         </Link>
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><ClipboardList className="h-5 w-5" /></span>
         <div className="min-w-0">
-          <h1 className="text-xl font-bold text-slate-900">{t(correctionId ? (returnedReport ? 'Correct Monthly Progress Report' : 'Continue Draft Report') : 'Monthly Progress Report')}</h1>
+          <h1 className="text-2xl font-extrabold text-navy">{t(correctionId ? (returnedReport ? 'Correct Monthly Progress Report' : 'Continue Draft Report') : 'Monthly Progress Report')}</h1>
           <p className="text-sm text-slate-500">
             {head ? <>Form <strong className="font-semibold text-slate-700">{head.formType}</strong> · Head {head.code} — {head.name}</> : t('Report physical and financial progress for your department. Amounts are in ₹ Lakh.')}
           </p>

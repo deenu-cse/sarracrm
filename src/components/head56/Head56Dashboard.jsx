@@ -7,17 +7,20 @@ import { DISTRICTS } from '@/constants/districts';
 import { useAuth } from '@/hooks/useAuth';
 import { USER_ROLES } from '@/constants/roles';
 import { Badge } from '@/components/ui/Badge';
-import { CellMeter, ComparisonChart, DataTable, EmptyState, Kpi, Panel, TrendChart } from '@/components/analytics/AnalyticsParts';
+import { ComparisonChart, DataTable, EmptyState, Kpi, Panel, TrendChart } from '@/components/analytics/AnalyticsParts';
+import { MoneyUnitToggle } from '@/components/ui/MoneyUnitToggle';
 import { Notice, RetryButton, Skeleton } from '@/components/projects/create/parts';
 import { Head56ReviewPanel } from './Head56Review';
-import { FilterSelect, FY_MONTHS, LevelPill, Tabs, amount, fyOptions, lakh, pct, qty, useH56Base } from './shared';
+import { formatMoney, useMoneyUnit } from '@/lib/moneyUnit';
+import { FilterSelect, FY_MONTHS, LevelPill, Tabs, fyOptions, pct, qty, useH56Base } from './shared';
 
-const utilTone = (value) => (value > 100 ? 'red' : value >= 90 ? 'amber' : 'emerald');
+const lakh = (value) => formatMoney(value || 0);
+
 const moneyColumns = [
-  { key: 'budgetLakh', label: 'Budget', align: 'right', render: (r) => amount(r.budgetLakh) },
-  { key: 'spentLakh', label: 'Expenditure', align: 'right', render: (r) => amount(r.spentLakh) },
-  { key: 'balanceLakh', label: 'Balance', align: 'right', render: (r) => <span className={r.balanceLakh < 0 ? 'font-semibold text-red-700' : ''}>{amount(r.balanceLakh)}</span> },
-  { key: 'utilisationPercent', label: 'Utilisation', align: 'right', render: (r) => <CellMeter percent={r.utilisationPercent} tone={utilTone(r.utilisationPercent)} /> },
+  { key: 'budgetLakh', label: 'Budget', money: true, sum: true, group: 'Budget and expenditure', tone: 'blue' },
+  { key: 'spentLakh', label: 'Expenditure', money: true, sum: true, group: 'Budget and expenditure', tone: 'blue' },
+  { key: 'balanceLakh', label: 'Balance', money: true, sum: true, group: 'Budget and expenditure', tone: 'blue' },
+  { key: 'utilisationPercent', label: 'Utilisation', percent: true, group: 'Progress', tone: 'green', total: (rows) => { const b = rows.reduce((s, r) => s + (Number(r.budgetLakh) || 0), 0); const x = rows.reduce((s, r) => s + (Number(r.spentLakh) || 0), 0); return b > 0 ? Math.round((x / b) * 1000) / 10 : 0; } },
 ];
 
 /**
@@ -27,6 +30,7 @@ const moneyColumns = [
  * monthly CEO / ACEO / CFO review.
  */
 export function Head56Dashboard({ financialYear, onYearChange }) {
+  useMoneyUnit(); // re-render every amount when the unit for reports changes
   const base = useH56Base();
   const { user } = useAuth();
   const stateWide = [USER_ROLES.SUPER_ADMIN, USER_ROLES.MND_SUPER_ADMIN, USER_ROLES.MND_OFFICER].includes(user?.role);
@@ -60,6 +64,7 @@ export function Head56Dashboard({ financialYear, onYearChange }) {
           <input type="checkbox" checked={filters.verifiedOnly} onChange={(event) => set('verifiedOnly', event.target.checked)} className="h-4 w-4 rounded border-slate-300 text-navy focus:ring-navy/40" />
           Verified by State only
         </label>
+        <MoneyUnitToggle className="ml-auto" />
       </section>
 
       {box.loading && !data && <div className="space-y-4" role="status" aria-label="Loading dashboard"><div className="grid grid-cols-2 gap-3 lg:grid-cols-6">{[0, 1, 2, 3, 4, 5].map((n) => <Skeleton key={n} className="h-24" />)}</div><Skeleton className="h-72" /></div>}
@@ -68,12 +73,12 @@ export function Head56Dashboard({ financialYear, onYearChange }) {
       {data && (
         <div className={`space-y-5 transition-opacity ${box.loading ? 'opacity-60' : ''}`}>
           <dl className="grid grid-cols-2 gap-3 lg:grid-cols-6">
-            <Kpi icon={Wallet} label="Total budget (Head 56)" value={lakh(k.budgetLakh)} sub={k.deptShareLakh ? `+ dept. share ${lakh(k.deptShareLakh)}` : `${k.units} unit${k.units === 1 ? '' : 's'} allocated`} />
-            <Kpi icon={IndianRupee} label="Total expenditure" value={lakh(k.spentLakh)} sub={`Verified ${lakh(k.verifiedLakh)}`} />
-            <Kpi icon={PiggyBank} label="Available balance" value={lakh(k.balanceLakh)} tone={k.balanceLakh < 0 ? 'danger' : 'default'} />
-            <Kpi icon={Activity} label="Utilisation" value={pct(k.utilisationPercent)} meter={k.utilisationPercent} tone={k.utilisationPercent > 100 ? 'danger' : 'success'} sub="Expenditure ÷ approved budget" />
-            <Kpi icon={CalendarCheck} label={`Reports — ${data.focus.label}`} value={`${k.unitsFiled} / ${k.units}`} sub={`${k.unitsVerified} verified · ${k.unitsMissing} not filed`} tone={k.unitsMissing ? 'warning' : 'success'} />
-            <Kpi icon={AlertTriangle} label="In approval chain" value={k.inReview} sub={k.allocationsPending ? `${k.allocationsPending} allocation(s) awaiting HQ` : 'Reports waiting for a step'} tone={k.inReview ? 'warning' : 'default'} />
+            <Kpi color="blue" icon={Wallet} label="Total budget (Head 56)" value={lakh(k.budgetLakh)} sub={k.deptShareLakh ? `+ dept. share ${lakh(k.deptShareLakh)}` : `${k.units} unit${k.units === 1 ? '' : 's'} allocated`} />
+            <Kpi color="green" icon={IndianRupee} label="Total expenditure" value={lakh(k.spentLakh)} sub={`Verified ${lakh(k.verifiedLakh)}`} />
+            <Kpi color="orange" icon={PiggyBank} label="Available balance" value={lakh(k.balanceLakh)} tone={k.balanceLakh < 0 ? 'danger' : 'default'} />
+            <Kpi color="violet" icon={Activity} label="Utilisation" value={pct(k.utilisationPercent)} meter={k.utilisationPercent} tone={k.utilisationPercent > 100 ? 'danger' : 'success'} sub="Expenditure ÷ approved budget" />
+            <Kpi color="teal" icon={CalendarCheck} label={`Reports — ${data.focus.label}`} value={`${k.unitsFiled} / ${k.units}`} sub={`${k.unitsVerified} verified · ${k.unitsMissing} not filed`} tone={k.unitsMissing ? 'warning' : 'success'} />
+            <Kpi color="rose" icon={AlertTriangle} label="In approval chain" value={k.inReview} sub={k.allocationsPending ? `${k.allocationsPending} allocation(s) awaiting HQ` : 'Reports waiting for a step'} tone={k.inReview ? 'warning' : 'default'} />
           </dl>
 
           <div className="grid gap-5 xl:grid-cols-5">
@@ -103,15 +108,15 @@ export function Head56Dashboard({ financialYear, onYearChange }) {
             )}
             {view === 'districts' && (
               <DataTable csvName={`Head56-districtwise-${data.financialYear}.csv`} caption="District-wise budget and expenditure" rowKey={(r) => r.district} defaultSort={{ key: 'district', direction: 'asc' }} rows={data.byDistrict} emptyText="No district in this selection."
-                columns={[{ key: 'district', label: 'District' }, { key: 'units', label: 'Units', align: 'right' }, ...moneyColumns.slice(0, 2), { key: 'dscSpentLakh', label: 'DSC exp.', align: 'right', render: (r) => amount(r.dscSpentLakh) }, { key: 'piaSpentLakh', label: 'PIA exp.', align: 'right', render: (r) => amount(r.piaSpentLakh) }, ...moneyColumns.slice(2), { key: 'verifiedReports', label: 'Verified reports', align: 'right' }]} />
+                columns={[{ key: 'district', label: 'District' }, { key: 'units', label: 'Units', align: 'right', sum: true }, ...moneyColumns.slice(0, 2), { key: 'dscSpentLakh', label: 'DSC exp.', money: true, sum: true, group: 'Expenditure by', tone: 'orange' }, { key: 'piaSpentLakh', label: 'PIA exp.', money: true, sum: true, group: 'Expenditure by', tone: 'orange' }, ...moneyColumns.slice(2), { key: 'verifiedReports', label: 'Verified reports', align: 'right' }]} />
             )}
             {view === 'pias' && (
               <DataTable csvName={`Head56-PIAwise-${data.financialYear}.csv`} caption="PIA-wise budget and expenditure" rowKey={(r) => r.unitKey} defaultSort={{ key: 'district', direction: 'asc' }} rows={data.byPia} emptyText="No PIA has a published Head 56 allocation in this selection."
-                columns={[{ key: 'departmentName', label: 'PIA (department)' }, { key: 'district', label: 'District' }, { key: 'deptShareLakh', label: 'Dept. share', align: 'right', render: (r) => amount(r.deptShareLakh) }, ...moneyColumns, { key: 'lastPeriod', label: 'Latest report', render: (r) => (r.lastStatus ? <span className="flex flex-col gap-1">{r.lastPeriod}<Badge status={r.lastStatus} /></span> : <span className="text-slate-400">None</span>) }]} />
+                columns={[{ key: 'departmentName', label: 'PIA (department)' }, { key: 'district', label: 'District' }, { key: 'deptShareLakh', label: 'Dept. share', money: true, sum: true, group: 'Department', tone: 'violet' }, ...moneyColumns, { key: 'lastPeriod', label: 'Latest report', render: (r) => (r.lastStatus ? <span className="flex flex-col gap-1">{r.lastPeriod}<Badge status={r.lastStatus} /></span> : <span className="text-slate-400">None</span>) }]} />
             )}
             {view === 'physical' && (
               <DataTable csvName={`Head56-physical-${data.financialYear}.csv`} caption="Physical target against achievement" rowKey={(r) => r.code} defaultSort={{ key: 'code', direction: 'asc' }} rows={data.physical} emptyText="No line with a physical target in this selection."
-                columns={[{ key: 'code', label: 'Code' }, { key: 'name', label: 'Line' }, { key: 'unit', label: 'Unit' }, { key: 'physicalTarget', label: 'Target', align: 'right', render: (r) => qty(r.physicalTarget) }, { key: 'physicalAchieved', label: 'Achieved', align: 'right', render: (r) => qty(r.physicalAchieved) }, { key: 'physicalPercent', label: 'Achievement', align: 'right', render: (r) => <CellMeter percent={r.physicalPercent} tone="navy" /> }]} />
+                columns={[{ key: 'code', label: 'Code' }, { key: 'name', label: 'Line' }, { key: 'unit', label: 'Unit' }, { key: 'physicalTarget', label: 'Target', align: 'right', render: (r) => qty(r.physicalTarget) }, { key: 'physicalAchieved', label: 'Achieved', align: 'right', render: (r) => qty(r.physicalAchieved) }, { key: 'physicalPercent', label: 'Achievement', percent: true, tone: 'green' }]} />
             )}
             {view === 'status' && (
               <DataTable csvName={`Head56-reporting-${data.focus.reportingMonth}-${data.financialYear}.csv`} caption="Reporting status of every allocated unit" rowKey={(r) => r.unitKey} defaultSort={{ key: 'level', direction: 'asc' }} rows={data.reporting} emptyText="No unit has a published allocation."
@@ -119,7 +124,7 @@ export function Head56Dashboard({ financialYear, onYearChange }) {
                   { key: 'unitName', label: 'Unit', render: (r) => (r.mprId ? <Link href={`${base}/report/${r.mprId}`} className="font-semibold text-navy hover:underline">{r.unitName}</Link> : r.unitName) },
                   { key: 'level', label: 'Level', render: (r) => <LevelPill level={r.level} label={r.levelLabel} /> },
                   { key: 'statusLabel', label: 'Status', render: (r) => (r.status === 'NOT_FILED' ? <span className="font-semibold text-red-700">Not filed</span> : <span className="flex flex-col gap-1"><Badge status={r.status} />{r.awaiting && <span className="text-xs text-slate-500">With {r.awaiting}</span>}</span>) },
-                  { key: 'spentLakh', label: 'Expenditure in month', align: 'right', render: (r) => amount(r.spentLakh) },
+                  { key: 'spentLakh', label: 'Expenditure in month', money: true, sum: true, tone: 'blue' },
                 ]} />
             )}
           </Panel>

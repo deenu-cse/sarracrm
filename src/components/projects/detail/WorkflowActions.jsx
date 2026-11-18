@@ -109,7 +109,7 @@ export function WorkflowActions({ project, user, onDone }) {
   const closed = project.closure?.status === 'CLOSED';
   const canResubmit = status === SANCTION_STATUS.REJECTED && role === 'MAKER' && departmentWise;
   const canRevise = role === 'MAKER' && departmentWise && !closed
-    && [SANCTION_STATUS.SANCTIONED, SANCTION_STATUS.FORWARDED_TO_DISTRICT, SANCTION_STATUS.DISTRICT_ACCEPTED, SANCTION_STATUS.FORWARDED_TO_PIA, SANCTION_STATUS.PIA_ACCEPTED].includes(status);
+    && [SANCTION_STATUS.SANCTIONED, SANCTION_STATUS.FORWARDED_TO_DISTRICT, SANCTION_STATUS.DISTRICT_ACCEPTED, SANCTION_STATUS.DISTRICT_PENDING_CHECKER, SANCTION_STATUS.DISTRICT_PENDING_APPROVER, SANCTION_STATUS.FORWARDED_TO_PIA, SANCTION_STATUS.PIA_ACCEPTED].includes(status);
   const secondaryLink = 'inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-[background-color,border-color,transform] duration-150 hover:border-slate-400 hover:bg-slate-50 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50 focus-visible:ring-offset-2';
 
   // Who the project is waiting for, when this user cannot move it forward.
@@ -119,7 +119,9 @@ export function WorkflowActions({ project, user, onDone }) {
   else if (status === SANCTION_STATUS.SANCTIONED && role !== 'MAKER') waiting = 'Sanctioned. Waiting for the HQ Maker to forward it to the district.';
   else if (status === SANCTION_STATUS.REJECTED && role !== 'MAKER') waiting = 'Returned to the HQ Maker for correction.';
   else if (status === SANCTION_STATUS.FORWARDED_TO_DISTRICT) waiting = `Waiting for the ${project.district} District Maker to accept the project.`;
-  else if (status === SANCTION_STATUS.DISTRICT_ACCEPTED) waiting = 'Accepted by the district. Waiting for the District Maker to assign the PIA and reporting responsibility.';
+  else if (status === SANCTION_STATUS.DISTRICT_ACCEPTED) waiting = 'Accepted by the district. Waiting for the District Maker to select the PIA and reporting responsibility.';
+  else if (status === SANCTION_STATUS.DISTRICT_PENDING_CHECKER) waiting = 'PIA selected by the District Maker. Waiting for the District Checker to verify it.';
+  else if (status === SANCTION_STATUS.DISTRICT_PENDING_APPROVER) waiting = 'Verified by the District Checker. Waiting for the District Approver to approve the PIA assignment.';
   else if (status === SANCTION_STATUS.FORWARDED_TO_PIA) waiting = 'Assigned to the PIA. Waiting for the PIA Maker to accept.';
 
   return (

@@ -55,7 +55,7 @@ export function PageHeader({ icon: Icon, title, subtitle, actions }) {
       <div className="flex min-w-0 items-center gap-3">
         {Icon && <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy" aria-hidden="true"><Icon className="h-5 w-5" /></span>}
         <div className="min-w-0">
-          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          <h1 className="text-2xl font-extrabold text-navy">{title}</h1>
           {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
         </div>
       </div>

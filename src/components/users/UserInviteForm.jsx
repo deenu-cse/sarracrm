@@ -112,7 +112,7 @@ export function UserInviteForm({ listHref }) {
       <div className="mb-6 flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><UserPlus className="h-5 w-5" /></span>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{scope.direct ? 'Invite User' : 'Request Account'}</h1>
+          <h1 className="text-2xl font-extrabold text-navy">{scope.direct ? 'Invite User' : 'Request Account'}</h1>
           <p className="text-sm text-slate-500">{scope.district ? `${scope.district} District SARRA Centre and its PIAs.` : 'Any tier: SARRA HQ, District SARRA Centre, PIA or M&E.'}</p>
         </div>
       </div>

@@ -3,49 +3,32 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, BarChart3, ClipboardList, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { ActionLink, COLORS, Card, Empty, FilingCard, HomeShell, Meter, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, lakh, shortLakh, td, th, useHome } from './HomeKit';
+import { DataTable } from '@/components/analytics/AnalyticsParts';
+import { DISTRICT_COLUMNS } from './StateHome';
+import { ActionLink, Card, Empty, FilingCard, HomeShell, Meter, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, lakh, shortLakh, useHome } from './HomeKit';
 
+const FILED = (rows) => `${rows.reduce((s, r) => s + (r.filed || 0), 0)} of ${rows.reduce((s, r) => s + (r.expected || 0), 0)}`;
+
+/** District performance in the report design: money, progress gauges and reporting for the month. */
 function DistrictTable({ rows }) {
-  if (rows.length === 0) return <div className="p-5"><Empty>No sanctioned project yet.</Empty></div>;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[860px]">
-        <caption className="sr-only">District performance</caption>
-        <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/70">
-            <th scope="col" className={`${th} pl-5`}>District</th>
-            <th scope="col" className={`${th} text-right`}>Projects</th>
-            <th scope="col" className={`${th} text-right`}>Sanctioned</th>
-            <th scope="col" className={`${th} w-44`}>Spent of sanctioned</th>
-            <th scope="col" className={`${th} text-right`}>Physical</th>
-            <th scope="col" className={th}>Reports for the month</th>
-            <th scope="col" className={`${th} pr-5 text-right`}>In verification</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {rows.map((row) => (
-            <tr key={row.name} className="transition-colors hover:bg-slate-50/60">
-              <th scope="row" className={`${td} pl-5 text-left font-semibold text-slate-900`}>{row.name}</th>
-              <td className={`${td} text-right tabular-nums`}>{row.projects}</td>
-              <td className={`${td} text-right tabular-nums`}>{shortLakh(row.sanctionedLakh)}</td>
-              <td className={td}>
-                <span className="text-xs font-semibold tabular-nums text-slate-700">{row.financialPercent}%</span>
-                <div className="mt-1"><Meter percent={row.financialPercent} color={COLORS.spent} label={`${row.name}: spent of sanctioned`} /></div>
-              </td>
-              <td className={`${td} text-right tabular-nums`}>{row.physicalPercent}%</td>
-              <td className={`${td} tabular-nums`}>
-                {row.expected === 0 ? <span className="text-xs text-slate-400">None expected</span> : <>{row.filed} of {row.expected} filed</>}
-                {row.overdue > 0 && <span className="ml-2 inline-block rounded-md border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-800">{row.overdue} overdue</span>}
-              </td>
-              <td className={`${td} pr-5 text-right tabular-nums ${row.inReview ? 'font-semibold text-amber-700' : ''}`}>{row.inReview}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      rows={rows}
+      rowKey={(row) => row.name}
+      caption="District performance"
+      csvName="district_performance.csv"
+      defaultSort={{ key: 'name', direction: 'asc' }}
+      minWidth={1040}
+      emptyText="No sanctioned project yet."
+      columns={[
+        ...DISTRICT_COLUMNS.slice(0, 7),
+        { key: 'filed', label: 'Filed', align: 'right', group: 'Monthly reports', tone: 'orange', render: (r) => (r.expected === 0 ? '—' : `${r.filed} of ${r.expected}`), total: FILED, csv: (r) => `${r.filed}/${r.expected}` },
+        { key: 'overdue', label: 'Overdue', align: 'right', sum: true, group: 'Monthly reports', tone: 'orange', render: (r) => (r.overdue ? <span className="font-extrabold text-red-700">{r.overdue}</span> : 0) },
+        DISTRICT_COLUMNS[7],
+      ]}
+    />
   );
 }
-
 
 function Overview({ data, deadlinesHref }) {
   const k = data.kpis;

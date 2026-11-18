@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Download, FileText } from 'lucide-react';
+import { CARD_COLORS, colorFor } from '@/lib/cardColors';
 
 /** Shared building blocks for the project detail page. */
 
@@ -50,16 +51,17 @@ export function DataItem({ label, value, mono = false, className = '' }) {
   );
 }
 
-export function StatTile({ label, value, sub, tone = 'default', icon: Icon }) {
+export function StatTile({ label, value, sub, tone = 'default', icon: Icon, color }) {
   const tones = { default: 'text-slate-900', success: 'text-emerald-700', warning: 'text-amber-700', accent: 'text-navy' };
+  const c = CARD_COLORS[color || colorFor(label)];
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
-      <dt className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-        {Icon && <Icon className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />}
-        {label}
+    <div className={`rounded-2xl border px-4 py-3.5 shadow-sm ${c.card}`}>
+      <dt className="flex items-center gap-2.5">
+        {Icon && <span className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${c.disc}`} aria-hidden="true"><Icon className="h-4 w-4" /></span>}
+        <span className={`text-[13px] font-bold ${c.label}`}>{label}</span>
       </dt>
-      <dd className={`mt-1 text-lg font-bold tabular-nums ${tones[tone] || tones.default}`}>{value}</dd>
-      {sub && <dd className="mt-0.5 truncate text-xs tabular-nums text-slate-400">{sub}</dd>}
+      <dd className={`mt-2 text-xl font-extrabold tabular-nums ${tones[tone] || tones.default}`}>{value}</dd>
+      {sub && <dd className="mt-0.5 truncate text-xs font-medium tabular-nums text-slate-600">{sub}</dd>}
     </div>
   );
 }

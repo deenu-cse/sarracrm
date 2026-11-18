@@ -67,7 +67,7 @@ export default function OfficerAnalyticsPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">My Analytics</h1>
+          <h1 className="text-2xl font-extrabold text-navy">My Analytics</h1>
           <p className="text-slate-500">Performance overview for {user?.district} district</p>
         </div>
         <div className="flex items-center gap-3">

@@ -187,7 +187,7 @@ export default function SpringshedDPRForm({ initialData = null, isEdit = false }
     <div className="max-w-4xl mx-auto pb-12">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{isEdit ? 'Edit DPR Form' : 'New DPR Form'}</h1>
+          <h1 className="text-2xl font-extrabold text-navy">{isEdit ? 'Edit DPR Form' : 'New DPR Form'}</h1>
           <p className="text-slate-500">Springshed Rejuvenation Project</p>
         </div>
         {lastSaved && (

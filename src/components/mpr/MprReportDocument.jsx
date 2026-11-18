@@ -1,9 +1,9 @@
 "use client";
 import React from 'react';
-import { formatLakh } from '@/lib/numeric';
+import { formatMoney as formatLakh, formatFigure, unitCaption } from '@/lib/moneyUnit';
 import { FORM_TYPE_TITLES, formatQuantity } from './mprForm';
 
-const money = (value) => formatLakh(value).replace(' Lakh', '').replace('₹ ', '');
+const money = (value) => formatFigure(value);
 
 function Info({ label, value }) {
   return (
@@ -85,7 +85,7 @@ export function MprReportDocument({ report }) {
               <th scope="col" rowSpan={2} className="border border-slate-300 px-2 py-2 text-left">Name of Activity</th>
               <th scope="col" rowSpan={2} className="border border-slate-300 px-2 py-2 text-left">Unit</th>
               <th scope="colgroup" colSpan={4} className="border border-slate-300 px-2 py-1.5 text-center">Physical Progress</th>
-              <th scope="colgroup" colSpan={4} className="border border-slate-300 px-2 py-1.5 text-center">Financial Progress (₹ Lakh)</th>
+              <th scope="colgroup" colSpan={4} className="border border-slate-300 px-2 py-1.5 text-center">Financial Progress ({unitCaption()})</th>
             </tr>
             <tr>
               {[0, 1].map((group) => (
