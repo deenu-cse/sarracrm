@@ -15,8 +15,12 @@ function validateName(raw, noun, existing) {
   if (name.length < 2) return `${noun} name must be at least 2 characters.`;
   if (name.length > 80) return `${noun} name cannot be longer than 80 characters.`;
   if (!NAME_PATTERN.test(name)) return `${noun} name can only contain letters, numbers, spaces and . , ' ( ) / -`;
-  const key = normalizeText(name);
-  const duplicate = existing.find((item) => normalizeText(item.name) === key);
+  // A department is the same with or without the word "Department" ("Forest" = "Forest Department").
+  const core = (text) => (noun === 'Department'
+    ? normalizeText(text).replace(/\b(department|deptt?)\b\.?/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
+    : normalizeText(text));
+  const key = core(name);
+  const duplicate = existing.find((item) => core(item.name) === key);
   if (duplicate) return `“${duplicate.name}” already exists. Select it from the list instead.`;
   return '';
 }
