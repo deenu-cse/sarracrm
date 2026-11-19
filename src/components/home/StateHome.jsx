@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { BarChart3, CalendarClock, ClipboardCheck, FolderKanban, Lock, PlusCircle, ScrollText, UserPlus, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { DataTable } from '@/components/analytics/AnalyticsParts';
-import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, useHome } from './HomeKit';
+import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, td, th, useHome } from './HomeKit';
 
 /** District-wise comparison in the report design: sanctioned, expenditure and balance, progress and reports. */
 export const DISTRICT_COLUMNS = [
