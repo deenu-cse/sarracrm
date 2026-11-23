@@ -19,7 +19,7 @@ function Breakdown({ title, rows }) {
   const max = Math.max(1, ...rows.map((r) => r.participants));
   return (
     <section className={`${card} p-4`}>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</h3>
+      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">{title}</h3>
       {rows.length ? (
         <ul className="mt-2 space-y-2">
           {rows.map((r) => (
@@ -84,7 +84,7 @@ export function TrainingHub() {
       {s && (
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {[['Programmes', num(s.programmes)], ['Participants', num(p.total)], ['Female', `${num(p.female)}${p.total ? ` (${Math.round((p.female / p.total) * 100)}%)` : ''}`], ['Officers / staff', num(p.officer.total)], ['Public representatives', num(p.representative.total)], ['Community', num(p.community.total)]].map(([label, value]) => (
-            <div key={label} className={`rounded-2xl border px-4 py-3 shadow-sm ${CARD_COLORS[colorFor(label)].card}`}><dt className={`text-[13px] font-bold ${CARD_COLORS[colorFor(label)].label}`}>{label}</dt><dd className="mt-1 text-2xl font-extrabold tabular-nums text-slate-900">{value}</dd></div>
+            <div key={label} className={`rounded-2xl border px-4 py-3 shadow-sm ${CARD_COLORS[colorFor(label)].card}`}><dt className={`text-[15px] font-extrabold ${CARD_COLORS[colorFor(label)].label}`}>{label}</dt><dd className="mt-1 text-2xl font-extrabold tabular-nums text-slate-900">{value}</dd></div>
           ))}
         </dl>
       )}

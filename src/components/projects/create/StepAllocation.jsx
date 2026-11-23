@@ -43,7 +43,7 @@ export function StepAllocation({ state, dispatch, errors, showErrors }) {
       title="Head & Allocation"
       description="Enter each department's share and the SARRA share. Totals are calculated automatically. All amounts are in ₹ Lakh."
     >
-      <h3 className="text-sm font-semibold text-slate-800">Department Allocation</h3>
+      <h3 className="text-base font-bold text-slate-800">Department Allocation</h3>
       <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
@@ -123,7 +123,7 @@ export function StepAllocation({ state, dispatch, errors, showErrors }) {
       </div>
 
       <div className="mt-8 border-t border-slate-100 pt-6">
-        <h3 id="head-group-label" className="text-sm font-semibold text-slate-800">
+        <h3 id="head-group-label" className="text-base font-bold text-slate-800">
           Select Head <span className="text-red-600" aria-hidden="true">*</span>
         </h3>
         <p className="mt-0.5 text-xs text-slate-500">

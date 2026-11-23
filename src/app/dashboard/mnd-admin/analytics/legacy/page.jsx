@@ -65,7 +65,7 @@ const ChartCard = ({ title, subtitle, children }) => (
   <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
     <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-start">
       <div>
-        <h3 className="font-semibold text-slate-800 leading-tight">{title}</h3>
+        <h3 className="font-bold text-slate-800 leading-tight">{title}</h3>
         {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -135,7 +135,7 @@ export default function MNDAdminAnalytics() {
         <div className="bg-white border-b border-slate-200 px-6 py-8 shadow-sm">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-navy">MNE Advanced Analytics</h1>
+              <h1 className="text-3xl font-extrabold text-navy">MNE Advanced Analytics</h1>
               <p className="text-sm text-slate-500 mt-1 flex items-center gap-2">
                 <Activity className="w-4 h-4" /> State-wide Monitoring Dashboard
               </p>
@@ -347,7 +347,7 @@ function Praroop1ATab({ data }) {
         {/* Activity-wise Physical Progress */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise Physical Progress</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise Physical Progress</h3>
             <p className="text-xs text-slate-500">Cumulative units completed per activity</p>
           </div>
           <div className="p-5 h-[400px]">
@@ -368,7 +368,7 @@ function Praroop1ATab({ data }) {
         {/* Budget Utilization Radial */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Budget Utilization</h3>
+            <h3 className="font-bold text-slate-800">Budget Utilization</h3>
             <p className="text-xs text-slate-500">SARRA expenditure vs allocation</p>
           </div>
           <div className="p-5 h-[300px] flex items-center justify-center relative">
@@ -400,7 +400,7 @@ function Praroop1ATab({ data }) {
         {/* Activity-wise SARRA Expenditure */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise SARRA Expenditure</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise SARRA Expenditure</h3>
             <p className="text-xs text-slate-500">Budget vs Spend per activity (₹ Lakh)</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -421,7 +421,7 @@ function Praroop1ATab({ data }) {
         {/* District-wise Summary */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">District-wise Summary</h3>
+            <h3 className="font-bold text-slate-800">District-wise Summary</h3>
             <p className="text-xs text-slate-500">Physical progress & SARRA spend by district</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -444,7 +444,7 @@ function Praroop1ATab({ data }) {
       {data.recentForms?.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Recent Praroop-1(A) Submissions</h3>
+            <h3 className="font-bold text-slate-800">Recent Praroop-1(A) Submissions</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -503,7 +503,7 @@ function Praroop1BTab({ data }) {
         {/* Activity-wise Physical Progress */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise Physical Progress</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise Physical Progress</h3>
             <p className="text-xs text-slate-500">Cumulative units completed per activity</p>
           </div>
           <div className="p-5 h-[400px]">
@@ -524,7 +524,7 @@ function Praroop1BTab({ data }) {
         {/* Budget Utilization Radial */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Budget Utilization</h3>
+            <h3 className="font-bold text-slate-800">Budget Utilization</h3>
             <p className="text-xs text-slate-500">SARRA expenditure vs allocation</p>
           </div>
           <div className="p-5 h-[300px] flex items-center justify-center relative">
@@ -556,7 +556,7 @@ function Praroop1BTab({ data }) {
         {/* Activity-wise SARRA Expenditure */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise SARRA Expenditure</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise SARRA Expenditure</h3>
             <p className="text-xs text-slate-500">Budget vs Spend per activity (₹ Lakh)</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -577,7 +577,7 @@ function Praroop1BTab({ data }) {
         {/* District-wise Summary */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">District-wise Summary</h3>
+            <h3 className="font-bold text-slate-800">District-wise Summary</h3>
             <p className="text-xs text-slate-500">Physical progress & SARRA spend by district</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -600,7 +600,7 @@ function Praroop1BTab({ data }) {
       {data.recentForms?.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Recent Praroop-1(B) Submissions</h3>
+            <h3 className="font-bold text-slate-800">Recent Praroop-1(B) Submissions</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -660,7 +660,7 @@ function Praroop1CTab({ data }) {
         {/* Activity-wise Physical Progress */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise Physical Progress</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise Physical Progress</h3>
             <p className="text-xs text-slate-500">Cumulative units completed per activity</p>
           </div>
           <div className="p-5 h-[400px]">
@@ -681,7 +681,7 @@ function Praroop1CTab({ data }) {
         {/* Budget Utilization Radial */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Budget Utilization</h3>
+            <h3 className="font-bold text-slate-800">Budget Utilization</h3>
             <p className="text-xs text-slate-500">SARRA expenditure vs allocation</p>
           </div>
           <div className="p-5 h-[300px] flex items-center justify-center relative">
@@ -713,7 +713,7 @@ function Praroop1CTab({ data }) {
         {/* Activity-wise SARRA Expenditure */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise SARRA Expenditure</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise SARRA Expenditure</h3>
             <p className="text-xs text-slate-500">Budget vs Spend per activity (₹ Lakh)</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -734,7 +734,7 @@ function Praroop1CTab({ data }) {
         {/* District-wise Summary */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">District-wise Summary</h3>
+            <h3 className="font-bold text-slate-800">District-wise Summary</h3>
             <p className="text-xs text-slate-500">Physical progress & SARRA spend by district</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -757,7 +757,7 @@ function Praroop1CTab({ data }) {
       {data.recentForms?.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Recent Praroop-1(C) Submissions</h3>
+            <h3 className="font-bold text-slate-800">Recent Praroop-1(C) Submissions</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -817,7 +817,7 @@ function Praroop1DTab({ data }) {
         {/* Activity-wise Physical Progress */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise Physical Progress</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise Physical Progress</h3>
             <p className="text-xs text-slate-500">Cumulative units completed per activity</p>
           </div>
           <div className="p-5 h-[400px]">
@@ -838,7 +838,7 @@ function Praroop1DTab({ data }) {
         {/* Budget Utilization Radial */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Budget Utilization</h3>
+            <h3 className="font-bold text-slate-800">Budget Utilization</h3>
             <p className="text-xs text-slate-500">SARRA expenditure vs allocation</p>
           </div>
           <div className="p-5 h-[300px] flex items-center justify-center relative">
@@ -870,7 +870,7 @@ function Praroop1DTab({ data }) {
         {/* Activity-wise SARRA Expenditure */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Activity-wise SARRA Expenditure</h3>
+            <h3 className="font-bold text-slate-800">Activity-wise SARRA Expenditure</h3>
             <p className="text-xs text-slate-500">Budget vs Spend per activity (₹ Lakh)</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -891,7 +891,7 @@ function Praroop1DTab({ data }) {
         {/* District-wise Summary */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">District-wise Summary</h3>
+            <h3 className="font-bold text-slate-800">District-wise Summary</h3>
             <p className="text-xs text-slate-500">Physical progress & SARRA spend by district</p>
           </div>
           <div className="p-5 h-[350px]">
@@ -914,7 +914,7 @@ function Praroop1DTab({ data }) {
       {data.recentForms?.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <h3 className="font-semibold text-slate-800">Recent Praroop-1(D) Submissions</h3>
+            <h3 className="font-bold text-slate-800">Recent Praroop-1(D) Submissions</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

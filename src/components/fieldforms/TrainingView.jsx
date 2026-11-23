@@ -143,7 +143,7 @@ export function TrainingView({ id }) {
       {editable ? (
         <>
           <section className={card}>
-            <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Level and place</h2></header>
+            <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Level and place</h2></header>
             <div className="space-y-4 px-5 py-5">
               <fieldset>
                 <legend className="mb-1.5 text-sm font-medium text-slate-700">Level <span className="text-red-600" aria-hidden="true">*</span></legend>
@@ -160,7 +160,7 @@ export function TrainingView({ id }) {
           </section>
 
           <section className={card}>
-            <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Programme</h2></header>
+            <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Programme</h2></header>
             <div className="grid grid-cols-1 gap-x-5 gap-y-4 px-5 py-5 md:grid-cols-2">
               <Field id="tr-date" label="Date" required error={errors.date}><input id="tr-date" type="date" max={today()} value={form.date} onChange={(e) => set('date')(e.target.value)} className={inputClass(Boolean(errors.date))} /></Field>
               <Field id="tr-place" label="Place of programme" required error={errors.place}><input id="tr-place" value={form.place} maxLength={300} onChange={(e) => set('place')(e.target.value)} className={inputClass(Boolean(errors.place))} placeholder="e.g. Vikas Bhawan" /></Field>
@@ -170,7 +170,7 @@ export function TrainingView({ id }) {
           </section>
 
           <section className={card}>
-            <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">No. of participants</h2>{errors.participants && <p role="alert" className="mt-1 text-xs font-medium text-red-700">{errors.participants}</p>}</header>
+            <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">No. of participants</h2>{errors.participants && <p role="alert" className="mt-1 text-xs font-medium text-red-700">{errors.participants}</p>}</header>
             <div className="overflow-x-auto px-5 py-4">
               <table className="w-full min-w-[520px] text-sm">
                 <thead className="text-left text-xs font-semibold uppercase tracking-wider text-slate-500"><tr><th scope="col" className="py-2">Category</th><th scope="col" className="w-32 py-2 text-right">Male</th><th scope="col" className="w-32 py-2 text-right">Female</th><th scope="col" className="w-24 py-2 text-right">Total</th></tr></thead>
@@ -218,7 +218,7 @@ export function TrainingView({ id }) {
 
       {isNew ? <Notice tone="info">Save the programme first, then attach the photographs, documents (attendance sheet, agenda …) and the minutes.</Notice> : (
         <section className={`${card} space-y-4 p-5`}>
-          <h2 className="text-sm font-semibold text-slate-900">Photographs and documents</h2>
+          <h2 className="text-base font-bold text-slate-900">Photographs and documents</h2>
           <FileGroup title="Photographs" imagesOnly files={t.photographs} max={12} {...fileProps('photographs')} />
           <FileGroup title="Documents" hint="Attendance sheet, agenda, presentation …" files={t.documents} max={10} {...fileProps('documents')} />
           <FileGroup title="Minutes of meeting" files={t.minutes} max={5} {...fileProps('minutes')} />

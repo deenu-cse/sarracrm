@@ -82,7 +82,7 @@ export default function MPRDetailPage() {
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-slate-800 font-mono">{mpr.applicationNo}</h1>
+            <h1 className="text-3xl font-bold text-slate-800 font-mono">{mpr.applicationNo}</h1>
             <span className={`text-xs px-2 py-1 rounded font-semibold flex items-center gap-1 ${mpr.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
               mpr.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
               mpr.status === 'RESUBMITTED' ? 'bg-purple-100 text-purple-700' :

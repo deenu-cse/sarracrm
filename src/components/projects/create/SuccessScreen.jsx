@@ -23,7 +23,7 @@ export function SuccessScreen({ project, mode = 'create', source, onCreateAnothe
   return (
     <div className="wz-fade-in mx-auto max-w-xl rounded-xl border border-slate-200 bg-white px-8 py-12 text-center shadow-sm" role="status">
       <div className="flex justify-center"><SuccessTick size={72} /></div>
-      <h1 ref={headingRef} tabIndex={-1} className="mt-6 text-2xl font-bold text-slate-900 focus:outline-none">{copy.heading}</h1>
+      <h1 ref={headingRef} tabIndex={-1} className="mt-6 text-3xl font-bold text-slate-900 focus:outline-none">{copy.heading}</h1>
 
       <div className="mx-auto mt-6 inline-block rounded-lg border border-slate-200 bg-slate-50 px-6 py-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Project ID</p>

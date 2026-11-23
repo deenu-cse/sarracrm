@@ -181,7 +181,7 @@ export function Head56Entry() {
       <header className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Budget Head 56 · Non-Salary Grant (गैर वेतन हेतु अनुदान)</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-navy">{reportId ? `${form?.mprNo} — ${form?.statusLabel}` : 'New monthly progress report'}</h1>
+          <h1 className="mt-1 text-3xl font-extrabold text-navy">{reportId ? `${form?.mprNo} — ${form?.statusLabel}` : 'New monthly progress report'}</h1>
           {unit && <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600"><LevelPill level={unit.level} /> {unit.unitName}</p>}
         </div>
         {form?.allocation && <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm">Allocation version <strong>{form.allocation.version}</strong> (published {new Date(form.allocation.publishedAt).toLocaleDateString('en-IN')})</p>}
@@ -231,7 +231,7 @@ export function Head56Entry() {
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm" aria-labelledby="h56-entry-title">
           <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
             <div>
-              <h2 id="h56-entry-title" className="text-sm font-semibold text-slate-900">{form.period.label}: progress and expenditure (₹ lakh)</h2>
+              <h2 id="h56-entry-title" className="text-base font-bold text-slate-900">{form.period.label}: progress and expenditure (₹ lakh)</h2>
               <p className="text-xs text-slate-500">Type only this month&apos;s figures. Earlier months and every total are filled in from the approved allocation and your previous reports.</p>
             </div>
           </header>
@@ -324,7 +324,7 @@ export function Head56Entry() {
               <textarea id="h56-remarks" rows={3} maxLength={2000} value={remarks} disabled={locked} onChange={(event) => setRemarks(event.target.value)} className={`${inputClass(nilNeedsRemark && Boolean(reportId))} mt-2 resize-none`} />
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-900">Supporting documents</h2>
+              <h2 className="text-base font-bold text-slate-900">Supporting documents</h2>
               <p className="mb-3 text-xs text-slate-500">Bills, vouchers, work orders and honorarium sheets for this month&apos;s expenditure.</p>
               {reportId
                 ? <Head56Documents reportId={reportId} documents={documents} lines={rows} docTypes={form.docTypes} editable={!locked} onChanged={refreshDocuments} />
@@ -333,7 +333,7 @@ export function Head56Entry() {
           </section>
           <aside className="lg:col-span-2">
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-900">Before you submit</h2>
+              <h2 className="text-base font-bold text-slate-900">Before you submit</h2>
               <ul className="mt-3 space-y-2 text-sm">
                 {[
                   [!hasErrors, 'Progress and expenditure are within the approved allocation and targets'],

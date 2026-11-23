@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, FolderKanban, Lock, Plus, Search, UserCog, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderKanban, ListChecks, Lock, Search, UserCog, X } from 'lucide-react';
 import axiosInstance from '@/lib/axiosInstance';
 import { fetchDistricts, fetchHeads } from '@/lib/projectApi';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,7 @@ import { formatLakh } from '@/lib/numeric';
 import { Notice, RetryButton, Skeleton, useMasterList } from '@/components/projects/create/parts';
 import { workflowRoleOf } from '@/constants/roles';
 import { PiaHandoverDialog } from '@/components/projects/detail/PiaHandoverDialog';
+import { GROUP_STAGES, PROJECT_GROUPS, ProjectOverview, groupCounts } from '@/components/projects/ProjectOverview';
 
 const STAGES = {
   state: [['PENDING_CHECKER', 'With HQ Checker'], ['PENDING_APPROVER', 'With HQ Approver'], ['SANCTIONED', 'Sanctioned'], ['FORWARDED_TO_DISTRICT', 'Sent to district'], ['DISTRICT_ACCEPTED', 'District accepted'],
@@ -21,7 +22,6 @@ const LIMIT = 15;
 const shortLakh = (value) => formatLakh(value || 0).replace(' Lakh', ' L');
 const date = (value) => (value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 const input = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 transition-[border-color,box-shadow] hover:border-slate-400 focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/20';
-const primaryLink = 'inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-navy-light hover:shadow-md active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/50 focus-visible:ring-offset-2';
 const secondaryLink = 'inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50 focus-visible:ring-offset-2';
 
 /**
@@ -34,10 +34,9 @@ export function ProjectListPage({ scope }) {
   const router = useRouter();
   const isState = scope === 'state';
   const base = isState ? '/dashboard/admin/projects' : '/dashboard/dd/projects';
-  const isMaker = isState && user?.workflowRole === 'MAKER';
   const isDistrictMaker = !isState && workflowRoleOf(user) === 'MAKER';
 
-  const [filters, setFilters] = useState({ status: '', district: '', headCode: '', search: '' });
+  const [filters, setFilters] = useState({ group: '', status: '', district: '', headCode: '', search: '' });
   const [searchText, setSearchText] = useState('');
   const [page, setPage] = useState(1);
   const [box, setBox] = useState({ rows: [], total: 0, pages: 1, summary: null, loading: true, error: '' });
@@ -45,6 +44,13 @@ export function ProjectListPage({ scope }) {
   const requestRef = useRef(0);
   const districts = useMasterList(fetchDistricts, isState ? 'districts' : null);
   const heads = useMasterList(fetchHeads, 'heads');
+
+  // Project Status group from the address (?group=PENDING), e.g. from the dashboard boxes.
+  useEffect(() => {
+    if (!isState) return;
+    const group = new URLSearchParams(window.location.search).get('group') || '';
+    if (GROUP_STAGES[group]) setFilters((current) => ({ ...current, group }));
+  }, [isState]);
 
   useEffect(() => {
     const timer = setTimeout(() => { setFilters((current) => (current.search === searchText.trim() ? current : { ...current, search: searchText.trim() })); setPage(1); }, 350);
@@ -67,9 +73,18 @@ export function ProjectListPage({ scope }) {
   useEffect(() => { load(); }, [load]);
 
   const set = (key, value) => { setFilters((current) => ({ ...current, [key]: value })); setPage(1); };
+  const keepGroupInAddress = (group) => {
+    const url = new URL(window.location.href);
+    if (group) url.searchParams.set('group', group); else url.searchParams.delete('group');
+    window.history.replaceState(window.history.state, '', url);
+  };
+  const selectGroup = (group) => { setFilters((current) => ({ ...current, group, status: '' })); setPage(1); keepGroupInAddress(group); };
   const active = Object.values(filters).some(Boolean);
-  const clear = () => { setFilters({ status: '', district: '', headCode: '', search: '' }); setSearchText(''); setPage(1); };
+  const clear = () => { setFilters({ group: '', status: '', district: '', headCode: '', search: '' }); setSearchText(''); setPage(1); if (isState) keepGroupInAddress(''); };
   const counts = box.summary?.byStage || {};
+  const groups = groupCounts(counts, box.summary?.total ?? 0);
+  const stages = STAGES[scope].filter(([value]) => !filters.group || GROUP_STAGES[filters.group].includes(value));
+  const groupLabel = PROJECT_GROUPS.find((g) => g.key === filters.group)?.label;
   const toAccept = !isState ? (counts.FORWARDED_TO_DISTRICT || 0) : 0;
   const firstLoad = box.loading && box.rows.length === 0 && !box.summary;
 
@@ -79,14 +94,13 @@ export function ProjectListPage({ scope }) {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><FolderKanban className="h-5 w-5" /></span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true">{isState ? <ListChecks className="h-5 w-5" /> : <FolderKanban className="h-5 w-5" />}</span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">{isState ? 'Projects' : 'District Projects'}</h1>
+            <h1 className="text-3xl font-extrabold text-navy">{isState ? 'Project Status' : 'District Projects'}</h1>
             <p className="text-sm text-slate-500">{isState ? 'Every project in the State, from creation to closure.' : `Projects forwarded to ${user?.district || 'your district'}.`}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {isMaker && <Link href="/dashboard/admin/projects/create" className={primaryLink}><Plus className="h-4 w-4" aria-hidden="true" /> New Project</Link>}
           {isDistrictMaker && <button type="button" onClick={() => setHandover(true)} className={secondaryLink}><UserCog className="h-4 w-4" aria-hidden="true" /> Hand Over PIA Charge</button>}
         </div>
       </div>
@@ -100,10 +114,16 @@ export function ProjectListPage({ scope }) {
         </div>
       )}
 
+      {isState && (
+        <section className="mb-4" aria-label="Project overview">
+          <ProjectOverview counts={box.summary ? groups : null} selected={filters.group} onSelect={selectGroup} />
+        </section>
+      )}
+
       <section className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="Filters">
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Stage">
-          {[['', 'All'], ...STAGES[scope]].map(([value, label]) => {
-            const n = value ? (counts[value] || 0) : (box.summary?.total ?? null);
+          {[['', groupLabel && filters.group ? `All ${groupLabel.toLowerCase()}` : 'All'], ...stages].map(([value, label]) => {
+            const n = value ? (counts[value] || 0) : (box.summary ? groups[filters.group || ''] : null);
             const selected = filters.status === value;
             return (
               <button key={value || 'all'} type="button" role="tab" aria-selected={selected} onClick={() => set('status', value)}
@@ -141,9 +161,7 @@ export function ProjectListPage({ scope }) {
         {!box.loading && !box.error && box.rows.length === 0 && (
           <div className="px-5 py-14 text-center">
             <p className="text-sm font-semibold text-slate-800">{active ? 'No project matches these filters.' : isState ? 'No project has been created yet.' : 'No project has been forwarded to your district yet.'}</p>
-            {active
-              ? <button type="button" onClick={clear} className="mt-2 text-sm font-semibold text-navy hover:underline">Clear filters</button>
-              : isMaker && <Link href="/dashboard/admin/projects/create" className={`${primaryLink} mt-4`}><Plus className="h-4 w-4" aria-hidden="true" /> New Project</Link>}
+            {active && <button type="button" onClick={clear} className="mt-2 text-sm font-semibold text-navy hover:underline">Clear filters</button>}
           </div>
         )}
 
@@ -153,7 +171,8 @@ export function ProjectListPage({ scope }) {
               <caption className="sr-only">Projects</caption>
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/70 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <th scope="col" className="px-5 py-2.5">Project</th>
+                  <th scope="col" className="w-14 py-2.5 pl-5 pr-2 text-right">S.No.</th>
+                  <th scope="col" className="px-3 py-2.5">Project</th>
                   {isState && <th scope="col" className="px-3 py-2.5">District</th>}
                   <th scope="col" className="px-3 py-2.5">Stage</th>
                   <th scope="col" className="px-3 py-2.5">Departments</th>
@@ -163,7 +182,7 @@ export function ProjectListPage({ scope }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {box.rows.map((project) => {
+                {box.rows.map((project, index) => {
                   const closed = project.closure?.status === 'CLOSED';
                   const departments = project.departments || [];
                   const ready = departments.filter((d) => d.reportingReady).length;
@@ -171,7 +190,8 @@ export function ProjectListPage({ scope }) {
                   const href = `${base}/${project._id}`;
                   return (
                     <tr key={project._id} onClick={() => router.push(href)} className="cursor-pointer align-top transition-colors hover:bg-slate-50/70">
-                      <th scope="row" className="px-5 py-3 text-left font-normal">
+                      <td className="py-3 pl-5 pr-2 text-right font-semibold tabular-nums text-slate-500">{(page - 1) * LIMIT + index + 1}</td>
+                      <th scope="row" className="px-3 py-3 text-left font-normal">
                         <Link href={href} onClick={(event) => event.stopPropagation()} className="block max-w-sm truncate font-semibold text-slate-900 hover:text-navy hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40">{project.projectTitle || 'Untitled project'}</Link>
                         <span className="block truncate font-mono text-xs text-slate-500">{project.projectId || project.sanctionId || project.dprApplicationNo || '—'}{project.head?.code ? ` · ${project.head.code}` : ''}</span>
                         {(project.location?.village || project.location?.block) && <span className="block truncate text-xs text-slate-400">{[project.location?.village, project.location?.block].filter(Boolean).join(', ')}</span>}

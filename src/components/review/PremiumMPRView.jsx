@@ -194,7 +194,7 @@ function SummaryTab({ mpr }) {
       </div>
       
       <div className="mt-8 bg-indigo-50 border border-indigo-100 rounded-3xl p-6">
-         <h4 className="text-sm font-bold text-indigo-900 mb-4 uppercase tracking-widest">Computed Totals</h4>
+         <h4 className="text-base font-bold text-indigo-900 mb-4 uppercase tracking-widest">Computed Totals</h4>
          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-xs text-indigo-600 font-semibold">Physical Progress</p>
@@ -290,7 +290,7 @@ function FinancialTab({ mpr }) {
       <SectionHeader title="Financial Breakdown" subtitle="Expenditure tracking" icon={<IndianRupee />} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
         <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white">
-          <h4 className="text-sm font-bold text-indigo-400 mb-6 uppercase tracking-widest">SARRA EXPENDITURE (₹ LAKH)</h4>
+          <h4 className="text-base font-bold text-indigo-400 mb-6 uppercase tracking-widest">SARRA EXPENDITURE (₹ LAKH)</h4>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-slate-400 font-medium">Monthly Progress</span>
@@ -305,7 +305,7 @@ function FinancialTab({ mpr }) {
         </div>
 
         <div className="bg-slate-50 border border-slate-200 rounded-[2.5rem] p-8">
-          <h4 className="text-sm font-bold text-slate-500 mb-6 uppercase tracking-widest">DEPT EXPENDITURE (₹ LAKH)</h4>
+          <h4 className="text-base font-bold text-slate-500 mb-6 uppercase tracking-widest">DEPT EXPENDITURE (₹ LAKH)</h4>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-slate-600 font-medium">Monthly Progress</span>

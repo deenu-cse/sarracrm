@@ -64,7 +64,7 @@ export function NotificationsPage() {
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><Bell className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">Notifications</h1>
+            <h1 className="text-3xl font-extrabold text-navy">Notifications</h1>
             <p className="text-sm text-slate-500" aria-live="polite">{unreadCount > 0 ? `${unreadCount} unread` : 'You have read everything.'}</p>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function NotificationsPage() {
         )}
         {!box.loading && groups.map((group) => (
           <div key={group.name}>
-            <h2 className="border-b border-slate-100 bg-slate-50/70 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{group.name}</h2>
+            <h2 className="border-b border-slate-100 bg-slate-50/70 px-5 py-2 text-sm font-bold uppercase tracking-wider text-slate-500">{group.name}</h2>
             <ul className="divide-y divide-slate-100">
               {group.items.map((notification) => <li key={notification._id}><NotificationRow notification={notification} onOpen={open} /></li>)}
             </ul>

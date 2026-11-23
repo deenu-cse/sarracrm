@@ -69,7 +69,7 @@ export function StepDepartments({ state, dispatch, errors, showErrors }) {
       {state.piaCount ? (
         <div className="mt-6 border-t border-slate-100 pt-6">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-800">Departments</h3>
+            <h3 className="text-base font-bold text-slate-800">Departments</h3>
             <p className="text-xs text-slate-500">
               {state.departments.filter((row) => row.department).length} of {state.piaCount} selected · each department can be used once
             </p>

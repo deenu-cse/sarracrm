@@ -41,7 +41,7 @@ export default function AdminFormViewPage({ params }) {
               <ArrowLeft className="w-5 h-5 text-slate-500" />
             </Button>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight">
                 MPR Review Center
               </h1>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -57,7 +57,7 @@ export default function AdminFormViewPage({ params }) {
         <div className="w-full lg:w-96 flex-shrink-0">
           <div className="sticky top-8 space-y-6">
             <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-slate-200">
-              <h3 className="text-lg font-black mb-6 flex items-center gap-2">
+              <h3 className="text-xl font-black mb-6 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-blue-400" />
                 Administrative View
               </h3>
@@ -68,7 +68,7 @@ export default function AdminFormViewPage({ params }) {
             </div>
 
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Revision Timeline</h4>
+              <h4 className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Revision Timeline</h4>
               <RevisionTimeline revisions={form.timeline || form.revisionHistory || []} currentStatus={form.status} />
             </div>
           </div>

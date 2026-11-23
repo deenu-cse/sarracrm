@@ -134,7 +134,7 @@ export function Head56AllocationEditor({ id }) {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Head 56 allocation · FY {data.financialYear}</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-navy">{data.unitName}</h1>
+          <h1 className="mt-1 text-3xl font-extrabold text-navy">{data.unitName}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm"><LevelPill level={data.level} label={data.levelLabel} /><AllocationPill status={data.status} label={data.statusLabel} />{data.version > 0 && <span className="text-xs text-slate-500">Published version {data.version}{data.publishedAt ? ` · ${moment(data.publishedAt)}` : ''}</span>}</p>
         </div>
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -212,7 +212,7 @@ export function Head56AllocationEditor({ id }) {
       )}
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-900">History</h2>
+        <h2 className="text-base font-bold text-slate-900">History</h2>
         <ol className="mt-3 space-y-3">
           {data.history.map((entry, index) => (
             <li key={index} className="border-l-2 border-slate-200 pl-3">

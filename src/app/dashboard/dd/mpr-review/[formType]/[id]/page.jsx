@@ -117,7 +117,7 @@ export default function DDMPRDetailPage() {
                   <ArrowLeft className="w-4 h-4 mr-1" /> Back to MPR Reviews
                 </button>
                 <div className="flex items-center gap-3">
-                  <h1 className="font-mono text-2xl font-bold text-slate-900 tracking-tight">{mpr.applicationNo}</h1>
+                  <h1 className="font-mono text-3xl font-bold text-slate-900 tracking-tight">{mpr.applicationNo}</h1>
                   <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full text-white ${formInfo.color}`}>
                     {formInfo.label}
                   </span>
@@ -178,7 +178,7 @@ export default function DDMPRDetailPage() {
               {/* Activity-wise Physical Progress Chart */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <h3 className="font-semibold text-slate-800 text-sm">Activity-wise Physical Progress</h3>
+                  <h3 className="font-bold text-slate-800 text-base">Activity-wise Physical Progress</h3>
                 </div>
                 <div className="p-2 h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -196,7 +196,7 @@ export default function DDMPRDetailPage() {
               {/* SARRA Budget vs Expenditure Chart */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <h3 className="font-semibold text-slate-800 text-sm">SARRA Budget vs Expenditure</h3>
+                  <h3 className="font-bold text-slate-800 text-base">SARRA Budget vs Expenditure</h3>
                 </div>
                 <div className="p-2 h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -219,7 +219,7 @@ export default function DDMPRDetailPage() {
               {/* District-wise Expenditure Pie Chart */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden lg:col-span-2">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <h3 className="font-semibold text-slate-800 text-sm">District-wise SARRA Expenditure Distribution</h3>
+                  <h3 className="font-bold text-slate-800 text-base">District-wise SARRA Expenditure Distribution</h3>
                 </div>
                 <div className="p-2 h-[320px] flex items-center">
                   <ResponsiveContainer width="50%" height="100%">
@@ -448,7 +448,7 @@ export default function DDMPRDetailPage() {
 
               {/* Metadata Grid */}
               <div className="mt-8 pt-6 border-t border-slate-100 space-y-3">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Report Metadata</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Report Metadata</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <MetaBox label="SCHEMES" value={mpr.totalApprovedSchemes || 0} />
                   {mpr.totalSpringsUnderSchemes !== undefined && <MetaBox label="SPRINGS" value={mpr.totalSpringsUnderSchemes} />}
@@ -469,7 +469,7 @@ export default function DDMPRDetailPage() {
 
                 {/* Submission info */}
                 <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Submission Info</h4>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Submission Info</h4>
                   <div className="text-xs text-slate-500 space-y-1">
                     <p><span className="font-semibold text-slate-700">Submitted:</span> {formatDate(mpr.submittedAt)}</p>
                     <p><span className="font-semibold text-slate-700">District:</span> {mpr.submittedByDistrict}</p>
@@ -492,7 +492,7 @@ export default function DDMPRDetailPage() {
       {showReturnModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Return Report to PIA</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Return Report to PIA</h3>
             <p className="text-sm text-slate-500 mb-4">Please provide detailed reasons or correction requests for the PIA Officer.</p>
             <textarea
               rows={4}

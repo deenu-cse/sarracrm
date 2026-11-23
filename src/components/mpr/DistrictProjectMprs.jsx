@@ -34,7 +34,7 @@ export function DistrictProjectMprs() {
       <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">All Project Progress Reports of the District</h2>
+            <h2 className="text-base font-bold text-slate-900">All Project Progress Reports of the District</h2>
             <p className="text-xs text-slate-500">PIA-entered and district-entered reports, wherever they are in the approval chain.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

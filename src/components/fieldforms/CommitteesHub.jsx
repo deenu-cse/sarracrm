@@ -37,7 +37,7 @@ function Stat({ label, value, tone = 'text-slate-900' }) {
   const c = CARD_COLORS[colorFor(label)];
   return (
     <div className={`rounded-2xl border px-4 py-3 shadow-sm ${c.card}`}>
-      <dt className={`text-[13px] font-bold ${c.label}`}>{label}</dt>
+      <dt className={`text-[15px] font-extrabold ${c.label}`}>{label}</dt>
       <dd className={`mt-1 text-2xl font-extrabold tabular-nums ${tone}`}>{value}</dd>
     </div>
   );
@@ -135,7 +135,7 @@ function MeetingList({ type, stateWide }) {
         <section className={card}>
           <header className="flex items-center gap-2 border-b border-slate-100 px-5 py-3">
             <Inbox className="h-4 w-4 text-navy" aria-hidden="true" />
-            <h2 className="text-sm font-semibold text-slate-900">Awaiting your approval</h2>
+            <h2 className="text-base font-bold text-slate-900">Awaiting your approval</h2>
             {pending.length > 0 && <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white">{pending.length}</span>}
           </header>
           {pending.length ? <MeetingTable items={pending} base={base} showDistrict={type === 'DLEC'} /> : <p className="px-5 py-6 text-center text-sm text-slate-500">No {type} meeting is waiting for your approval.</p>}

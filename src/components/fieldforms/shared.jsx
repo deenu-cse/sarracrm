@@ -55,7 +55,7 @@ export function PageHeader({ icon: Icon, title, subtitle, actions }) {
       <div className="flex min-w-0 items-center gap-3">
         {Icon && <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-navy/10 text-navy" aria-hidden="true"><Icon className="h-5 w-5" /></span>}
         <div className="min-w-0">
-          <h1 className="text-2xl font-extrabold text-navy">{title}</h1>
+          <h1 className="text-3xl font-extrabold text-navy">{title}</h1>
           {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
         </div>
       </div>
@@ -115,7 +115,7 @@ export function FileGroup({ title, hint, files = [], imagesOnly = false, max, ed
     <section className="rounded-lg border border-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-4 py-2.5">
         <div>
-          <h3 className="text-sm font-semibold text-slate-800">{title}{required && <span className="ml-1 text-red-600" aria-hidden="true">*</span>} <span className="font-normal text-slate-500">({files.length}{max ? ` of ${max}` : ''})</span></h3>
+          <h3 className="text-base font-bold text-slate-800">{title}{required && <span className="ml-1 text-red-600" aria-hidden="true">*</span>} <span className="font-normal text-slate-500">({files.length}{max ? ` of ${max}` : ''})</span></h3>
           {hint && <p className="text-xs text-slate-500">{hint}</p>}
         </div>
         {editable && (

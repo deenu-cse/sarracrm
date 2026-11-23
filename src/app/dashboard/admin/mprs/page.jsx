@@ -48,7 +48,7 @@ export default function AdminMprsPage() {
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><ClipboardCheck className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">MPR Verification — SARRA HQ</h1>
+            <h1 className="text-3xl font-extrabold text-navy">MPR Verification — SARRA HQ</h1>
             <p className="text-sm text-slate-500">HQ Maker compiles → HQ Checker verifies → HQ Approver gives final approval (Verified by State).</p>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function AdminMprsPage() {
       <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="space-y-3 border-b border-slate-100 px-5 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-slate-900">All Project Progress Reports</h2>
+            <h2 className="text-base font-bold text-slate-900">All Project Progress Reports</h2>
             <StatusFilter filters={FILTERS} value={status} onChange={setStatus} />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

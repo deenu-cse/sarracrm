@@ -98,7 +98,7 @@ export function ActionRequired({ items = [], emptyText = 'No actions required ri
       <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-white flex items-center gap-2">
         <AlertCircle className="w-5 h-5 text-amber-600" />
         <div>
-          <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Action Required</h3>
+          <h3 className="text-base font-black text-slate-900 uppercase tracking-widest">Action Required</h3>
           <p className="text-xs text-slate-500">Items waiting for your decision</p>
         </div>
         {items.length > 0 && (
@@ -149,7 +149,7 @@ export function RecentList({ title = 'Recent Activity', items = [], emptyText = 
     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden h-full">
       <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2">
         <Clock className="w-5 h-5 text-slate-500" />
-        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{title}</h3>
+        <h3 className="text-base font-black text-slate-900 uppercase tracking-widest">{title}</h3>
       </div>
       <div className="divide-y divide-slate-50 max-h-[420px] overflow-y-auto">
         {items.length === 0 ? (

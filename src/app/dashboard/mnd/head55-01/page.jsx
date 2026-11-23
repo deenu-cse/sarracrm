@@ -504,7 +504,7 @@ export default function MPRPraroop1A() {
       <div className="bg-[#0a3d62] px-6 py-6 z-50 sticky top-0 shadow-md">
         <div className="max-w-[98%] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">प्रारूप-1(A) | HEAD 55-01 (Spring) | MPR</h1>
+            <h1 className="text-2xl md:text-2xl font-bold text-white tracking-tight">प्रारूप-1(A) | HEAD 55-01 (Spring) | MPR</h1>
             <p className="text-blue-200 text-sm mt-1">SARRA 55-पूंजीगत परिसम्पत्तियों — वित्तीय एवं भौतिक प्रगति विवरण</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">

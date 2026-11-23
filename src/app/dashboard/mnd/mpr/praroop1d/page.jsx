@@ -19,7 +19,7 @@ export default function MPRpraroop1dListPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-navy">MPR Reports</h1>
+          <h1 className="text-3xl font-extrabold text-navy">MPR Reports</h1>
           <p className="text-slate-500">View and manage submitted Monthly Progress Reports</p>
         </div>
       </div>

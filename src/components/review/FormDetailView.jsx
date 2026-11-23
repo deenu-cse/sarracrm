@@ -67,7 +67,7 @@ export function FormDetailView({ dpr }) {
           
           {dpr.financials?.activities && dpr.financials.activities.length > 0 && (
             <div className="mt-6">
-              <h4 className="text-sm font-semibold text-slate-800 mb-3">Activity Breakdown</h4>
+              <h4 className="text-base font-bold text-slate-800 mb-3">Activity Breakdown</h4>
               <div className="overflow-x-auto rounded-lg border border-slate-200">
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-slate-50">

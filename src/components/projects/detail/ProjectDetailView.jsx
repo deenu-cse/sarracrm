@@ -152,7 +152,7 @@ export function ProjectDetailView({ projectId, backHref, backLabel = 'Back to pr
           </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-extrabold text-navy">{project.projectTitle || 'Untitled project'}</h1>
+              <h1 className="text-3xl font-extrabold text-navy">{project.projectTitle || 'Untitled project'}</h1>
               <Badge status={project.status} size="md" kind="project" />
               {project.closure?.status === 'CLOSED'
                 ? <span className="inline-flex items-center gap-1 rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"><Lock className="h-3 w-3" aria-hidden="true" /> {t('Closed')}</span>

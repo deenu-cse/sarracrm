@@ -166,7 +166,7 @@ export function JsaReportView({ id }) {
 
       {isNew && (
         <section className={card}>
-          <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Report of</h2></header>
+          <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Report of</h2></header>
           <div className="space-y-4 px-5 py-5">
             <div className="flex flex-wrap items-end gap-4">
               <FilterSelect id="jn-campaign" label="Campaign year" value={campaign} onChange={setCampaign} options={campaignYears()} />
@@ -190,7 +190,7 @@ export function JsaReportView({ id }) {
       {!isNew && (
         <section className={card}>
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3">
-            <h2 className="text-sm font-semibold text-slate-900">Tributaries / streams</h2>
+            <h2 className="text-base font-bold text-slate-900">Tributaries / streams</h2>
             {canEdit && <ActionButton size="sm" variant="ghost" icon={Trash2} disabled={saving} onClick={remove}>Delete report</ActionButton>}
           </header>
           <div className="px-5 py-4">
@@ -207,7 +207,7 @@ export function JsaReportView({ id }) {
       {(isNew || canEdit) && (
         <section className={card}>
           <header className="border-b border-slate-100 px-5 py-3">
-            <h2 className="text-sm font-semibold text-slate-900">{isNew ? 'First progress statement' : 'This week’s progress'}</h2>
+            <h2 className="text-base font-bold text-slate-900">{isNew ? 'First progress statement' : 'This week’s progress'}</h2>
             <p className="text-xs text-slate-500">{isNew ? 'Targets and progress so far. You can add the progress later as well.' : 'The figures of the last statement are filled in; change what has moved and save.'}</p>
           </header>
           <div className="px-5 py-5">
@@ -222,7 +222,7 @@ export function JsaReportView({ id }) {
 
       {!isNew && (
         <section className={card}>
-          <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Weekly statements</h2></header>
+          <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Weekly statements</h2></header>
           {rep.history.length ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1100px] border-collapse text-xs">

@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { ClipboardCheck, ClipboardPen, FolderKanban, Lock } from 'lucide-react';
+import { ClipboardPen, FolderKanban, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { ActionLink, COLORS, Card, Empty, FilingCard, HomeShell, Meter, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, lakh, rowLink, shortLakh, td, th, useHome } from './HomeKit';
 
@@ -29,7 +29,6 @@ export function DistrictHome() {
         <>
           <ActionLink href="/dashboard/dd/projects" icon={FolderKanban}>District Projects</ActionLink>
           {role === 'MAKER' && <ActionLink href="/dashboard/dd/mprs" icon={ClipboardPen}>District Entry MPRs</ActionLink>}
-          <ActionLink href="/dashboard/dd/mpr-review" icon={ClipboardCheck} primary>MPR Verification</ActionLink>
         </>
       )}
     >

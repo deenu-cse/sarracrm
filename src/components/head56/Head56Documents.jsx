@@ -84,7 +84,7 @@ export function Head56Documents({ reportId, documents = [], lines = [], docTypes
         <div className="space-y-3">
           {grouped.map((group) => (
             <section key={group.key || 'report'}>
-              <h4 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500"><Paperclip className="h-3.5 w-3.5" aria-hidden="true" />{group.key ? `${group.key} — ${nameOf.get(group.key) || ''}` : 'Whole report'}</h4>
+              <h4 className="mb-1.5 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-slate-500"><Paperclip className="h-3.5 w-3.5" aria-hidden="true" />{group.key ? `${group.key} — ${nameOf.get(group.key) || ''}` : 'Whole report'}</h4>
               <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
                 {group.items.map((doc) => {
                   const Icon = doc.mimeType?.startsWith('image/') ? ImageIcon : FileText;

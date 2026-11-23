@@ -183,7 +183,7 @@ function Cards({ activities, entries, evaluations, onChange }) {
         const financialId = `financial-${index}`;
         return (
           <li key={activity.activityCode} className={`rounded-xl border bg-white p-4 transition-colors duration-150 ${evaluation.entered ? 'border-emerald-200' : 'border-slate-200'}`}>
-            <h4 className="text-sm font-semibold text-slate-900" lang={language}>{index + 1}. {nameOf(activity, language)}</h4>
+            <h4 className="text-base font-bold text-slate-900" lang={language}>{index + 1}. {nameOf(activity, language)}</h4>
             <p className="text-xs text-slate-500">Unit: {activity.unit || '—'}</p>
 
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">

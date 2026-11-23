@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ClipboardCheck, ClipboardPlus, FolderKanban, Lock } from 'lucide-react';
+import { ArrowRight, ClipboardPlus, FolderKanban, Lock } from 'lucide-react';
 import { ActionLink, COLORS, Card, Empty, Meter, Metric, MoneyFlow, ReportRows, SeeAll, TaskList, HomeShell, day, lakh, shortLakh, useHome } from './HomeKit';
 
 const DUE = {
@@ -79,7 +79,7 @@ export function OfficerHome() {
       roleLine={`${data?.roleLabel || 'PIA'}${data?.scope?.department ? ` · ${data.scope.department}` : ''}${data?.scope?.district ? ` · ${data.scope.district}` : ''}`}
       actions={maker
         ? <><ActionLink href="/dashboard/officer/projects" icon={FolderKanban}>My Projects</ActionLink><ActionLink href="/dashboard/officer/forms/new" icon={ClipboardPlus} primary>New Monthly Report</ActionLink></>
-        : <><ActionLink href="/dashboard/officer/projects" icon={FolderKanban}>Projects</ActionLink><ActionLink href="/dashboard/officer/mprs" icon={ClipboardCheck} primary>MPR Verification</ActionLink></>}
+        : <ActionLink href="/dashboard/officer/projects" icon={FolderKanban} primary>Projects</ActionLink>}
     >
       {data && (
         <>
@@ -105,7 +105,7 @@ export function OfficerHome() {
 
           <section aria-labelledby="my-departments">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 id="my-departments" className="text-sm font-semibold text-slate-900">{maker ? 'My departments' : 'Departments of my PIA'}</h2>
+              <h2 id="my-departments" className="text-base font-bold text-slate-900">{maker ? 'My departments' : 'Departments of my PIA'}</h2>
               <SeeAll href="/dashboard/officer/projects">All projects</SeeAll>
             </div>
             {data.holdings.length === 0

@@ -10,7 +10,7 @@ export function SectionViewer({ title, data, expanded = true, renderContent }) {
         className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-100 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+        <h3 className="text-xl font-bold text-slate-800">{title}</h3>
         <button className="text-slate-500 hover:text-navy focus:outline-none">
           {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>

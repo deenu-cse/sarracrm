@@ -14,7 +14,7 @@ const formatDate = (iso) => {
 function Section({ title, children }) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white">
-      <h3 className="border-b border-slate-100 bg-slate-50/70 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</h3>
+      <h3 className="border-b border-slate-100 bg-slate-50/70 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-slate-500">{title}</h3>
       <div className="p-4">{children}</div>
     </section>
   );
@@ -122,7 +122,7 @@ export function ProjectSummary({ state, detailed = false }) {
                 return (
                   <div key={row.key}>
                     <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                      <h4 className="text-sm font-semibold text-slate-900">{row.department?.name || `Department ${index + 1}`}</h4>
+                      <h4 className="text-base font-bold text-slate-900">{row.department?.name || `Department ${index + 1}`}</h4>
                       <p className="text-xs text-slate-500">Allocation {formatLakh(departmentTotal(row))}</p>
                     </div>
                     <div className="overflow-x-auto rounded-lg border border-slate-200">

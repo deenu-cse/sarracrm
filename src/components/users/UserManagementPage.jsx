@@ -148,7 +148,7 @@ export function UserManagementPage({ newHref }) {
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><Users className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">Users</h1>
+            <h1 className="text-3xl font-extrabold text-navy">Users</h1>
             <p className="text-sm text-slate-500">Accounts of {scopeText} Signed in as {roleLabelOf(user)}.</p>
           </div>
         </div>

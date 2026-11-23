@@ -1,6 +1,6 @@
 import {
-  BarChart3, Bell, CalendarClock, ClipboardCheck, ClipboardList, ClipboardPen, CloudRain, Droplets, FileSpreadsheet, FolderKanban,
-  GraduationCap, Landmark, LayoutDashboard, Mountain, ScrollText, Settings, Users, Wallet, Waves, Waypoints,
+  BarChart3, Bell, CalendarClock, ClipboardCheck, ClipboardList, ClipboardPen, CloudRain, Droplets, FilePlus2, FileSpreadsheet, FolderKanban,
+  GraduationCap, Landmark, LayoutDashboard, ListChecks, Mountain, ScrollText, Settings, Users, Wallet, Waves, Waypoints,
 } from 'lucide-react';
 import { USER_ROLES, WORKFLOW_ROLES, isSystemAdmin, workflowRoleOf } from './roles';
 
@@ -91,7 +91,8 @@ export const NAV_MENU = {
     { label: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard, tone: 'sky' },
     {
       label: 'Project Management', icon: FolderKanban, tone: 'blue', children: [
-        { label: 'All Projects', href: '/dashboard/admin/projects', icon: FolderKanban },
+        { label: 'New Project Entry', href: '/dashboard/admin/projects/create', icon: FilePlus2, show: is(MAKER) },
+        { label: 'Project Status', href: '/dashboard/admin/projects', icon: ListChecks },
         { label: 'Deadlines', href: '/dashboard/admin/deadlines', icon: CalendarClock },
       ],
     },

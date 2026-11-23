@@ -42,7 +42,7 @@ export function StepCard({ step, title, description, aside, children }) {
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Step {String(step).padStart(2, '0')}</p>
-          <h2 id={`step-title-${step}`} className="mt-1 text-lg font-semibold text-slate-900">{title}</h2>
+          <h2 id={`step-title-${step}`} className="mt-1 text-xl font-bold text-slate-900">{title}</h2>
           {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
         </div>
         {aside}

@@ -93,7 +93,7 @@ const ChartCard = ({ title, subtitle, children, className = '' }) => (
   <div className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col ${className}`}>
     <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-start">
       <div>
-        <h3 className="font-semibold text-slate-800 leading-tight">{title}</h3>
+        <h3 className="font-bold text-slate-800 leading-tight">{title}</h3>
         {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
       <button className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -307,7 +307,7 @@ export default function DDAnalyticsDashboard() {
         <div className="max-w-[1440px] mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-navy">District Analytics Dashboard</h1>
+              <h1 className="text-3xl font-extrabold text-navy">District Analytics Dashboard</h1>
               <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
                 <MapPin className="w-3.5 h-3.5" /> {user?.district} District · {user?.department} ·
                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Updated: {format(new Date(), "dd MMM, hh:mm a")}</span>
@@ -592,7 +592,7 @@ export default function DDAnalyticsDashboard() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-slate-100">
-            <h4 className="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">Processing Speed (Days)</h4>
+            <h4 className="text-sm font-bold text-slate-400 uppercase mb-4 tracking-widest">Processing Speed (Days)</h4>
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart outerRadius={80} data={[
@@ -939,7 +939,7 @@ export default function DDAnalyticsDashboard() {
           <div className="p-5 bg-[#f8fafc] rounded-2xl border border-slate-200">
             <div className="flex items-center gap-2 mb-3">
               <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg"><Info className="w-4 h-4" /></div>
-              <h4 className="font-bold text-slate-800 text-sm">Groundwater Insight</h4>
+              <h4 className="font-bold text-slate-800 text-base">Groundwater Insight</h4>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
               {groundwater.stats.avgDepthPre - groundwater.stats.avgDepthPost > 5 
@@ -950,7 +950,7 @@ export default function DDAnalyticsDashboard() {
           <div className="p-5 bg-[#f8fafc] rounded-2xl border border-slate-200">
             <div className="flex items-center gap-2 mb-3">
               <div className="p-1.5 bg-green-100 text-green-600 rounded-lg"><TrendingUp className="w-4 h-4" /></div>
-              <h4 className="font-bold text-slate-800 text-sm">Streamshed Health</h4>
+              <h4 className="font-bold text-slate-800 text-base">Streamshed Health</h4>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
               Total catchment area of {streams.totalCatchmentArea?.toFixed(0)} Ha has been demarcated. 

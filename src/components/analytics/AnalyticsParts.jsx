@@ -29,7 +29,7 @@ export function Panel({ title, description, aside, children, padded = true, clas
         <div className="flex min-w-0 items-start gap-2.5">
           <span className="mt-0.5 h-5 w-1.5 flex-shrink-0 rounded-full bg-gradient-to-b from-blue-600 to-emerald-500" aria-hidden="true" />
           <div className="min-w-0">
-            <h2 className="text-[15px] font-extrabold text-navy">{title}</h2>
+            <h2 className="text-lg font-extrabold text-navy">{title}</h2>
             {description && <p className="mt-0.5 text-xs font-medium text-slate-500">{description}</p>}
           </div>
         </div>
@@ -46,7 +46,7 @@ export function Kpi({ label, value, sub, tone = 'default', icon: Icon, meter, co
     <div className={`rounded-2xl border px-4 py-3.5 shadow-sm transition-shadow hover:shadow-md ${c.card}`}>
       <dt className="flex items-center gap-2.5">
         {Icon && <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${c.disc}`} aria-hidden="true"><Icon className="h-[18px] w-[18px]" /></span>}
-        <span className={`text-[13px] font-bold leading-tight ${c.label}`}>{label}</span>
+        <span className={`text-[15px] font-extrabold leading-tight ${c.label}`}>{label}</span>
       </dt>
       <dd className="mt-2 text-2xl font-extrabold tabular-nums text-slate-900">{value}</dd>
       {sub && <dd className="mt-0.5 truncate text-xs font-medium text-slate-600" title={typeof sub === 'string' ? sub : undefined}>{sub}</dd>}

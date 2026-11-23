@@ -91,7 +91,7 @@ export function Head56Reports({ financialYear, onYearChange, isMaker, onQueueCou
       {reviewer && (
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Inbox className="h-4 w-4 text-navy" aria-hidden="true" />Awaiting your action{queue.total > 0 && <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white">{queue.total}</span>}</h2>
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900"><Inbox className="h-4 w-4 text-navy" aria-hidden="true" />Awaiting your action{queue.total > 0 && <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white">{queue.total}</span>}</h2>
           </header>
           {queue.loading && <div className="p-5"><Skeleton className="h-16" /></div>}
           {queue.error && <div className="p-5"><Notice tone="error">{queue.error}</Notice></div>}

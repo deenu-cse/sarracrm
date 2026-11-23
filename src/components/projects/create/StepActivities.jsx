@@ -214,7 +214,7 @@ export function StepActivities({ state, dispatch, onBack, onComplete }) {
         >
           <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-base font-semibold text-slate-900">{departmentName}</h3>
+              <h3 className="text-lg font-bold text-slate-900">{departmentName}</h3>
               <span className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs">
                 <span className="text-slate-500">Head</span>
                 <span className="font-mono font-bold text-slate-800">{state.head?.code}</span>

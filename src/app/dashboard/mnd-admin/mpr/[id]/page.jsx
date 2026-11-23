@@ -113,7 +113,7 @@ export default function MNDAdminReviewPage() {
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex justify-between items-start">
               <div>
                 <button onClick={() => router.push("/dashboard/mnd-admin/mpr")} className="inline-flex items-center text-sm font-semibold text-[#0a3d62] mb-2 hover:translate-x-[-4px] transition-transform"><ArrowLeft className="w-4 h-4 mr-1" /> Back to MPR list</button>
-                <h1 className="font-mono text-2xl font-bold text-slate-900 tracking-tight">{form?.applicationNo}</h1>
+                <h1 className="font-mono text-3xl font-bold text-slate-900 tracking-tight">{form?.applicationNo}</h1>
                 <p className="text-sm text-slate-500 font-medium mt-1">Submitted by {form?.submittedByDistrict} District • {form?.reportingMonth} {form?.financialYear}</p>
               </div>
               <Badge status={form?.status} className="px-4 py-1.5 rounded-full font-bold text-xs" />
