@@ -484,7 +484,7 @@ export default function OfficerFormAnalytics({ params }) {
       <div className="mb-5">
         <p className="text-sm text-slate-500">Dashboard → Forms → {form?.applicationNo} → Analytics</p>
         <div className="flex justify-between items-center flex-wrap gap-2">
-          <h1 className="text-2xl font-extrabold text-navy">Analytics — {form?.applicationNo}</h1>
+          <h1 className="text-3xl font-extrabold text-navy">Analytics — {form?.applicationNo}</h1>
           <span className="text-sm text-slate-600">{form?.formType} | {district || "—"} | {form?.section1_deptDetails?.department || "—"} | {form?.status}</span>
         </div>
       </div>
@@ -501,13 +501,13 @@ export default function OfficerFormAnalytics({ params }) {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 className="font-semibold mb-2">Budget Breakdown</h3>
+          <h3 className="font-bold mb-2">Budget Breakdown</h3>
           {(computed?.budgetBreakdown || []).length > 0 ? (
             <div className="h-[300px]"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={computed.budgetBreakdown} dataKey="value" nameKey="name" outerRadius={100} label>{computed.budgetBreakdown.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip content={<CustomTooltip />} /><Legend /></PieChart></ResponsiveContainer></div>
           ) : <EmptyChart reason="No budget breakdown data in this form" />}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 className="font-semibold mb-2">Fund Source Distribution</h3>
+          <h3 className="font-bold mb-2">Fund Source Distribution</h3>
           {(computed?.fundDist || []).length > 0 ? (
             <>
               <div className="h-[300px]"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={computed.fundDist} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} label>{computed.fundDist.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip content={<CustomTooltip />} /><Legend /></PieChart></ResponsiveContainer></div>
@@ -519,7 +519,7 @@ export default function OfficerFormAnalytics({ params }) {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 className="font-semibold mb-2">{isSpring ? "Spring Discharge Analysis" : isGroundwater ? "Hydrological Analysis (Depth to Water)" : "Stream Discharge Analysis"}</h3>
+          <h3 className="font-bold mb-2">{isSpring ? "Spring Discharge Analysis" : isGroundwater ? "Hydrological Analysis (Depth to Water)" : "Stream Discharge Analysis"}</h3>
           {isSpring ? (
             (computed?.springDischarge || []).length > 0 ? (
               <>
@@ -603,7 +603,7 @@ export default function OfficerFormAnalytics({ params }) {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 className="font-semibold mb-2">{isSpring ? "Land Use & Threat Analysis" : "Land Cover Composition"}</h3>
+          <h3 className="font-bold mb-2">{isSpring ? "Land Use & Threat Analysis" : "Land Cover Composition"}</h3>
           {isSpring ? (
             (computed?.landUse || []).length > 0 ? (
               <div className="h-[300px]">
@@ -665,13 +665,13 @@ export default function OfficerFormAnalytics({ params }) {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 className="font-semibold mb-2">Recharge Area Analysis</h3>
+          <h3 className="font-bold mb-2">Recharge Area Analysis</h3>
           {(computed?.recharge || []).length > 0 ? (
             <div className="h-[320px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={computed.recharge}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip content={<CustomTooltip />} /><Legend /><Bar dataKey="forest" stackId="a" fill="#1e8449" name="Forest Land" /><Bar dataKey="revenue" stackId="a" fill="#e67e22" name="Revenue Land" /><Bar dataKey="private" stackId="a" fill="#ef4444" name="Private Land" /></BarChart></ResponsiveContainer></div>
           ) : <EmptyChart reason="No recharge area data in this form" />}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 className="font-semibold mb-2">Activity Budget Distribution</h3>
+          <h3 className="font-bold mb-2">Activity Budget Distribution</h3>
           {(computed?.activities || []).length > 0 ? (
             <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -690,7 +690,7 @@ export default function OfficerFormAnalytics({ params }) {
 
       {!isSpring && (
         <div className="bg-white rounded-xl border border-slate-200 p-4 mb-5">
-          <h3 className="font-semibold mb-2">Water Recharge Compliance Gauge</h3>
+          <h3 className="font-bold mb-2">Water Recharge Compliance Gauge</h3>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" barSize={20} data={rechargeGauge} startAngle={180} endAngle={0}>
@@ -719,14 +719,14 @@ export default function OfficerFormAnalytics({ params }) {
       )}
 
       <div className="bg-white rounded-xl border border-slate-200 p-4 mb-5">
-        <h3 className="font-semibold mb-2">Timeline & Status History</h3>
+        <h3 className="font-bold mb-2">Timeline & Status History</h3>
         {(computed?.timeline || []).length > 0 ? (
           <div className="h-[260px]"><ResponsiveContainer width="100%" height="100%"><LineChart data={computed.timeline}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="stage" /><YAxis hide /><Tooltip content={<CustomTooltip />} /><Line type="monotone" dataKey="day" stroke="#0a3d62" strokeWidth={3} /></LineChart></ResponsiveContainer></div>
         ) : <EmptyChart reason="No status timeline data in this form" />}
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-4 mb-5">
-        <h3 className="font-semibold mb-3">Physical Targets Table</h3>
+        <h3 className="font-bold mb-3">Physical Targets Table</h3>
         {(computed?.activities || []).length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -756,7 +756,7 @@ export default function OfficerFormAnalytics({ params }) {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-4">
-        <h3 className="font-semibold mb-1">This DPR in Context of {district || "District"}</h3>
+        <h3 className="font-bold mb-1">This DPR in Context of {district || "District"}</h3>
         <p className="text-sm text-slate-500 mb-4">How this form compares to the district's overall data</p>
 
         {districtMatch ? (

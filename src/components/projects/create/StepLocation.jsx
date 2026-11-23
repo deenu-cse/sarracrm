@@ -66,7 +66,7 @@ export function StepLocation({ state, dispatch, errors, showErrors }) {
     <StepCard
       step={1}
       title="Project Location"
-      description="Select the location from district down to village. Each list only shows places that belong to the selection above it."
+      description="Select the district. Block, Gram Panchayat and Village are optional; each list only shows places that belong to the selection above it."
     >
       {districtLocked && (
         <div className="mb-5">
@@ -99,7 +99,7 @@ export function StepLocation({ state, dispatch, errors, showErrors }) {
           </div>
         </Field>
 
-        <Field id="loc-block" label="Block" required error={errorFor('block')}>
+        <Field id="loc-block" label="Block" optional error={errorFor('block')}>
           <SearchableSelect
             id="loc-block"
             noun="block"
@@ -119,7 +119,7 @@ export function StepLocation({ state, dispatch, errors, showErrors }) {
           />
         </Field>
 
-        <Field id="loc-gp" label="Gram Panchayat" required error={errorFor('gramPanchayat')}>
+        <Field id="loc-gp" label="Gram Panchayat" optional error={errorFor('gramPanchayat')}>
           <SearchableSelect
             id="loc-gp"
             noun="Gram Panchayat"
@@ -139,7 +139,7 @@ export function StepLocation({ state, dispatch, errors, showErrors }) {
           />
         </Field>
 
-        <Field id="loc-village" label="Village Name" required error={errorFor('village')}>
+        <Field id="loc-village" label="Village Name" optional error={errorFor('village')}>
           <SearchableSelect
             id="loc-village"
             noun="village"

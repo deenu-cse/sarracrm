@@ -104,7 +104,7 @@ export default function OfficerMPRDetailPage() {
                   <ArrowLeft className="w-4 h-4 mr-1" /> Back to My Reports
                 </button>
                 <div className="flex items-center gap-3">
-                  <h1 className="font-mono text-2xl font-bold text-slate-900 tracking-tight">{mpr.applicationNo || 'Draft Form'}</h1>
+                  <h1 className="font-mono text-3xl font-bold text-slate-900 tracking-tight">{mpr.applicationNo || 'Draft Form'}</h1>
                   <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full text-white ${formInfo.color}`}>
                     {formInfo.label}
                   </span>
@@ -143,7 +143,7 @@ export default function OfficerMPRDetailPage() {
               {/* Activity-wise Physical Progress */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <h3 className="font-semibold text-slate-800 text-sm">Activity-wise Physical Progress</h3>
+                  <h3 className="font-bold text-slate-800 text-base">Activity-wise Physical Progress</h3>
                 </div>
                 <div className="p-2 h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -161,7 +161,7 @@ export default function OfficerMPRDetailPage() {
               {/* Budget vs Expenditure */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <h3 className="font-semibold text-slate-800 text-sm">SARRA Budget vs Expenditure</h3>
+                  <h3 className="font-bold text-slate-800 text-base">SARRA Budget vs Expenditure</h3>
                 </div>
                 <div className="p-2 h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -343,7 +343,7 @@ export default function OfficerMPRDetailPage() {
 
               {/* Metadata */}
               <div className="mt-8 pt-6 border-t border-slate-100 space-y-3">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Report Metadata</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Report Metadata</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <MetaBox label="SCHEMES" value={mpr.totalApprovedSchemes || 0} />
                   {mpr.totalSpringsUnderSchemes !== undefined && <MetaBox label="SPRINGS" value={mpr.totalSpringsUnderSchemes} />}
@@ -355,7 +355,7 @@ export default function OfficerMPRDetailPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Submission Info</h4>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Submission Info</h4>
                   <div className="text-xs text-slate-500 space-y-1">
                     <p><span className="font-semibold text-slate-700">Created:</span> {formatDate(mpr.createdAt)}</p>
                     {mpr.submittedAt && <p><span className="font-semibold text-slate-700">Submitted:</span> {formatDate(mpr.submittedAt)}</p>}

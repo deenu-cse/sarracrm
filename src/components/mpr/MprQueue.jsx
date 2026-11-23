@@ -17,7 +17,7 @@ export function MprQueue({ hrefFor, title = 'Awaiting your action', emptyText = 
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50/50 px-5 py-3">
         <div className="flex items-center gap-2">
           <ClipboardCheck className="h-4 w-4 text-amber-700" aria-hidden="true" />
-          <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+          <h2 className="text-base font-bold text-slate-900">{title}</h2>
           {!box.loading && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold tabular-nums text-amber-800">{box.items.length}</span>}
         </div>
         <p className="text-xs text-slate-500">Open a report to verify and forward it, return it to its Maker, or (Approvers) reject it.</p>

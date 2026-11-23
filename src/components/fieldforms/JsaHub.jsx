@@ -77,13 +77,13 @@ function Progress({ campaign, setCampaign, stateWide }) {
               ['Targeted recharge', `${r.recharge.totals.potentialMillion} M cu.m`, `${num(r.recharge.totals.potentialRecharge, 0)} cu.m in the monsoon`],
               [`Recharge as on ${r.asOnLabel}`, `${r.recharge.totals.tillDateMillion} M cu.m`, `${num(r.recharge.totals.rechargeTillDate, 0)} cu.m`],
             ].map(([label, value, sub]) => (
-              <div key={label} className={`rounded-2xl border px-4 py-3 shadow-sm ${CARD_COLORS[colorFor(label)].card}`}><dt className={`text-[13px] font-bold ${CARD_COLORS[colorFor(label)].label}`}>{label}</dt><dd className="mt-1 text-2xl font-extrabold tabular-nums text-slate-900">{value}</dd><dd className="text-xs text-slate-500">{sub}</dd></div>
+              <div key={label} className={`rounded-2xl border px-4 py-3 shadow-sm ${CARD_COLORS[colorFor(label)].card}`}><dt className={`text-[15px] font-extrabold ${CARD_COLORS[colorFor(label)].label}`}>{label}</dt><dd className="mt-1 text-2xl font-extrabold tabular-nums text-slate-900">{value}</dd><dd className="text-xs text-slate-500">{sub}</dd></div>
             ))}
           </dl>
 
           <section className={card}>
             <header className="border-b border-slate-100 px-5 py-3">
-              <h2 className="text-sm font-semibold text-slate-900">जल संरक्षण अभियान {r.campaign} — साप्ताहिक प्रगति प्रारूप-03</h2>
+              <h2 className="text-base font-bold text-slate-900">जल संरक्षण अभियान {r.campaign} — साप्ताहिक प्रगति प्रारूप-03</h2>
               <p className="text-xs text-slate-500">Treatment plan and progress of tributary rivers / streams by district, as on {r.asOnLabel}. Each place counts with its latest weekly statement on or before that date.</p>
             </header>
             <div className="overflow-x-auto">
@@ -120,7 +120,7 @@ function Progress({ campaign, setCampaign, stateWide }) {
             <header className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-5 py-3">
               <CloudRain className="h-4 w-4 text-navy" aria-hidden="true" />
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Potential recharge — targets and progress of water and soil conservation activities</h2>
+                <h2 className="text-base font-bold text-slate-900">Potential recharge — targets and progress of water and soil conservation activities</h2>
                 <p className="text-xs text-slate-500">Recharge = structures × average capacity of one structure × refills in the monsoon.</p>
               </div>
             </header>

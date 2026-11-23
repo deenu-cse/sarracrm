@@ -96,7 +96,7 @@ export function DnssView({ id }) {
       {message.text && <Notice tone={message.tone || 'info'}>{message.text}</Notice>}
 
       <section className={card}>
-        <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Gram Panchayat</h2></header>
+        <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Gram Panchayat</h2></header>
         <div className="px-5 py-5">
           {editable
             ? <LocationPicker depth="GRAM_PANCHAYAT" value={place} onChange={(next) => { setPlace(next); setErrors((e) => ({ ...e, district: undefined, block: undefined, gramPanchayat: undefined })); }} lockedDistrict={user?.district || null} errors={errors} idPrefix="dnss" />
@@ -105,7 +105,7 @@ export function DnssView({ id }) {
       </section>
 
       <section className={card}>
-        <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Committee details</h2></header>
+        <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Committee details</h2></header>
         {editable ? (
           <div className="grid grid-cols-1 gap-x-5 gap-y-4 px-5 py-5 md:grid-cols-3">
             <Field id="dn-groups" label="No. of groups"><CountInput id="dn-groups" value={form.groups} onChange={set('groups')} /></Field>
@@ -137,7 +137,7 @@ export function DnssView({ id }) {
 
       {isNew ? <Notice tone="info">Save the details first, then attach the DNSS formation letter, photographs and minutes.</Notice> : (
         <section className={`${card} space-y-4 p-5`}>
-          <h2 className="text-sm font-semibold text-slate-900">Documents</h2>
+          <h2 className="text-base font-bold text-slate-900">Documents</h2>
           <FileGroup title="DNSS formation letter" files={d.formationLetter} max={3} {...fileProps('formationLetter')} />
           <FileGroup title="Photographs of meeting" imagesOnly files={d.photographs} max={12} {...fileProps('photographs')} />
           <FileGroup title="Minutes of meeting" files={d.minutes} max={5} {...fileProps('minutes')} />

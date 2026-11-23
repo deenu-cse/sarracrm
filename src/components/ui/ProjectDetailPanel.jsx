@@ -93,7 +93,7 @@ export function ProjectDetailPanel({ project, actions }) {
 
         {/* Budget Breakdown */}
         <Card>
-          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Budget Breakdown</h3>
+          <h3 className="text-base font-bold text-slate-700 uppercase tracking-wider mb-4">Budget Breakdown</h3>
           <BudgetBar
             label="Total Sanctioned"
             value={project.totalSanctionedBudgetLakh}
@@ -117,7 +117,7 @@ export function ProjectDetailPanel({ project, actions }) {
         {/* Department-wise allocation and activity plan */}
         {project.departmentAllocations?.length > 0 && (
           <Card>
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">
+            <h3 className="text-base font-bold text-slate-700 uppercase tracking-wider mb-4">
               Department Allocation ({project.numberOfPIA || project.departmentAllocations.length} PIA)
             </h3>
             <div className="space-y-5">
@@ -161,7 +161,7 @@ export function ProjectDetailPanel({ project, actions }) {
         {/* Sanctioned Targets */}
         {project.sanctionedTargets?.length > 0 && (
           <Card>
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">
+            <h3 className="text-base font-bold text-slate-700 uppercase tracking-wider mb-4">
               Sanctioned Targets ({project.sanctionedTargets.length} components)
             </h3>
             <div className="overflow-x-auto">
@@ -194,7 +194,7 @@ export function ProjectDetailPanel({ project, actions }) {
         {/* Documents */}
         {(project.secretariatApprovalOrder?.url || project.stateSanctionOrder?.url) && (
           <Card>
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Documents</h3>
+            <h3 className="text-base font-bold text-slate-700 uppercase tracking-wider mb-4">Documents</h3>
             <div className="space-y-2">
               {project.secretariatApprovalOrder?.url && (
                 <a
@@ -223,7 +223,7 @@ export function ProjectDetailPanel({ project, actions }) {
         {/* PIA Info */}
         {project.forwardedToPIA && (
           <Card>
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">PIA Assignment</h3>
+            <h3 className="text-base font-bold text-slate-700 uppercase tracking-wider mb-3">PIA Assignment</h3>
             <InfoRow label="Assigned PIA Officer" value={project.forwardedToPIA?.name} icon={User} />
             <InfoRow label="Department" value={project.forwardedToPIA?.department} icon={Building2} />
             <InfoRow label="Assigned On" value={formatDate(project.piaForwardedAt)} icon={Calendar} />
@@ -236,7 +236,7 @@ export function ProjectDetailPanel({ project, actions }) {
         {/* Action Area */}
         {actions && (
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Actions</h3>
+            <h3 className="text-base font-bold text-slate-600 uppercase tracking-wider mb-3">Actions</h3>
             {actions}
           </div>
         )}

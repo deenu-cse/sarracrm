@@ -1,9 +1,10 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { BarChart3, CalendarClock, ClipboardCheck, FolderKanban, Lock, PlusCircle, ScrollText, UserPlus, Users } from 'lucide-react';
+import { BarChart3, CalendarClock, ListChecks, Lock, ScrollText, UserPlus, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { DataTable } from '@/components/analytics/AnalyticsParts';
+import { ProjectOverview } from '@/components/projects/ProjectOverview';
 import { ActionLink, Card, Empty, HomeShell, Metric, MoneyFlow, PendingStages, ReportRows, SeeAll, TaskList, TrendBars, ago, lakh, rowLink, shortLakh, td, th, useHome } from './HomeKit';
 
 /** District-wise comparison in the report design: sanctioned, expenditure and balance, progress and reports. */
@@ -27,35 +28,6 @@ const ROLE_TEXT = {
 
 const STAGE_HREF = '/dashboard/admin/projects';
 
-/** Where every project stands, from creation to closure. The step that belongs to this role is marked. */
-function Pipeline({ stages, mine }) {
-  const flow = stages.filter((stage) => stage.status !== 'REJECTED');
-  const returned = stages.find((stage) => stage.status === 'REJECTED');
-  const top = Math.max(...flow.map((stage) => stage.count), 1);
-  return (
-    <div>
-      <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
-        {flow.map((stage, index) => {
-          const own = mine.includes(stage.status);
-          return (
-            <li key={stage.status} className={`rounded-lg border px-3 py-2.5 ${own ? 'border-navy bg-navy/[0.04]' : 'border-slate-200 bg-white'}`}>
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                <span className="tabular-nums text-slate-400">{index + 1}</span>{stage.label}
-              </p>
-              <p className={`mt-1 text-2xl font-bold tabular-nums ${stage.count ? 'text-slate-900' : 'text-slate-300'}`}>{stage.count}</p>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100" aria-hidden="true"><div className="h-full rounded-full bg-navy" style={{ width: `${(stage.count / top) * 100}%` }} /></div>
-              {own && <p className="mt-1.5 text-[11px] font-semibold text-navy">Your step</p>}
-            </li>
-          );
-        })}
-      </ol>
-      {returned?.count > 0 && <p className="mt-3 text-sm text-slate-600"><span className="font-semibold text-red-700">{returned.count} returned</span> to the HQ Maker for correction and resubmission.</p>}
-    </div>
-  );
-}
-
-const MINE = { MAKER: ['SANCTIONED'], CHECKER: ['PENDING_CHECKER'], APPROVER: ['PENDING_APPROVER'], ADMIN: [] };
-
 /** Consolidated SARRA HQ dashboard. Maker, Checker, Approver and the administrator each see their own work first. */
 export function StateHome() {
   const home = useHome();
@@ -65,27 +37,27 @@ export function StateHome() {
   const k = data?.kpis;
 
   const actions = {
-    MAKER: <><ActionLink href="/dashboard/admin/mprs" icon={ClipboardCheck}>MPR Verification</ActionLink><ActionLink href="/dashboard/admin/projects/create" icon={PlusCircle} primary>New Project</ActionLink></>,
-    CHECKER: <><ActionLink href="/dashboard/admin/mprs" icon={ClipboardCheck}>MPR Verification</ActionLink><ActionLink href={STAGE_HREF} icon={FolderKanban} primary>Projects</ActionLink></>,
-    APPROVER: <><ActionLink href="/dashboard/admin/mprs" icon={ClipboardCheck}>MPR Verification</ActionLink><ActionLink href={STAGE_HREF} icon={FolderKanban} primary>Projects</ActionLink></>,
+    MAKER: null,
+    CHECKER: <ActionLink href={STAGE_HREF} icon={ListChecks} primary>Project Status</ActionLink>,
+    APPROVER: <ActionLink href={STAGE_HREF} icon={ListChecks} primary>Project Status</ActionLink>,
     ADMIN: <><ActionLink href="/dashboard/admin/audit-logs" icon={ScrollText}>Audit Logs</ActionLink><ActionLink href="/dashboard/admin/users/new" icon={UserPlus} primary>Add User</ActionLink></>,
   }[role];
 
   const metrics = k && {
     MAKER: [
       ['Projects created', String(k.projects), `${k.pendingChecker} with Checker · ${k.pendingApprover} with Approver`, 'default', STAGE_HREF],
-      ['Returned to you', String(k.returned), 'To correct and resubmit', k.returned ? 'danger' : 'default', STAGE_HREF],
+      ['Returned to you', String(k.returned), 'To correct and resubmit', k.returned ? 'danger' : 'default', `${STAGE_HREF}?group=REJECTED`],
       ['Reports to compile', String(k.myActions), `${k.mprInReview} in verification across the State`, k.myActions ? 'warning' : 'default', '/dashboard/admin/mprs'],
       ['Sanctioned amount', lakh(k.sanctionedLakh), `${k.sanctioned} sanctioned project${k.sanctioned === 1 ? '' : 's'}`],
     ],
     CHECKER: [
-      ['Projects to verify', String(k.pendingChecker), 'DPR, targets and allocation', k.pendingChecker ? 'warning' : 'default', STAGE_HREF],
+      ['Projects to verify', String(k.pendingChecker), 'DPR, targets and allocation', k.pendingChecker ? 'warning' : 'default', `${STAGE_HREF}?group=PENDING`],
       ['Reports to verify', String(k.myActions), 'State-level data consistency', k.myActions ? 'warning' : 'default', '/dashboard/admin/mprs'],
       ['Sanctioned', String(k.sanctioned), lakh(k.sanctionedLakh)],
       ['Returned to Maker', String(k.returned), 'Back with the HQ Maker'],
     ],
     APPROVER: [
-      ['Projects to sanction', String(k.pendingApprover), 'Verified by the HQ Checker', k.pendingApprover ? 'warning' : 'default', STAGE_HREF],
+      ['Projects to sanction', String(k.pendingApprover), 'Verified by the HQ Checker', k.pendingApprover ? 'warning' : 'default', `${STAGE_HREF}?group=PENDING`],
       ['Reports for final approval', String(k.myActions), `${k.mprVerified} verified by State so far`, k.myActions ? 'warning' : 'default', '/dashboard/admin/mprs'],
       ['Active projects', String(k.inProgress), `${k.physicalPercent}% average physical progress`],
       ['Closed', String(k.closed), 'Completed and closed'],
@@ -146,8 +118,11 @@ export function StateHome() {
             </div>
           )}
 
-          <Card title="Project pipeline" description="How many projects are at each step right now." aside={<SeeAll href={STAGE_HREF}>All projects</SeeAll>}>
-            <Pipeline stages={data.pipeline} mine={MINE[role] || []} />
+          <Card title="Project Overview" description="Every project of the State: pending with HQ, approved (sanctioned) or rejected (returned to the HQ Maker)." aside={<SeeAll href={STAGE_HREF}>Project Status</SeeAll>}>
+            <ProjectOverview
+              counts={{ '': k.projects, PENDING: k.pendingChecker + k.pendingApprover, APPROVED: k.sanctioned, REJECTED: k.returned }}
+              hrefFor={(group) => (group ? `${STAGE_HREF}?group=${group}` : STAGE_HREF)}
+            />
           </Card>
 
           <Card title="MPR pending actions by step" description="Reports of the whole State waiting at each Maker, Checker and Approver step of the three tiers." aside={<SeeAll href="/dashboard/admin/mprs">MPR verification</SeeAll>}>

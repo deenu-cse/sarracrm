@@ -462,7 +462,7 @@ export function AssignmentReview({ project, user, onDone }) {
     <section className={`mt-5 rounded-xl border-2 ${tone} p-4 sm:p-5`} aria-label="PIA assignment review">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-slate-900">{heading}</h2>
+          <h2 className="text-lg font-bold text-slate-900">{heading}</h2>
           <p className="mt-0.5 text-xs text-slate-600">
             Selected by {proposal.submittedBy?.name || 'the District Maker'}{proposal.submittedAt ? ` on ${when(proposal.submittedAt)}` : ''}
             {proposal.checkedBy ? ` · verified by ${proposal.checkedBy.name} on ${when(proposal.checkedAt)}` : ''}

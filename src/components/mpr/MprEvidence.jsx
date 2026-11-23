@@ -113,7 +113,7 @@ export function MprEvidence({ report, onChanged }) {
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm print:hidden">
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-3">
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">Evidence <span className="font-normal text-slate-500">({evidence.length})</span></h2>
+          <h2 className="text-base font-bold text-slate-900">Evidence <span className="font-normal text-slate-500">({evidence.length})</span></h2>
           <p className="mt-0.5 text-xs text-slate-500">{canManage ? 'Field photographs and supporting documents. They can be changed until the first reviewer acts on the report.' : 'Photographs and documents attached by the reporting Maker.'}</p>
         </div>
         {canManage && room > 0 && <ActionButton size="sm" variant="secondary" icon={ImagePlus} onClick={() => { setItems([]); setError(''); setPicking(true); }}>Add Files</ActionButton>}

@@ -99,7 +99,7 @@ export function WorkflowTab({ project, user, canSeeRevisions = false, onChanged 
             <EmptyNote>No sanction order has been attached to this project yet.</EmptyNote>
           ) : (
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Sanction Orders</h3>
+              <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-slate-500">Sanction Orders</h3>
               <div className="space-y-2">{orders.map((order) => <DocumentLink key={order.name} {...order} />)}</div>
             </div>
           )}

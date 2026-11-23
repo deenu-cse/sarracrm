@@ -60,7 +60,7 @@ export function MprReportDocument({ report }) {
       <div className="rounded-lg border border-slate-300 bg-white">
         <div className="border-b border-slate-300 px-4 py-3 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Spring and River Rejuvenation Authority (SARRA)</p>
-          <h3 className="mt-0.5 text-base font-bold text-slate-900">{FORM_TYPE_TITLES[report.formType] || 'Monthly Progress Report'}</h3>
+          <h3 className="mt-0.5 text-lg font-bold text-slate-900">{FORM_TYPE_TITLES[report.formType] || 'Monthly Progress Report'}</h3>
           <p className="text-xs text-slate-600">Form {report.formType}{report.mprNo ? ` · ${report.mprNo}` : ''}</p>
         </div>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3 px-4 py-3 md:grid-cols-4">

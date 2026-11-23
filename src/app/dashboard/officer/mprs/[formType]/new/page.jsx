@@ -628,7 +628,7 @@ export default function OfficerMPRFormPage() {
             <button onClick={() => router.push('/dashboard/officer/mprs')} className="text-white/70 hover:text-white text-xs font-semibold mb-1 flex items-center gap-1">
               ← Back to MPRs
             </button>
-            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">{config.label} | {config.headLabel} | MPR</h1>
+            <h1 className="text-2xl md:text-2xl font-bold text-white tracking-tight">{config.label} | {config.headLabel} | MPR</h1>
             <p className="text-blue-200 text-sm mt-1">{config.subtitle}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">

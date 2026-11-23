@@ -189,7 +189,7 @@ function ActivityLog() {
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
-          <h2 className="text-sm font-semibold text-slate-900">Activity <span className="font-normal text-slate-500">newest first</span></h2>
+          <h2 className="text-base font-bold text-slate-900">Activity <span className="font-normal text-slate-500">newest first</span></h2>
           <ExportButton onClick={exportPage} disabled={!box.logs.length}>Export this page</ExportButton>
         </header>
 
@@ -279,7 +279,7 @@ export function AuditLogPage() {
       <div className="mb-5 flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><ScrollText className="h-5 w-5" /></span>
         <div>
-          <h1 className="text-2xl font-extrabold text-navy">Audit Logs</h1>
+          <h1 className="text-3xl font-extrabold text-navy">Audit Logs</h1>
           <p className="text-sm text-slate-500">Who did what, and when. Entries cannot be edited or deleted.</p>
         </div>
       </div>

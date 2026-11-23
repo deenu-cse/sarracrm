@@ -8,8 +8,11 @@ import { getDashboardRoute } from '@/lib/routes';
 
 // Words that read wrongly when a path segment is simply capitalised.
 const WORDS = { mpr: 'MPR', mprs: 'MPRs', dpr: 'DPR', dd: 'District', 'mpr-review': 'Review MPRs', 'audit-logs': 'Audit Logs', head56: 'Head 56', allocation: 'Allocation', report: 'Report', committees: 'Committees', meeting: 'Meeting', dnss: 'DNSS', jsa: 'JSA Progress', training: 'Training', new: 'New' };
+// SARRA HQ names its project pages after their menu items.
+const HQ_WORDS = { projects: 'Project Status', 'projects/create': 'New Project Entry' };
 const looksLikeId = (segment) => /^[a-f0-9]{24}$/i.test(segment) || (segment.length > 15 && !/^[a-z]+(-[a-z]+)+$/.test(segment));
-const labelOf = (segment) => {
+const labelOf = (segment, roleSegment, path) => {
+  if (roleSegment === 'admin' && HQ_WORDS[path]) return HQ_WORDS[path];
   if (WORDS[segment]) return WORDS[segment];
   if (looksLikeId(segment)) return 'Details';
   const text = segment.replace(/-/g, ' ');
@@ -33,13 +36,15 @@ export function Breadcrumb() {
       {rest.length === 0 && <span className="ml-2 truncate font-medium text-slate-800" aria-current="page">Dashboard</span>}
       {rest.map((segment, index) => {
         const last = index === rest.length - 1;
-        const href = `/dashboard/${roleSegment}/${rest.slice(0, index + 1).join('/')}`;
+        const path = rest.slice(0, index + 1).join('/');
+        const href = `/dashboard/${roleSegment}/${path}`;
+        const label = labelOf(segment, roleSegment, path);
         return (
           <React.Fragment key={href}>
             <ChevronRight className="mx-1.5 h-4 w-4 flex-shrink-0 text-slate-300" aria-hidden="true" />
             {last
-              ? <span className="truncate font-medium text-slate-800" aria-current="page">{labelOf(segment)}</span>
-              : <Link href={href} className={`truncate rounded transition-colors hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40 ${index < rest.length - 2 ? 'hidden sm:inline' : ''}`}>{labelOf(segment)}</Link>}
+              ? <span className="truncate font-medium text-slate-800" aria-current="page">{label}</span>
+              : <Link href={href} className={`truncate rounded transition-colors hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/40 ${index < rest.length - 2 ? 'hidden sm:inline' : ''}`}>{label}</Link>}
           </React.Fragment>
         );
       })}

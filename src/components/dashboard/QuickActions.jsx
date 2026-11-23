@@ -54,7 +54,7 @@ export function QuickActions({ role }) {
             <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
           <div>
-            <h3 className="font-bold text-lg leading-tight">{action.title}</h3>
+            <h3 className="font-bold text-xl leading-tight">{action.title}</h3>
             <p className={`text-xs mt-1 font-medium ${action.color.includes('text-white') ? 'text-white/60' : 'text-slate-500'}`}>
               {action.desc}
             </p>

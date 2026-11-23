@@ -90,7 +90,7 @@ export function ApprovalPanel({ form, onApprove, onReject, isReadOnly = false })
 
       {/* Form Stats */}
       <Card>
-        <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide mb-4">Form Overview</h4>
+        <h4 className="text-base font-bold text-slate-800 uppercase tracking-wide mb-4">Form Overview</h4>
         <div className="space-y-3">
           <div className="flex justify-between items-center pb-2 border-b border-slate-100">
             <span className="text-sm text-slate-500">{form.formType === 'STREAMSHED' ? 'Total Streams' : 'Total Springs'}</span>
@@ -130,7 +130,7 @@ export function ApprovalPanel({ form, onApprove, onReject, isReadOnly = false })
 
       {/* Officer Info */}
       <Card>
-        <h4 className="text-sm font-semibold text-slate-800 uppercase tracking-wide mb-4">Submitted By</h4>
+        <h4 className="text-base font-bold text-slate-800 uppercase tracking-wide mb-4">Submitted By</h4>
         {form.submittedBy ? (
           <div className="space-y-2 text-sm">
             <p className="font-medium text-slate-900">{form.submittedBy.name}</p>

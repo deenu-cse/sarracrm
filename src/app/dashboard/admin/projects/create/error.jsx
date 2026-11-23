@@ -12,7 +12,7 @@ export default function CreateProjectError({ error, reset }) {
   return (
     <div className="mx-auto max-w-xl p-6 pt-12">
       <div role="alert" className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">Something went wrong on this page</h1>
+        <h1 className="text-xl font-bold text-slate-900">Something went wrong on this page</h1>
         <p className="mt-2 text-sm text-slate-600">
           The information you entered is saved as a draft on this device. Reload the form to continue where you left off.
         </p>

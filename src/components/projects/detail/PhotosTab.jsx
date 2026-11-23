@@ -312,7 +312,7 @@ export function PhotosTab({ project }) {
           <div className="space-y-6">
             {groups.map((group) => (
               <section key={group.key} aria-label={`${group.activityName} — ${group.departmentName}`}>
-                <h3 className="mb-2 text-sm font-semibold text-slate-900">
+                <h3 className="mb-2 text-base font-bold text-slate-900">
                   {group.activityName}
                   <span className="ml-2 text-xs font-normal text-slate-500">{group.departmentName}{group.physicalTarget ? ` · approved target ${group.physicalTarget} ${group.unit}` : ''}</span>
                 </h3>

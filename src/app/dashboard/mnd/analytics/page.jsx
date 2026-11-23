@@ -1088,7 +1088,7 @@ export default function AnalyticsDashboard() {
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-navy">Analytics Dashboard</h1>
+              <h1 className="text-3xl font-extrabold text-navy">Analytics Dashboard</h1>
               <p className="text-slate-500">Track state-wide submissions and physical/financial progress.</p>
             </div>
             <div className="flex bg-slate-200 p-1 rounded-lg overflow-x-auto whitespace-nowrap">

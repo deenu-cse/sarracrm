@@ -33,8 +33,12 @@ export const ago = (value) => {
   return days < 30 ? `${days} days ago` : new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-/** Loads the signed-in role's home data. */
+/**
+ * Loads the signed-in role's home data. The home page using it also re-renders when the
+ * unit for amounts (Rupees / Thousand / Lakh / Crore) changes, so every amount updates at once.
+ */
 export function useHome() {
+  useMoneyUnit();
   const [box, setBox] = useState({ data: null, loading: true, error: '' });
   const load = useCallback(() => {
     setBox((current) => ({ ...current, loading: true, error: '' }));
@@ -55,7 +59,6 @@ const greeting = () => {
 /** Page frame: greeting, who you are, today's date, the main actions, then the page. */
 export function HomeShell({ home, roleLine, actions, children }) {
   const { user } = useAuth();
-  useMoneyUnit(); // re-render every amount when the unit for reports changes
   const [today, setToday] = useState('');
   const [hello, setHello] = useState('Welcome');
   // Set on the client only, so the server and first client render agree.
@@ -118,7 +121,7 @@ export function Card({ title, description, aside, children, padded = true, class
           <div className="flex min-w-0 items-start gap-2.5">
             <span className="mt-0.5 h-5 w-1.5 flex-shrink-0 rounded-full bg-gradient-to-b from-blue-600 to-emerald-500" aria-hidden="true" />
             <div className="min-w-0">
-              <h2 className="text-[15px] font-extrabold text-navy">{title}</h2>
+              <h2 className="text-lg font-extrabold text-navy">{title}</h2>
               {description && <p className="mt-0.5 text-xs font-medium text-slate-500">{description}</p>}
             </div>
           </div>
@@ -152,7 +155,7 @@ export function TaskList({ tasks, emptyTitle = 'Nothing is waiting for you', emp
   return (
     <section aria-labelledby="home-tasks" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-        <h2 id="home-tasks" className="text-sm font-semibold text-slate-900">Needs your action</h2>
+        <h2 id="home-tasks" className="text-base font-bold text-slate-900">Needs your action</h2>
         {total > 0 && <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-bold tabular-nums text-white">{total}</span>}
       </header>
       {sorted.length === 0 ? (
@@ -196,7 +199,7 @@ export function Metric({ label, value, sub, tone = 'default', icon: Icon, href, 
     <>
       <dt className="flex items-center gap-2.5">
         {Icon && <span className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white shadow ${c.disc}`} aria-hidden="true"><Icon className="h-[18px] w-[18px]" /></span>}
-        <span className={`text-[13px] font-bold leading-tight ${c.label}`}>{label}</span>
+        <span className={`text-[15px] font-extrabold leading-tight ${c.label}`}>{label}</span>
       </dt>
       <dd className={`mt-2 text-2xl font-extrabold tabular-nums ${tones[tone] || tones.default}`}>{value}</dd>
       {sub && <dd className="mt-0.5 truncate text-xs font-medium text-slate-600">{sub}</dd>}

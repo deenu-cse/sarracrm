@@ -202,7 +202,7 @@ export default function DDFormReviewPage({ params }) {
           </div>
           <DataTable columns={["#", "ARS Detail", "Name", "Latitude", "Longitude", "Altitude", "Recharge Ha", "Ownership", "Type"]} rows={(s2.arsDetails || []).map((r, i) => [i + 1, r.arsDetail, r.name, formatDMS(r.latitude), formatDMS(r.longitude), r.altitudeMasl, r.approxRechargeAreaHa, r.landOwnership, r.landTypeDesignation])} />
           <div className="mt-4" />
-          <h4 className="font-semibold text-sm mb-2 text-slate-700">Hydrological Details</h4>
+          <h4 className="font-bold text-base mb-2 text-slate-700">Hydrological Details</h4>
           <DataTable columns={["ARS Detail", "Name", "Pre-Monsoon (m)", "Post-Monsoon (m)", "10 Yrs Ago (m)", "Trend"]} rows={(s2.hydrologicalDetails || []).map((r) => {
             const current = Number(r.depthToWaterTablePostMonsoon) || 0;
             const past = Number(r.depthToWaterTable10YrsAgo) || 0;
@@ -235,7 +235,7 @@ export default function DDFormReviewPage({ params }) {
         </> },
         { n: 6, t: "Analytics Overview", c: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <h4 className="text-xs font-bold text-slate-500 uppercase mb-4">Land Cover Composition</h4>
+            <h4 className="text-sm font-bold text-slate-500 uppercase mb-4">Land Cover Composition</h4>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(s2.arsDetails || []).map(r => ({
@@ -256,7 +256,7 @@ export default function DDFormReviewPage({ params }) {
             </div>
           </div>
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <h4 className="text-xs font-bold text-slate-500 uppercase mb-4">Hydrological Trends</h4>
+            <h4 className="text-sm font-bold text-slate-500 uppercase mb-4">Hydrological Trends</h4>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(s2.hydrologicalDetails || []).map(r => ({
@@ -329,7 +329,7 @@ export default function DDFormReviewPage({ params }) {
           <div className="bg-white rounded-xl border border-slate-200 p-4 flex justify-between items-start">
             <div>
               <button onClick={() => router.push("/dashboard/dd/review")} className="inline-flex items-center text-sm text-[#0a3d62] mb-1"><ArrowLeft className="w-4 h-4 mr-1" /> Back to review list</button>
-              <h1 className="font-mono text-lg font-bold text-slate-800">{form?.applicationNo || "—"}</h1>
+              <h1 className="font-mono text-xl font-bold text-slate-800">{form?.applicationNo || "—"}</h1>
               <p className="text-sm text-slate-500">{form?.formType} | Submitted {formatDateTime(form?.submittedAt)}</p>
             </div>
             <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">{form?.status || "—"}</span>
@@ -359,14 +359,14 @@ export default function DDFormReviewPage({ params }) {
         <div className="lg:col-span-3">
           <div className="sticky top-24 space-y-3">
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <h3 className="font-semibold mb-3 text-slate-800">Approval Panel</h3>
+              <h3 className="font-bold mb-3 text-slate-800">Approval Panel</h3>
               <button onClick={approve} className="w-full mb-2 px-3 py-2 rounded bg-green-600 text-white text-sm inline-flex justify-center items-center gap-2"><CheckCircle className="w-4 h-4" /> Approve</button>
               <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={4} className="w-full border border-slate-300 rounded p-2 text-sm" placeholder="Reason for rejection" />
               <button onClick={reject} className="w-full mt-2 px-3 py-2 rounded bg-red-600 text-white text-sm inline-flex justify-center items-center gap-2"><XCircle className="w-4 h-4" /> Reject</button>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <h3 className="font-semibold mb-2 text-slate-800">Revision Timeline</h3>
+              <h3 className="font-bold mb-2 text-slate-800">Revision Timeline</h3>
               {(form?.revisionHistory || []).length === 0 && <p className="text-sm text-slate-500">No revision history yet</p>}
               <div className="space-y-2">
                 {(form?.revisionHistory || []).map((r, i) => (

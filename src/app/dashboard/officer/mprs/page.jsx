@@ -46,7 +46,7 @@ export default function OfficerMPRsPage() {
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true">{maker ? <ClipboardList className="h-5 w-5" /> : <ClipboardCheck className="h-5 w-5" />}</span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">{t(maker ? 'My MPRs' : 'MPR Verification')}</h1>
+            <h1 className="text-3xl font-extrabold text-navy">{t(maker ? 'My MPRs' : 'MPR Verification')}</h1>
             <p className="text-sm text-slate-500">
               {maker
                 ? t('Monthly Progress Reports for the departments assigned to you. Submitted reports go to the PIA Checker.')
@@ -74,7 +74,7 @@ export default function OfficerMPRsPage() {
 
       <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t(maker ? 'Reports' : 'All reports of the department')}</h2>
+          <h2 className="text-base font-bold text-slate-900">{t(maker ? 'Reports' : 'All reports of the department')}</h2>
           <div className="flex flex-wrap items-center gap-2">
             <StatusFilter filters={maker ? MAKER_FILTERS : REVIEWER_FILTERS} value={status} onChange={setStatus} />
             <RegisterDownload label={t('Excel Register')} download={() => downloadMprRegister({ status })} />

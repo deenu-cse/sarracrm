@@ -18,7 +18,7 @@ function ProjectCard({ project, onAccept, accepting }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-xs font-bold text-slate-500">{project.projectId || project.sanctionId}</p>
-          <h3 className="mt-0.5 text-base font-semibold text-slate-900">{project.projectTitle}</h3>
+          <h3 className="mt-0.5 text-lg font-bold text-slate-900">{project.projectTitle}</h3>
           <p className="mt-0.5 text-xs text-slate-500">{location}{project.head?.code ? ` · Head ${project.head.code} ${project.head.name}` : ''}</p>
         </div>
         {project.needsMyAcceptance
@@ -104,7 +104,7 @@ export default function OfficerProjectsPage() {
       <div className="mb-6 flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><FolderOpen className="h-5 w-5" /></span>
         <div>
-          <h1 className="text-2xl font-extrabold text-navy">My Projects</h1>
+          <h1 className="text-3xl font-extrabold text-navy">My Projects</h1>
           <p className="text-sm text-slate-500">Projects where the District SARRA Centre has assigned your department.</p>
         </div>
       </div>
@@ -122,14 +122,14 @@ export default function OfficerProjectsPage() {
 
       {!firstLoad && !error && pending.length > 0 && (
         <section className="mb-8" aria-labelledby="pending-heading">
-          <h2 id="pending-heading" className="mb-3 text-sm font-semibold text-slate-800">Awaiting your acceptance ({pending.length})</h2>
+          <h2 id="pending-heading" className="mb-3 text-base font-bold text-slate-800">Awaiting your acceptance ({pending.length})</h2>
           <ul className="space-y-3">{pending.map((project) => <ProjectCard key={project._id} project={project} onAccept={accept} accepting={accepting === project._id} />)}</ul>
         </section>
       )}
 
       {!firstLoad && !error && accepted.length > 0 && (
         <section aria-labelledby="accepted-heading">
-          <h2 id="accepted-heading" className="mb-3 text-sm font-semibold text-slate-800">Projects ({accepted.length})</h2>
+          <h2 id="accepted-heading" className="mb-3 text-base font-bold text-slate-800">Projects ({accepted.length})</h2>
           <ul className="space-y-3">{accepted.map((project) => <ProjectCard key={project._id} project={project} onAccept={accept} accepting={false} />)}</ul>
         </section>
       )}

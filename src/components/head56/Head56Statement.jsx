@@ -57,7 +57,7 @@ export function Head56Statement({ financialYear, onYearChange }) {
         <section className={`rounded-xl border border-slate-200 bg-white shadow-sm transition-opacity ${box.loading ? 'opacity-60' : ''}`}>
           <header className="border-b border-slate-100 px-5 py-3">
             <p className="text-xs font-semibold text-slate-500">SARRA अन्तर्गत 56-गैर वेतन हेतु अनुदान के अन्तर्गत आवंटित बजट के सापेक्ष वित्तीय एवं भौतिक प्रगति विवरण प्रारूप –2</p>
-            <h2 className="mt-1 text-base font-extrabold text-navy">{data.scopeLabel} · FY {data.financialYear}, {data.period}</h2>
+            <h2 className="mt-1 text-lg font-extrabold text-navy">{data.scopeLabel} · FY {data.financialYear}, {data.period}</h2>
             <p className="text-xs text-slate-500">{data.units} unit allocation(s) · {data.reports} report(s) filed for the month · {data.verifiedOnly ? 'verified reports only' : 'all filed reports (in the chain, returned or verified)'} · amounts {unitCaption(unit)} (downloads in ₹ lakh)</p>
           </header>
           <Head56Table rows={data.rows} total={data.total} variant="STATEMENT" caption={`Prarup-2 statement, ${data.period}`} />

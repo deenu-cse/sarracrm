@@ -22,7 +22,7 @@ export default function DDReviewFormsPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-navy">Forms for Review</h1>
+          <h1 className="text-3xl font-extrabold text-navy">Forms for Review</h1>
           <p className="text-slate-500">Review and approve district DPR forms</p>
         </div>
         <ExportButton filters={filters} availableTypes={['csv', 'excel']} />

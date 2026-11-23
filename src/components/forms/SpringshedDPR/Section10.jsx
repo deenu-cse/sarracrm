@@ -31,7 +31,7 @@ export default function Section10({ data, onChange, errors }) {
       </div>
 
       <div className="mb-8 bg-slate-50 p-6 rounded-xl border border-slate-200">
-        <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wide mb-4">Activity Costing</h3>
+        <h3 className="text-base font-bold text-slate-800 uppercase tracking-wide mb-4">Activity Costing</h3>
         <TableInput
           columns={activityColumns}
           data={data?.activities || []}

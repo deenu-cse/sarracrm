@@ -24,7 +24,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       
       <div className={`relative w-full ${maxWidth} bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+          <h3 className="text-xl font-bold text-slate-800">{title}</h3>
           <button 
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition-colors rounded-full p-1 hover:bg-slate-100"

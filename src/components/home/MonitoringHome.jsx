@@ -161,7 +161,7 @@ export function MonitoringOfficerHome() {
             </Card>
           </div>
 
-          <h2 className="pt-2 text-sm font-semibold text-slate-900">State picture <span className="font-normal text-slate-500">(project reporting, read only)</span></h2>
+          <h2 className="pt-2 text-base font-bold text-slate-900">State picture <span className="font-normal text-slate-500">(project reporting, read only)</span></h2>
           <Overview data={data} deadlinesHref={null} />
 
           <Card title="Latest project reports" description="Most recently filed across the State." padded={false}>

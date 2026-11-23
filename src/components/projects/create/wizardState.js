@@ -202,13 +202,10 @@ export const isRealDate = (value) => {
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 };
 
+/** Only the district is required; Block, Gram Panchayat and Village are optional. */
 export function validateLocation(state) {
   const errors = {};
-  const { district, block, gramPanchayat, village } = state.location;
-  if (!district) errors.district = 'Please select a district.';
-  if (!block) errors.block = 'Please select a block.';
-  if (!gramPanchayat) errors.gramPanchayat = 'Please select a Gram Panchayat.';
-  if (!village) errors.village = 'Please select a village.';
+  if (!state.location.district) errors.district = 'Please select a district.';
   return errors;
 }
 

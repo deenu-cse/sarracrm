@@ -29,7 +29,7 @@ function Card({ step, title, description, children }) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
       <header className="border-b border-slate-100 px-5 py-4 sm:px-6">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+        <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
           {step && <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-navy text-xs font-bold text-white" aria-hidden="true">{step}</span>}
           {title}
         </h2>
@@ -304,7 +304,7 @@ export function MprEntryWorkspace({ initialQuery = {}, routes = OFFICER_ROUTES }
         </Link>
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><ClipboardList className="h-5 w-5" /></span>
         <div className="min-w-0">
-          <h1 className="text-2xl font-extrabold text-navy">{t(correctionId ? (returnedReport ? 'Correct Monthly Progress Report' : 'Continue Draft Report') : 'Monthly Progress Report')}</h1>
+          <h1 className="text-3xl font-extrabold text-navy">{t(correctionId ? (returnedReport ? 'Correct Monthly Progress Report' : 'Continue Draft Report') : 'Monthly Progress Report')}</h1>
           <p className="text-sm text-slate-500">
             {head ? <>Form <strong className="font-semibold text-slate-700">{head.formType}</strong> · Head {head.code} — {head.name}</> : t('Report physical and financial progress for your department. Amounts are in ₹ Lakh.')}
           </p>
@@ -317,7 +317,7 @@ export function MprEntryWorkspace({ initialQuery = {}, routes = OFFICER_ROUTES }
             <div className="flex flex-wrap items-center gap-5">
               <SuccessTick size={56} />
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-bold text-slate-900">{saved.draft ? 'Draft Saved' : t(returnedReport ? 'Report Resubmitted' : 'MPR Submitted Successfully')}</h2>
+                <h2 className="text-xl font-bold text-slate-900">{saved.draft ? 'Draft Saved' : t(returnedReport ? 'Report Resubmitted' : 'MPR Submitted Successfully')}</h2>
                 <p className="mt-0.5 text-sm text-slate-700">
                   <span className="font-mono font-semibold">{saved.mprNo}</span> — {saved.department}, {saved.period}.{' '}
                   {saved.draft ? 'It stays with you until you submit it.' : `It has been sent to the ${FIRST_REVIEWER[saved.entryMode || 'PIA']} for verification.`}

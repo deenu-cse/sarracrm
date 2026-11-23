@@ -29,7 +29,7 @@ const formatSavedAt = (iso) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 };
 
-const MODE_TITLES = { create: 'Create Project', resubmit: 'Correct & Resubmit Project', revise: 'Revise Project' };
+const MODE_TITLES = { create: 'New Project Entry', resubmit: 'Correct & Resubmit Project', revise: 'Revise Project' };
 
 /**
  * The project wizard. Three modes share the same steps and validation:
@@ -244,7 +244,7 @@ function ProjectWizard({ mode, sourceId }) {
             <FolderPlus className="h-5 w-5" />
           </span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">{MODE_TITLES[mode]}</h1>
+            <h1 className="text-3xl font-extrabold text-navy">{MODE_TITLES[mode]}</h1>
             <p className="text-sm text-slate-500">
               Step {state.step + 1} of {STEPS.length} · {STEPS[state.step].label}
             </p>

@@ -265,7 +265,7 @@ function SectionThree({ data }) {
 
       <div className="space-y-10 mt-8">
         <div>
-          <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <h4 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-blue-600 rounded-full" />
             General Description (Table 3.1)
           </h4>
@@ -286,7 +286,7 @@ function SectionThree({ data }) {
         </div>
 
         <div>
-          <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <h4 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-emerald-600 rounded-full" />
             Structure & Supply (Table 3.2)
           </h4>
@@ -342,7 +342,7 @@ function SectionTen({ data, springNames }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
         {/* Budget Summary */}
         <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
-          <h4 className="text-sm font-bold text-slate-800 mb-6">Budget Summary</h4>
+          <h4 className="text-base font-bold text-slate-800 mb-6">Budget Summary</h4>
           <div className="space-y-4">
             <SummaryRow label="DPR Preparation Budget" value={data.table101?.dprPreparationBudgetLakh} />
             <SummaryRow label="Total Interventions Cost" value={data.table101?.totalInterventionsCostLakh} />
@@ -356,7 +356,7 @@ function SectionTen({ data, springNames }) {
         {/* Interventions Plan */}
         <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
           <div className="p-8 pb-4">
-            <h4 className="text-sm font-bold text-slate-800">Interventions Plan (Top 5)</h4>
+            <h4 className="text-base font-bold text-slate-800">Interventions Plan (Top 5)</h4>
           </div>
           <div className="flex-1 overflow-auto px-4">
             <table className="w-full text-sm">
@@ -388,7 +388,7 @@ function SectionTen({ data, springNames }) {
 
       {/* Financial Sources */}
       <div className="mt-10 bg-slate-900 rounded-[2.5rem] p-8 text-white">
-        <h4 className="text-sm font-bold text-blue-400 mb-8 uppercase tracking-widest">Financial Sources</h4>
+        <h4 className="text-base font-bold text-blue-400 mb-8 uppercase tracking-widest">Financial Sources</h4>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           <SourceItem label="From PIA Dept." value={data.table103?.fundFromPIADeptLakh} />
           <SourceItem label="Other Sources" value={data.table103?.fundFromOtherSourcesLakh} />
@@ -399,7 +399,7 @@ function SectionTen({ data, springNames }) {
 
       {/* Annexures */}
       <div className="mt-10">
-        <h4 className="text-sm font-bold text-slate-800 mb-6 uppercase tracking-widest">Annexures</h4>
+        <h4 className="text-base font-bold text-slate-800 mb-6 uppercase tracking-widest">Annexures</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <FileCard label="DPR Document" url={data.annexures?.detailProjectReport?.url} />
           <FileCard label="Dhara Naula Details" url={data.annexures?.dharaNaulaDetails?.url} />

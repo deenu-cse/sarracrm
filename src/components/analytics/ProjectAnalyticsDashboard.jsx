@@ -153,7 +153,7 @@ export function ProjectAnalyticsDashboard({ initialFilters = {}, legacyHref, rep
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/10 text-navy" aria-hidden="true"><BarChart3 className="h-5 w-5" /></span>
           <div>
-            <h1 className="text-2xl font-extrabold text-navy">State Analytics</h1>
+            <h1 className="text-3xl font-extrabold text-navy">State Analytics</h1>
             <p className="text-sm font-medium text-slate-600">Projects, expenditure against the sanctioned allocation and monthly progress across every district and PIA.</p>
           </div>
         </div>

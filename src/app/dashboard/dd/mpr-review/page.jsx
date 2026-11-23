@@ -139,14 +139,14 @@ export default function DDMPRReviewPage() {
           <ClipboardCheck className="w-5 h-5 text-teal-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-slate-900">MPR Verification</h1>
+          <h1 className="text-3xl font-black text-slate-900">MPR Verification</h1>
           <p className="text-slate-500 text-sm">District Maker receives, District Checker verifies, District Approver approves and forwards to SARRA HQ</p>
         </div>
       </div>
 
       <DistrictProjectMprs />
 
-      <h2 className="mb-2 mt-8 text-sm font-semibold text-slate-700">Earlier Praroop-format reports</h2>
+      <h2 className="mb-2 mt-8 text-base font-bold text-slate-700">Earlier Praroop-format reports</h2>
       <FilterBar
         filters={filters}
         onChange={(f) => setFilters(prev => ({ ...prev, ...f }))}

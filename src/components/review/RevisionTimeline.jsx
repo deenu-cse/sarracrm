@@ -19,7 +19,7 @@ export function RevisionTimeline({ revisions, currentStatus }) {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6 overflow-x-auto">
-      <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wide mb-6">Revision History</h3>
+      <h3 className="text-base font-bold text-slate-800 uppercase tracking-wide mb-6">Revision History</h3>
       
       <div className="relative min-w-[600px]">
         {/* Timeline Line */}

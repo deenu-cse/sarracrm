@@ -185,7 +185,7 @@ export function MprReportPage({ mprId, backHref, backLabel = 'Back', correctionH
           </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-extrabold text-navy">{report.departmentName} — {report.period}</h1>
+              <h1 className="text-3xl font-extrabold text-navy">{report.departmentName} — {report.period}</h1>
               <Badge status={report.status} size="md" />
               <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${report.entryMode === 'DISTRICT' ? 'bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-700'}`}>{ENTRY_MODE_LABELS[report.entryMode] || ENTRY_MODE_LABELS.PIA}</span>
             </div>
@@ -279,7 +279,7 @@ export function MprReportPage({ mprId, backHref, backLabel = 'Back', correctionH
           {tab === 'analysis' && <MprAnalysis report={report} reportHref={reportHref} />}
           {tab === 'history' && (
             <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-              <h2 className="border-b border-slate-100 px-5 py-3 text-sm font-semibold text-slate-900">Workflow History <span className="font-normal text-slate-500">— every action with user, designation, date, time and remarks</span></h2>
+              <h2 className="border-b border-slate-100 px-5 py-3 text-base font-bold text-slate-900">Workflow History <span className="font-normal text-slate-500">— every action with user, designation, date, time and remarks</span></h2>
               <ol className="divide-y divide-slate-100">
                 {report.revisionHistory.map((step, index) => (
                   <li key={`${step.changedAt}-${index}`} className="flex flex-wrap items-start justify-between gap-3 px-5 py-3 text-sm">

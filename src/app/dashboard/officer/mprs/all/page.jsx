@@ -93,7 +93,7 @@ export default function AllOfficerMPRsPage() {
               <ClipboardList className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900">All Submitted MPRs</h1>
+              <h1 className="text-3xl font-black text-slate-900">All Submitted MPRs</h1>
               <p className="text-slate-500 text-sm">View and track all your historical monthly progress reports</p>
             </div>
           </div>

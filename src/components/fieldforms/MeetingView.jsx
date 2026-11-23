@@ -137,7 +137,7 @@ export function MeetingView({ id }) {
       {message.text && <Notice tone={message.tone || 'info'}>{message.text}</Notice>}
 
       <section className={card}>
-        <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">Meeting details</h2></header>
+        <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">Meeting details</h2></header>
         {editable ? (
           <div className="grid grid-cols-1 gap-x-5 gap-y-4 px-5 py-5 md:grid-cols-3">
             <Field id="m-no" label={`No. of ${committee.code} meeting`} required error={errors.meetingNo}><CountInput id="m-no" value={form.meetingNo} onChange={set('meetingNo')} invalid={Boolean(errors.meetingNo)} placeholder="e.g. 3" /></Field>
@@ -165,7 +165,7 @@ export function MeetingView({ id }) {
         <Notice tone="info">Save the details first. Then attach the minutes of the meeting (required) and the photographs, and submit to the HQ Approver.</Notice>
       ) : (
         <section className={`${card} space-y-4 p-5`}>
-          <h2 className="text-sm font-semibold text-slate-900">Minutes and photographs</h2>
+          <h2 className="text-base font-bold text-slate-900">Minutes and photographs</h2>
           <FileGroup title="Minutes of meeting" hint="Signed minutes (PDF or scanned image). Required before submitting." required files={meeting.minutes} max={5} editable={permissions.canEdit} onUpload={async (files) => { await uploadMeetingFiles(id, 'minutes', files); await load(); }} onRemove={async (file) => { await removeMeetingFile(id, 'minutes', file.id); await load(); }} />
           <FileGroup title="Photographs of meeting" imagesOnly files={meeting.photographs} max={12} editable={permissions.canEdit} onUpload={async (files) => { await uploadMeetingFiles(id, 'photographs', files); await load(); }} onRemove={async (file) => { await removeMeetingFile(id, 'photographs', file.id); await load(); }} />
         </section>
@@ -185,7 +185,7 @@ export function MeetingView({ id }) {
 
       {!isNew && meeting.history?.length > 0 && (
         <section className={card}>
-          <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-semibold text-slate-900">History</h2></header>
+          <header className="border-b border-slate-100 px-5 py-3"><h2 className="text-base font-bold text-slate-900">History</h2></header>
           <ol className="divide-y divide-slate-100">
             {meeting.history.map((h, i) => (
               <li key={i} className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-2.5 text-sm">

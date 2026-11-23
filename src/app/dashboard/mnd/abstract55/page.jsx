@@ -403,7 +403,7 @@ export default function MPRAbstract55() {
       <div className="bg-navy px-2 py-8 md:px-8 z-50">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">Abstract 55 — MPR Form</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">Abstract 55 — MPR Form</h1>
             <p className="text-blue-500 text-sm mt-1">District wise-Department wise Approved Project (From DLEC) Status_Under Budget Head 55</p>
           </div>
         </div>
@@ -536,7 +536,7 @@ export default function MPRAbstract55() {
               {/* TABLE */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-700 to-blue-900 p-4 flex justify-between items-center">
-                  <h3 className="text-white font-bold flex items-center gap-2 text-lg">
+                  <h3 className="text-white font-bold flex items-center gap-2 text-xl">
                     <span>{activeDept.icon}</span> Active: {activeDept.label}
                   </h3>
                   <div className="flex gap-2">

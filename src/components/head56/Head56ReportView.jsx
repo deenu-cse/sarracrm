@@ -120,7 +120,7 @@ export function Head56ReportView({ id }) {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Budget Head 56 · Non-Salary Grant · Prarup-2</p>
-          <h1 className="mt-1 flex flex-wrap items-center gap-2 text-xl font-bold text-slate-900">{report.unitName} <span className="font-normal text-slate-400">·</span> {report.period}</h1>
+          <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">{report.unitName} <span className="font-normal text-slate-400">·</span> {report.period}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
             <span className="font-mono text-xs">{report.mprNo}</span><LevelPill level={report.level} /><Badge status={report.status} />
             {report.awaiting && <span className="text-xs text-slate-500">Waiting for {report.awaiting}</span>}
@@ -176,7 +176,7 @@ export function Head56ReportView({ id }) {
       {tab === 'history' && (
         <div className="grid gap-4 lg:grid-cols-2">
           <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-900">Verification checklists</h2>
+            <h2 className="text-base font-bold text-slate-900">Verification checklists</h2>
             {report.checksDone.length === 0 ? <p className="mt-2 text-sm text-slate-500">No checklist confirmed in this cycle yet.</p> : (
               <ul className="mt-3 space-y-3">
                 {report.checksDone.map((step) => (
@@ -189,7 +189,7 @@ export function Head56ReportView({ id }) {
             )}
           </section>
           <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-900">Audit trail</h2>
+            <h2 className="text-base font-bold text-slate-900">Audit trail</h2>
             <ol className="mt-3 space-y-3">
               {report.history.map((entry, index) => (
                 <li key={index} className="border-l-2 border-slate-200 pl-3">
